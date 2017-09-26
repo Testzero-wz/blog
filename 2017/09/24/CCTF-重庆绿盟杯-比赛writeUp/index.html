@@ -22,7 +22,7 @@
 <meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-21-47.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-37-40.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-40-49.jpg">
-<meta property="og:updated_time" content="2017-09-26T17:14:19.442Z">
+<meta property="og:updated_time" content="2017-09-26T17:18:34.189Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="CCTF（重庆绿盟杯）比赛writeUp">
 <meta name="twitter:description" content="WEB1靶机只扫描到22的ssh端口那么思路只有一个，只能爆破">
@@ -51,7 +51,7 @@
     <canvas id="anm-canvas" class="anm-canvas"></canvas>
     <div class="left-col" q-class="show:isShow">
       
-<div class="overlay" style="background: #4D4D58"></div>
+<div class="overlay" style="background: #4D4D59"></div>
 <div class="intrude-less">
 	<header id="header" class="inner">
 		<a href="" class="profilepic">
@@ -69,7 +69,9 @@
 			
 				<li><a href="/">主页</a></li>
 	        
-				<li><a href="/essay/">随笔</a></li>
+				<li><a href="/categories/WriteUp">WriteUp</a></li>
+	        
+				<li><a href="/categories/随笔">随笔</a></li>
 	        
 			</ul>
 		</nav>
@@ -80,7 +82,7 @@
     			
             
     			
-    			<a q-on="click: openSlider(e, 'friends')" href="javascript:void(0)">友情链接</a>
+    			<a q-on="click: openSlider(e, 'friends')" href="javascript:void(0)">友链</a>
     			
             
     			
@@ -93,11 +95,9 @@
 				
 					<a class="github" target="_blank" href="#" title="github"><i class="icon-github"></i></a>
 		        
-					<a class="weibo" target="_blank" href="#" title="weibo"><i class="icon-weibo"></i></a>
-		        
-					<a class="rss" target="_blank" href="#" title="rss"><i class="icon-rss"></i></a>
-		        
 					<a class="zhihu" target="_blank" href="#" title="zhihu"><i class="icon-zhihu"></i></a>
+		        
+					<a class="google" target="_blank" href="#" title="google"><i class="icon-google"></i></a>
 		        
 			</div>
 		</nav>
@@ -108,7 +108,7 @@
     <div class="mid-col" q-class="show:isShow,hide:isShow|isFalse">
       
 <nav id="mobile-nav">
-  	<div class="overlay js-overlay" style="background: #4D4D58"></div>
+  	<div class="overlay js-overlay" style="background: #4D4D59"></div>
 	<div class="btnctn js-mobile-btnctn">
   		<div class="slider-trigger list" q-on="click: openSlider(e)"><i class="icon icon-sort"></i></div>
 	</div>
@@ -129,6 +129,8 @@
 			
 				
 			
+				
+			
 			
 			
 			<nav class="header-nav">
@@ -136,22 +138,22 @@
 					
 						<a class="github" target="_blank" href="#" title="github"><i class="icon-github"></i></a>
 			        
-						<a class="weibo" target="_blank" href="#" title="weibo"><i class="icon-weibo"></i></a>
-			        
-						<a class="rss" target="_blank" href="#" title="rss"><i class="icon-rss"></i></a>
-			        
 						<a class="zhihu" target="_blank" href="#" title="zhihu"><i class="icon-zhihu"></i></a>
+			        
+						<a class="google" target="_blank" href="#" title="google"><i class="icon-google"></i></a>
 			        
 				</div>
 			</nav>
 
 			<nav class="header-menu js-header-menu">
-				<ul style="width: 50%">
+				<ul style="width: 70%">
 				
 				
-					<li style="width: 50%"><a href="/">主页</a></li>
+					<li style="width: 33.333333333333336%"><a href="/">主页</a></li>
 		        
-					<li style="width: 50%"><a href="/essay/">随笔</a></li>
+					<li style="width: 33.333333333333336%"><a href="/categories/WriteUp">WriteUp</a></li>
+		        
+					<li style="width: 33.333333333333336%"><a href="/categories/随笔">随笔</a></li>
 		        
 				</ul>
 			</nav>
@@ -379,11 +381,15 @@
   
 <nav id="article-nav">
   
-  
-    <a href="/2017/09/22/Notice/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">Notice</div>
-      <i class="icon-circle-right"></i>
+    <a href="/2999/09/22/Notice/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          Notice
+        
+      </div>
     </a>
+  
   
 </nav>
 
@@ -482,7 +488,7 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
       
         
       
-      <li style="width: 33.333333333333336%" q-on="click: openSlider(e, 'friends')"><a href="javascript:void(0)" q-class="active:friends">友情链接</a></li>
+      <li style="width: 33.333333333333336%" q-on="click: openSlider(e, 'friends')"><a href="javascript:void(0)" q-class="active:friends">友链</a></li>
       
         
       
