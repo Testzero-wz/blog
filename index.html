@@ -610,7 +610,7 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
     
     	<section class="tools-section tools-section-all" q-show="innerArchive">
         <div class="search-wrap">
-          <input class="search-ipt" q-model="search" type="text" placeholder="find something…">
+          <input class="search-ipt" q-model="search" type="text" placeholder="搜索文章、标签">
           <i class="icon-search icon" q-show="search|isEmptyStr"></i>
           <i class="icon-close icon" q-show="search|isNotEmptyStr" q-on="click:clearChose(e)"></i>
         </div>
@@ -701,7 +701,11 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
     
     	<section class="tools-section tools-section-me" q-show="aboutme">
   	  	
-  	  		<div class="aboutme-wrap" id="js-aboutme">大学才开始接触电脑以及安全的菜鸡<br>正在奋力学习中<br><br>愿不忘初心<br><br>感谢您的关注<br>谢谢</div>
+  	  		<div class="aboutme-wrap" id="js-aboutme">
+			<div>
+			<br/>大学才开始接触电脑以及安全的菜鸡<br/>正在奋力学习中<br>/<br/>愿不忘初心<br/><br/>感谢您的关注<br/>谢谢
+			</div>
+			</div>
   	  	
     	</section>
     
