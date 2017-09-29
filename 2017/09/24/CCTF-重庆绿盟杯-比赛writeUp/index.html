@@ -8,13 +8,11 @@
   <link rel="dns-prefetch" href="https://www.wzsite.cn">
   <title>CCTF（重庆绿盟杯）比赛writeUp | Wz&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="WEB1靶机只扫描到22的ssh端口那么思路只有一个，只能爆破">
-<meta name="keywords" content="CTF,WriteUp">
+  <meta name="keywords" content="CTF,WriteUp">
 <meta property="og:type" content="article">
 <meta property="og:title" content="CCTF（重庆绿盟杯）比赛writeUp">
 <meta property="og:url" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/index.html">
 <meta property="og:site_name" content="Wz&#39;s Blog">
-<meta property="og:description" content="WEB1靶机只扫描到22的ssh端口那么思路只有一个，只能爆破">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-23-66.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-17-21.jpg">
@@ -22,10 +20,9 @@
 <meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-21-47.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-37-40.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-40-49.jpg">
-<meta property="og:updated_time" content="2017-09-28T12:22:03.263Z">
+<meta property="og:updated_time" content="2017-09-29T07:40:53.939Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="CCTF（重庆绿盟杯）比赛writeUp">
-<meta name="twitter:description" content="WEB1靶机只扫描到22的ssh端口那么思路只有一个，只能爆破">
 <meta name="twitter:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-23-66.jpg">
   
     <link rel="alternative" href="/atom.xml" title="Wz&#39;s Blog" type="application/atom+xml">
@@ -189,7 +186,9 @@
     <div class="article-entry" itemprop="articleBody">
       
         <img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-23-66.jpg" alt="21-23-66.jpg" title="">
-<h1 id="WEB1"><a href="#WEB1" class="headerlink" title="WEB1"></a>WEB1</h1><p>靶机只扫描到22的ssh端口<br>那么思路只有一个，只能爆破<br><a id="more"></a><br>用的是一个SSH爆破工具<strong>SSH_Crack</strong><br> <strong>百度云下载链接:</strong><a href="https://pan.baidu.com/s/1qX9lyZM" target="_blank" rel="external">https://pan.baidu.com/s/1qX9lyZM</a><br>然后下几个弱密码字典，放进去跑，然而并没有什么用<br>最后到结束也没跑出来，跑到怀疑人生。结束后问别队，他们说最后半小时出现了一个5984的端口</p>
+<a id="more"></a>
+<h1 id="WEB1"><a href="#WEB1" class="headerlink" title="WEB1"></a>WEB1</h1><p>靶机只扫描到22的ssh端口<br>那么思路只有一个，只能爆破</p>
+<p>用的是一个SSH爆破工具<strong>SSH_Crack</strong><br> <strong>百度云下载链接:</strong><a href="https://pan.baidu.com/s/1qX9lyZM" target="_blank" rel="external">https://pan.baidu.com/s/1qX9lyZM</a><br>然后下几个弱密码字典，放进去跑，然而并没有什么用<br>最后到结束也没跑出来，跑到怀疑人生。结束后问别队，他们说最后半小时出现了一个5984的端口</p>
 <blockquote>
 <p>21 ftp<br>22 SSH<br>23 Telnet<br>80 web<br>80-89 web<br>161 SNMP<br>389 LDAP<br>443 SSL心脏滴血以及一些web漏洞测试<br>445 SMB<br>512,513,514 Rexec<br>873 Rsync未授权<br>1025,111 NFS<br>1433 MSSQL<br>1521 Oracle:(iSqlPlus Port:5560,7778)<br>2082/2083 cpanel主机管理系统登陆 （国外用较多）<br>2222 DA虚拟主机管理系统登陆 （国外用较多）<br>2601,2604 zebra路由，默认密码zebra<br>3128 squid代理默认端口，如果没设置口令很可能就直接漫游内网了<br>3306 MySQL<br>3312/3311 kangle主机管理系统登陆<br>3389 远程桌面<br>4440 rundeck 参考WooYun: 借用新浪某服务成功漫游新浪内网<br>5432 PostgreSQL<br>5900 vnc<br>5984 CouchDB <a href="http://xxx:5984/_utils/" target="_blank" rel="external">http://xxx:5984/_utils/</a><br>6082 varnish 参考WooYun: Varnish HTTP accelerator CLI 未授权访问易导&gt;致网站被直接篡改或者作为代理进入内网<br>6379 redis未授权<br>7001,7002 WebLogic默认弱口令，反序列<br>7778 Kloxo主机控制面板登录<br>8000-9090 都是一些常见的web端口，有些运维喜欢把管理后台开在这些非80的端口上<br>8080 tomcat/WDCP主机管理系统，默认弱口令<br>8080,8089,9090 JBOSS<br>8083 Vestacp主机管理系统 (国外用较多)<br>8649 ganglia<br>8888 amh/LuManager 主机管理系统默认端口<br>9200,9300 elasticsearch 参考WooYun: 多玩某服务器ElasticSearch命令执&gt;行漏洞<br>10000 Virtualmin/Webmin 服务器虚拟主机管理系统<br>11211 memcache未授权访问<br>27017,27018 Mongodb未授权访问<br>28017 mongodb统计页面<br>50000 SAP命令执行<br>50070,50030 hadoop默认端口未授权访问</p>
 </blockquote>
@@ -542,15 +541,15 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">面试</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">XSS</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">WEB</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">面试</a>
               </li>
             
             <div class="clearfix"></div>
