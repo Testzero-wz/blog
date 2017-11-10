@@ -34,7 +34,7 @@
 <meta property="og:image" content="https://www.wzsite.cn/2017/11/10/2017-看雪CTF秋季赛-第二题/20-42-45.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2017/11/10/2017-看雪CTF秋季赛-第二题/20-44-26.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2017/11/10/2017-看雪CTF秋季赛-第二题/20-57-36.jpg">
-<meta property="og:updated_time" content="2017-11-10T13:19:54.081Z">
+<meta property="og:updated_time" content="2017-11-10T13:24:27.545Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="2017-看雪CTF秋季赛-第二题">
 <meta name="twitter:description" content="逆向入坑的试炼，跌跌撞撞地做完，也算是快速得积累了一些逆向的经验，很多地方不甚了了，望见谅">
@@ -219,7 +219,7 @@
 <p>还是太naive啦</p>
 <p>原来这两个条件是无解的<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="number">5</span> * (v1 - v0) + v1 == <span class="number">0x8F503A42</span></div><div class="line"><span class="number">17</span> * (v1 - v0) + v1 == <span class="number">0xF3A94883</span></div><div class="line"><span class="comment">#两式相减</span></div><div class="line"><span class="number">12</span>*(v1-v0)=<span class="number">1683557953</span>(奇数)</div></pre></td></tr></table></figure></p>
 <p>这就非常的尴尬了</p>
-<h2 id="看是太naive"><a href="#看是太naive" class="headerlink" title="看是太naive"></a>看是太naive</h2><p>再看第一个函数<code>sub_401050</code>的汇编代码</p>
+<h2 id="还是太naive"><a href="#还是太naive" class="headerlink" title="还是太naive"></a>还是太naive</h2><p>再看第一个函数<code>sub_401050</code>的汇编代码</p>
 <p>IDA反出来的代码不太利于理解，直接放Ollydbg的反汇编代码，等会反正会用到它</p>
 <img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/20-04-43.jpg" alt="20-04-43.jpg" title="">
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">00401050  |  83EC 0C       sub esp,0xC</div><div class="line">00401053  |  68 ACB04100   push ctf2017_.0041B0AC                   ;   Coded by Fpc.\n\n</div><div class="line">00401058  |  E8 E52C0100   call ctf2017_.00413D42</div><div class="line">0040105D  |  83C4 04       add esp,0x4</div><div class="line">00401060  |  68 90B04100   push ctf2017_.0041B090                   ;   Please input your code:</div><div class="line">00401065  |  E8 D82C0100   call ctf2017_.00413D42</div><div class="line">0040106A  |  83C4 04       add esp,0x4</div><div class="line">0040106D  |  8D4424 00     lea eax,dword ptr ss:[esp]</div><div class="line">00401071  |  50            push eax</div><div class="line">00401072  |  68 8CB04100   push ctf2017_.0041B08C                   ;  %s</div><div class="line">00401077  |  E8 F72C0100   call ctf2017_.00413D73</div><div class="line">0040107C  |  8D4424 08     lea eax,dword ptr ss:[esp+0x8]</div><div class="line">00401080  |  83C4 14       add esp,0x14</div><div class="line">00401083  |  C3            retn</div></pre></td></tr></table></figure>
@@ -232,19 +232,23 @@
 <p>如果我们想直接跳到打印<code>&quot;You get it!\n&quot;</code>函数的地址</p>
 <img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/20-21-43.jpg" alt="20-21-43.jpg" title="">
 <p>可以将字符串后三个字符构造为对应ascl码为0x2f 0x10 0x40的字符串就可以跳转到<code>YouGotit</code>了</p>
-<h2 id="再次陷入僵局"><a href="#再次陷入僵局" class="headerlink" title="再次陷入僵局"></a>再次陷入僵局</h2><p>然而事情还是没有那么简单<br>比赛规定了咱们只能输入数字和字母，而对应ascl码为0x2f 0x10 0x40的字符串并不是都是字母和数字<br>emmmmmmmm…….<br>果然不适合入门</p>
+<h2 id="再次陷入僵局"><a href="#再次陷入僵局" class="headerlink" title="再次陷入僵局"></a>再次陷入僵局</h2><p>然而事情还是没有那么简单<br>比赛规定了咱们只能输入数字和字母，而对应ASCLL码为0x2f 0x10 0x40的字符串并不是都是字母和数字<br>emmmmmmmm……<br>果然不适合入门</p>
 <img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/20-27-21.jpg" alt="20-27-21.jpg" title="">
 <h2 id="好戏才刚刚开始"><a href="#好戏才刚刚开始" class="headerlink" title="好戏才刚刚开始"></a>好戏才刚刚开始</h2><p>通过观(kan)察(WP)我们注意到有一段很奇怪的数据段</p>
 <img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/20-30-52.jpg" alt="20-30-52.jpg" title="">
 <p>然后还是通过观(kan)察(WP)发现这些数据居然都是代码，而且还是加了花的代码<br>(在IDA中按C键将数据转换成代码)</p>
-<img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/20-32-44.jpg" alt="20-32-44.jpg" title="">emmmmmm…….<br>这个花加得<br>果然不适合入门<br><br><img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/20-33-51.jpg" alt="20-33-51.jpg" title="">
+<img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/20-32-44.jpg" alt="20-32-44.jpg" title="">
+<p>emmmmmm…….<br>这个花加得<br>果然不适合入门</p>
+<img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/20-33-51.jpg" alt="20-33-51.jpg" title="">
 <p>该数据段的地址为<code>0x00413131</code>对应的ASCLL码字符串为<code>11A</code><br>到此，我们可以看出这到题的思路就是构造缓冲区溢出，跳转到这个加了花的数据段上执行，然后分析得出flag</p>
 <p>看到了大佬的WP中的一句话</p>
 <blockquote>
 <p>可以看到很多跳转指令。熟悉的人一眼就明白。这里其实是花指令。而且是最简单的花指令。就是来回跳一跳，吓唬吓唬你而已。相信我。所有的花指令都是纸老虎。复杂的花指令可以用插件记录程序流程分析一下脱花。简单的花指令（就像本题中遇到的这种）根本不用鸟它。完全是战五渣。直接gang正面……</p>
 </blockquote>
 <p>于是我充满信心，开始了我第一次去花之旅<br>打开Ollydbg开始动态调试<br>(恩，这是我第一次动态调试)<br>构造字符串<code>11223344556611A</code>使得咱们能给够跳转到0x00413131处执行</p>
-<img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/20-40-26.jpg" alt="20-40-26.jpg" title="">首先右键选择分析-&gt;从模块移除分析<br><br><img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/20-42-45.jpg" alt="20-42-45.jpg" title="">
+<img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/20-40-26.jpg" alt="20-40-26.jpg" title="">
+<p>首先右键选择分析-&gt;从模块移除分析</p>
+<img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/20-42-45.jpg" alt="20-42-45.jpg" title="">
 <p>然后代码就出来了<br><img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/20-44-26.jpg" alt="20-44-26.jpg" title=""></p>
 <p>emmmmmm…..<br>这么多的花指令跳转，让我瑟瑟发抖</p>
 <p>借助上面大佬的”教诲”壮胆，硬着头皮执行了下去<br>去花的原则是(当然我也不知道这样对不对,是不是一个好方法)</p>
@@ -423,7 +427,7 @@
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#分析"><span class="toc-number">1.</span> <span class="toc-text">分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#陷入僵局"><span class="toc-number">2.</span> <span class="toc-text">陷入僵局</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#看是太naive"><span class="toc-number">3.</span> <span class="toc-text">看是太naive</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#再次陷入僵局"><span class="toc-number">4.</span> <span class="toc-text">再次陷入僵局</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#好戏才刚刚开始"><span class="toc-number">5.</span> <span class="toc-text">好戏才刚刚开始</span></a></li></ol>
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#分析"><span class="toc-number">1.</span> <span class="toc-text">分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#陷入僵局"><span class="toc-number">2.</span> <span class="toc-text">陷入僵局</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#还是太naive"><span class="toc-number">3.</span> <span class="toc-text">还是太naive</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#再次陷入僵局"><span class="toc-number">4.</span> <span class="toc-text">再次陷入僵局</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#好戏才刚刚开始"><span class="toc-number">5.</span> <span class="toc-text">好戏才刚刚开始</span></a></li></ol>
                     </div>
                 </span>
             </div>
@@ -539,11 +543,11 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">WriteUp</a>
+                <a href="javascript:void(0)" class="js-tag color4">二进制</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">二进制</a>
+                <a href="javascript:void(0)" class="js-tag color3">WriteUp</a>
               </li>
              
               <li class="article-tag-list-item">
