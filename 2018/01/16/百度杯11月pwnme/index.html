@@ -8,23 +8,23 @@
   <link rel="dns-prefetch" href="https://www.wzsite.cn">
   <title>百度杯11月pwnme | Wz&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="&amp;gt; 这算是接触pwntools的第一题吧&amp;gt; 需要很多二进制知识储备，解释得比较适合新手看，大佬绕行&amp;gt; 过程跌跌撞撞，写来纪念一下">
+  <meta name="description" content="这算是接触pwntools的第一题吧需要很多二进制知识储备，解释得比较适合新手看，大佬绕行过程跌跌撞撞，写来纪念一下">
 <meta name="keywords" content="CTF,二进制,PWN">
 <meta property="og:type" content="article">
 <meta property="og:title" content="百度杯11月pwnme">
 <meta property="og:url" content="https://www.wzsite.cn/2018/01/16/百度杯11月pwnme/index.html">
 <meta property="og:site_name" content="Wz&#39;s Blog">
-<meta property="og:description" content="&amp;gt; 这算是接触pwntools的第一题吧&amp;gt; 需要很多二进制知识储备，解释得比较适合新手看，大佬绕行&amp;gt; 过程跌跌撞撞，写来纪念一下">
+<meta property="og:description" content="这算是接触pwntools的第一题吧需要很多二进制知识储备，解释得比较适合新手看，大佬绕行过程跌跌撞撞，写来纪念一下">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://www.wzsite.cn/2018/01/16/百度杯11月pwnme/13-99-45.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2018/01/16/百度杯11月pwnme/13-32-01.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2018/01/16/百度杯11月pwnme/13-32-40.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2018/01/16/百度杯11月pwnme/13-34-54.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2018/01/16/百度杯11月pwnme/13-42-45.jpg">
-<meta property="og:updated_time" content="2018-01-16T10:59:58.855Z">
+<meta property="og:updated_time" content="2018-01-16T11:12:11.551Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="百度杯11月pwnme">
-<meta name="twitter:description" content="&amp;gt; 这算是接触pwntools的第一题吧&amp;gt; 需要很多二进制知识储备，解释得比较适合新手看，大佬绕行&amp;gt; 过程跌跌撞撞，写来纪念一下">
+<meta name="twitter:description" content="这算是接触pwntools的第一题吧需要很多二进制知识储备，解释得比较适合新手看，大佬绕行过程跌跌撞撞，写来纪念一下">
 <meta name="twitter:image" content="https://www.wzsite.cn/2018/01/16/百度杯11月pwnme/13-99-45.jpg">
   
     <link rel="alternative" href="/atom.xml" title="Wz&#39;s Blog" type="application/atom+xml">
@@ -187,7 +187,10 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <img src="/2018/01/16/百度杯11月pwnme/13-99-45.jpg" alt="13-99-45.jpg" title="">&gt; 这算是接触pwntools的第一题吧<br>&gt; 需要很多二进制知识储备，解释得比较适合新手看，大佬绕行<br>&gt; 过程跌跌撞撞，写来纪念一下<br><a id="more"></a>
+        <img src="/2018/01/16/百度杯11月pwnme/13-99-45.jpg" alt="13-99-45.jpg" title="">
+<blockquote>
+<p>这算是接触pwntools的第一题吧<br>需要很多二进制知识储备，解释得比较适合新手看，大佬绕行<br>过程跌跌撞撞，写来纪念一下<br><a id="more"></a></p>
+</blockquote>
 <p>首先拿到题目，丢IDA，发现是 64位 elf文件</p>
 <img src="/2018/01/16/百度杯11月pwnme/13-32-01.jpg" alt="13-32-01.jpg" title="">随意找一下，分析出主程序和主循环<br><br><img src="/2018/01/16/百度杯11月pwnme/13-32-40.jpg" alt="13-32-40.jpg" title="">大致过程就是先打印欢迎界面 -&gt; 先注册 -&gt; 然后主循环，三个选项，分别是打印信息、修改信息、退出<br>很容易发现打印信息函数存在明显的格式化字符串漏洞<br><br><img src="/2018/01/16/百度杯11月pwnme/13-34-54.jpg" alt="13-34-54.jpg" title="">直接打印存入的信息，是一个很明显的格式化字符漏洞<br>我们可以构造一个比如<code>%11$x</code> <code>%11$n</code>的payload去泄露内存，以及修改内存<br>格式化漏洞详情         <a href="https://ctf-wiki.github.io/ctf-wiki/pwn/fmtstr/fmtstr_intro.html" target="_blank" rel="external">CTF Wiki-格式化字符串漏洞 </a><br>然后我们用<code>checksec</code>来看一下程序开了那些保护(github上有此脚本)<br><br><img src="/2018/01/16/百度杯11月pwnme/13-42-45.jpg" alt="13-42-45.jpg" title=""><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">$ checksec --file pwnme </div><div class="line">RELRO           STACK CANARY      NX            PIE             RPATH      RUNPATH	FORTIFY	Fortified Fortifiable  FILE</div><div class="line">Full RELRO      No canary found   NX enabled    No PIE          No RPATH   No RUNPATH   No	0		5	pwnme</div></pre></td></tr></table></figure>
 <blockquote>
@@ -520,19 +523,19 @@ getOwnMetadataKeys:function(t){return o(i(t),arguments.length<2?void 0:u(argumen
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">XSS</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">WEB</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">实验</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">网络</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">XSS</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">WEB</a>
               </li>
              
               <li class="article-tag-list-item">
