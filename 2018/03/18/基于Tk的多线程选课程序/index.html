@@ -22,7 +22,7 @@
 <meta property="og:image" content="https://www.wzsite.cn/2018/03/18/基于Tk的多线程选课程序/15-29-30.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2018/03/18/基于Tk的多线程选课程序/15-30-51.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2018/03/18/基于Tk的多线程选课程序/15-32-22.jpg">
-<meta property="og:updated_time" content="2018-03-18T08:03:13.738Z">
+<meta property="og:updated_time" content="2018-03-18T09:00:16.199Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="基于Tk的多线程选课程序">
 <meta name="twitter:description" content="很久以前写的破程序，拿出来献丑来的">
@@ -209,7 +209,9 @@
 </ol>
 <h2 id="Usage"><a href="#Usage" class="headerlink" title="Usage"></a>Usage</h2><h4 id="登录"><a href="#登录" class="headerlink" title="登录"></a>登录</h4><p>输入教务系统的学号和密码，并在左下角选择需要选的课程类型<br><img src="/2018/03/18/基于Tk的多线程选课程序/15-21-51.jpg" alt="15-21-51.jpg" title=""></p>
 <h4 id="选择课程"><a href="#选择课程" class="headerlink" title="选择课程"></a>选择课程</h4><p>以通识课为例，双击左边任意的课程选项，若多线程爬虫返回了结果就会显示在右边<br><img src="/2018/03/18/基于Tk的多线程选课程序/15-24-30.jpg" alt="15-24-30.jpg" title=""><br>若还没返回结果，你将得到一个卖萌</p>
-<img src="/2018/03/18/基于Tk的多线程选课程序/15-26-48.jpg" alt="15-26-48.jpg" title="">##### 注意<br>每个课程的爬虫都是独立的线程爬虫，并非阻塞式地等到所有课程详细信息都得到后才返回结果，所以你可以多看看其他课程的情况<br><br>当然，如果你点击非课程项，右边的信息框将会出现一些建议<br><img src="/2018/03/18/基于Tk的多线程选课程序/15-29-30.jpg" alt="15-29-30.jpg" title="">
+<img src="/2018/03/18/基于Tk的多线程选课程序/15-26-48.jpg" alt="15-26-48.jpg" title="">
+<p><strong>注意</strong><br>每个课程的爬虫都是独立的线程爬虫，并非阻塞式地等到所有课程详细信息都得到后才返回结果，所以你可以多看看其他课程的情况</p>
+<p>当然，如果你点击非课程项，右边的信息框将会出现一些建议<br><img src="/2018/03/18/基于Tk的多线程选课程序/15-29-30.jpg" alt="15-29-30.jpg" title=""></p>
 <h4 id="提交课程"><a href="#提交课程" class="headerlink" title="提交课程"></a>提交课程</h4><p>若爬虫已经返回结果，你就可以双击右边的选项将对应老师的课程添加到下方的已选待提交列表(列表上限为三个课程)<br><img src="/2018/03/18/基于Tk的多线程选课程序/15-30-51.jpg" alt="15-30-51.jpg" title=""><br>当你选择完之后就可以点击右下角的提交按钮了</p>
 <p><img src="/2018/03/18/基于Tk的多线程选课程序/15-32-22.jpg" alt="15-32-22.jpg" title="">若不出意外，你的选课将会被服务器处理然后选课成功<br>当然，在你点击了提交选课之后，左边的信息框会强制刷新一次，或者说是再一次向服务器发送请求，所以当提交了之后左边的信息框并未更新的时候，请不要着急然后猛点击手动刷新，这可能会造成服务器更加严重的负担，对谁都没好处对吧<br>这个按钮是用来当信息很久没有更新的情况下给用户手动刷新一下的</p>
 <p> 对<br> 当你提交之后，你唯一能做的就是等它刷新 :)<br> (并不保证所有提交请求都会被处理)</p>
@@ -507,19 +509,19 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">分区</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">磁盘</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">PWN</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">随笔</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">分区</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">磁盘</a>
               </li>
             
             <div class="clearfix"></div>
