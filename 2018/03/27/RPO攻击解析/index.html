@@ -115,7 +115,7 @@
 <meta property="og:image" content="https://www.wzsite.cn/2018/03/27/RPO攻击解析/14-53-25.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2018/03/27/RPO攻击解析/14-56-27.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2018/03/27/RPO攻击解析/15-04-26.jpg">
-<meta property="og:updated_time" content="2018-03-28T09:03:19.762Z">
+<meta property="og:updated_time" content="2018-04-01T11:52:41.879Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="RPO攻击解析">
 <meta name="twitter:description" content="一种新的XSS攻击手法以强网杯中的一道Web题为例做解析">
@@ -383,8 +383,9 @@
       
         <img src="/2018/03/27/RPO攻击解析/userid363214time20141028063048at22.jpg" alt="userid363214time20141028063048at22.jpg" title="">
 <blockquote>
-<p>一种新的XSS攻击手法<br>以强网杯中的一道Web题为例做解析<br><a id="more"></a></p>
+<p>一种新的XSS攻击手法<br>以强网杯中的一道Web题为例做解析</p>
 </blockquote>
+<a id="more"></a>
 <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>RPO(Relative Path Overwrite)攻击，原理一句话概括就是利用服务器和客户端浏览器对当前网址不同的解析导致的。</p>
 <h1 id="本地演示"><a href="#本地演示" class="headerlink" title="本地演示"></a>本地演示</h1><p>我们搭建本地环境来演示一下这个攻击，来一个比较直观的感官认识<br>首先我们的目录结构是这样的<br>pro<br>│  1.php<br>│  common.js<br>├─ bbb<br>│             common.js<br>在/pro目录下的common.js中是弹一个<code>common function</code>的窗</p>
 <img src="/2018/03/27/RPO攻击解析/10-11-22.jpg" alt="10-11-22.jpg" title="">
