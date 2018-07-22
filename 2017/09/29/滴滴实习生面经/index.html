@@ -96,7 +96,7 @@
 <meta property="og:site_name" content="Wz&#39;s Blog">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://www.wzsite.cn/2017/09/29/滴滴实习生面经/2-21.jpg">
-<meta property="og:updated_time" content="2018-03-06T12:57:45.301Z">
+<meta property="og:updated_time" content="2018-07-22T13:39:08.846Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="滴滴实习生面经">
 <meta name="twitter:image" content="https://www.wzsite.cn/2017/09/29/滴滴实习生面经/2-21.jpg">
@@ -382,9 +382,7 @@
 <p>答： sql注入原理大概是过于信任用户输入，未对用户提交参数进行过滤，造成sql语句被插入恶意代码，使得语句变意。我觉得sql注入大致(<strong><em>个人认为而已</em></strong>)分为两种，显式注入和隐式注入<br>显式注入包括Union注入等能直接将注入信息直接在页面显示出来的注入，隐式注入包括布尔注入等，其实我觉得报错盲注，时间盲注，以及一些页面的布尔显示都属于布尔注入，因为它们都是通过布尔二进制信息来传递注入的数据库信息的。网上分的什么Cookie注入，数字型注入，字符型注入，Post注入等都是通过注入方法区分，我觉得都可以归并为显式和隐式，只是可能大家爱这么分而已，个人看法。<br>(<strong><em>当然，这只是我的个人看法，读者不要被误导啦。可以查查资料了解主流的分类</em></strong>)<br>XSS原理大概也是信任用户输入，被插入一些恶意代码，导致页面JS代码被控制。<br>分类的话就是存储型和反射型了，我对这方面也才刚刚起步，也不是很了解，只能通过比赛所看到的来解释一下——反射型是点击、访问被构造过的存在XSS漏洞的网址触发，特点是一碰就给你回应，类似于反射。而存储型就类似于留言，贴吧，论坛等帖子，留言被插入XSS恶意代码，就会一直留在那，一访问就会触发。</p>
 </blockquote>
 <h4 id="6-如果只给你一次机会检测是否存在sql注入，你的payload是什么"><a href="#6-如果只给你一次机会检测是否存在sql注入，你的payload是什么" class="headerlink" title="6. 如果只给你一次机会检测是否存在sql注入，你的payload是什么"></a>6. 如果只给你一次机会检测是否存在sql注入，你的payload是什么</h4><blockquote>
-<p>答： (<strong><em>没答出来</em></strong>)因为平时给的机会不会只有一次，所以我选择Fuzz，单引号，各种过滤符号等<br>面：只有一次机会那<br>答：(<strong><em>无辜脸</em></strong>)那我也一时想不出来啦，平时渗透没有这种情况<br>(<strong><em>其实这个问题还是挺有趣的，比如写一个渗透工具，如果你一句话就能测出来有没有漏洞，那么你就不用Fuzz一堆情况来测试了，还是太嫩啦</em></strong>)<br>之后想了一下，类似于这种<code>palyload</code> 就可以实现，当然不局限于此句能实现</p>
-<pre><code class="&#39;or&#39;or(1)#&#39;=&#39;or(1)#">
-</code></pre>
+<p>答： (<strong><em>没答出来</em></strong>)因为平时给的机会不会只有一次，所以我选择Fuzz，单引号，各种过滤符号等<br>面：只有一次机会那<br>答：(<strong><em>无辜脸</em></strong>)那我也一时想不出来啦，平时渗透没有这种情况<br>(<strong><em>其实这个问题还是挺有趣的，比如写一个渗透工具，如果你一句话就能测出来有没有漏洞，那么你就不用Fuzz一堆情况来测试了，还是太嫩啦</em></strong>)<br>之后想了一下，类似于这种<code>palyload</code> 就可以实现，当然不局限于此句能实现<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">'or'or(1)#'='or(1)#</div></pre></td></tr></table></figure></p>
 </blockquote>
 <h4 id="7-检测XSS存在步骤，XSS-sql防御"><a href="#7-检测XSS存在步骤，XSS-sql防御" class="headerlink" title="7. 检测XSS存在步骤，XSS,sql防御"></a>7. 检测XSS存在步骤，XSS,sql防御</h4><blockquote>
 <p>答： 防御部分还没深入学习过，不过按照攻击方式来说防御可以是参数关键字过滤，恶意代码检测就ban，sql语句参数化，避免拼接sql语句，数字参数仅允许数字输入，字符参数就过滤关键字符，单引号括起来等</p>
