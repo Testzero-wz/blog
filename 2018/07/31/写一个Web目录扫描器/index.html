@@ -78,7 +78,7 @@
 
 
 
-  <meta name="keywords" content="总结,工具," />
+  <meta name="keywords" content="工具,总结," />
 
 
 
@@ -90,7 +90,7 @@
 
 
 <meta name="description" content="最近实习之余，打算写一个用来自测用的的web目录扫描的小工具来重新学习以及应用一下python3.5的新特性——async/await。">
-<meta name="keywords" content="总结,工具">
+<meta name="keywords" content="工具,总结">
 <meta property="og:type" content="article">
 <meta property="og:title" content="写一个Web目录扫描器">
 <meta property="og:url" content="https://www.wzsite.cn/2018/07/31/写一个Web目录扫描器/index.html">
@@ -100,8 +100,7 @@
 <meta property="og:image" content="https://www.wzsite.cn/2018/07/31/写一个Web目录扫描器/10-21-23.png">
 <meta property="og:image" content="https://www.wzsite.cn/2018/07/31/写一个Web目录扫描器/22-34-13.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2018/07/31/写一个Web目录扫描器/22-35-36.jpg">
-<meta property="og:image" content="https://raw.githubusercontent.com/WananpIG/wscan/master/demo.gif">
-<meta property="og:updated_time" content="2018-08-18T15:55:30.463Z">
+<meta property="og:updated_time" content="2018-10-21T03:08:23.123Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="写一个Web目录扫描器">
 <meta name="twitter:description" content="最近实习之余，打算写一个用来自测用的的web目录扫描的小工具来重新学习以及应用一下python3.5的新特性——async/await。">
@@ -395,8 +394,10 @@
 <li>本来想加入端口扫描的功能，然后发现直接socket进行TCP连接的方式判断开放与否不仅速度慢并且会留下痕迹，而且我也没准备啥指纹去匹配端口所对应服务，现阶段只是一个探测开放性的一个小功能，还是待我完善之后再加进去吧</li>
 </ol>
 <p>附上代码目录结构：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">wscan</div><div class="line">│  wscan.py</div><div class="line">├─fuzz</div><div class="line">│   │   dirList.txt     <span class="comment">#Fuzz路径文件</span></div><div class="line">│   └─  user_agent.txt    <span class="comment"># 请求所需的User-agent 列表</span></div><div class="line">└─lib </div><div class="line">	├─controller   </div><div class="line">	│  └─ Controller.py    <span class="comment"># 主控制流程</span></div><div class="line">	├─exception</div><div class="line">	│  └─ ScanException.py    <span class="comment"># 异常处理</span></div><div class="line">	├─io</div><div class="line">	│  │  Argument.py    <span class="comment"># 参数接收相关</span></div><div class="line">	│  └─ ColorOutput.py    <span class="comment"># 输出相关</span></div><div class="line">	├─portscan</div><div class="line">	│  └─ portScan.py    <span class="comment"># 端口扫描(由于功能有点简陋，还未加进主程序)</span></div><div class="line">	└─tree</div><div class="line">	   │  DirTree.py    <span class="comment"># 路径树</span></div><div class="line">	   └─ Node.py    <span class="comment"># 节点</span></div></pre></td></tr></table></figure></p>
+<h4 id="Install"><a href="#Install" class="headerlink" title="Install"></a>Install</h4><p>学习了一下怎么上传pypi，终于能够方便地安装了</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ pip install wscan</div></pre></td></tr></table></figure>
 <h4 id="Usage"><a href="#Usage" class="headerlink" title="Usage"></a>Usage</h4><p>使用方式：<br><strong>Type</strong> <code>-h</code> <strong>for help</strong> </p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ wscan.py [-u URL] [-f] [-m] [Extend options]</div></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ wscan [-u URL] [-f] [-m] [Extend options]</div></pre></td></tr></table></figure>
 <ul>
 <li><p><strong>-u  URL</strong>:    目标URL</p>
 </li>
@@ -410,21 +411,19 @@
 </li>
 <li><p><strong>-max   NUM</strong>:    最大协程数</p>
 </li>
-<li><p><strong>–no-img</strong>:     不爬图片</p>
+<li><p><strong>-404   NOT_FOUND</strong>:  自定义404标识, 爬取和Fuzz时会正则匹配该值来判断是不是自定义404页面，减少误报. e.g. “Not found”</p>
 </li>
-<li><p><strong>–no-re</strong>:    遇到服务器返回跳转响应时不跳转</p>
+<li><p><strong>–s</strong>:   爬取静态资源(目前只支持图片<img>和JS<script>)</p>
 </li>
-<li><p><strong>-v</strong>:      详细输出信息 </p>
-</li>
-<li><p><strong>-vv</strong>:      最详细的输出信息</p>
+<li><p><strong>-v, -vv</strong>:      详细的输出信息 </p>
 </li>
 <li><p><strong>-h</strong>:       帮助</p>
 </li>
 </ul>
 <p>说了这么多<br>最后来一个演示小动画吧:)</p>
-<p><img src="https://raw.githubusercontent.com/WananpIG/wscan/master/demo.gif" alt="wscan"></p>
-<p>欢迎下载使用并提出意见<br><a href="https://github.com/WananpIG/wscan" target="_blank" rel="external">wscan-Github地址</a></p>
-
+<p><img src="https://s1.ax1x.com/2018/10/21/iBaIZ4.gif" alt="wscan演示"></p>
+<p>欢迎下载使用并提出意见<br><a href="https://github.com/WananpIG/wscan">wscan-Github地址</a></p>
+</script></p></li></ul>
       
     </div>
     
@@ -451,9 +450,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/总结/" rel="tag"># 总结</a>
-          
             <a href="/tags/工具/" rel="tag"># 工具</a>
+          
+            <a href="/tags/总结/" rel="tag"># 总结</a>
           
         </div>
       
@@ -626,7 +625,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#为何要用协程"><span class="nav-number">1.</span> <span class="nav-text">为何要用协程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#历史"><span class="nav-number">1.0.1.</span> <span class="nav-text">历史</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#线程VS协程"><span class="nav-number">1.0.2.</span> <span class="nav-text">线程VS协程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#The-Infamous-GIL"><span class="nav-number">1.0.3.</span> <span class="nav-text">The Infamous GIL</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#wscan"><span class="nav-number">2.</span> <span class="nav-text">wscan</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#思路"><span class="nav-number">2.0.1.</span> <span class="nav-text">思路</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#细节"><span class="nav-number">2.0.2.</span> <span class="nav-text">细节</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Usage"><span class="nav-number">2.0.3.</span> <span class="nav-text">Usage</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#为何要用协程"><span class="nav-number">1.</span> <span class="nav-text">为何要用协程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#历史"><span class="nav-number">1.0.1.</span> <span class="nav-text">历史</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#线程VS协程"><span class="nav-number">1.0.2.</span> <span class="nav-text">线程VS协程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#The-Infamous-GIL"><span class="nav-number">1.0.3.</span> <span class="nav-text">The Infamous GIL</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#wscan"><span class="nav-number">2.</span> <span class="nav-text">wscan</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#思路"><span class="nav-number">2.0.1.</span> <span class="nav-text">思路</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#细节"><span class="nav-number">2.0.2.</span> <span class="nav-text">细节</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Install"><span class="nav-number">2.0.3.</span> <span class="nav-text">Install</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Usage"><span class="nav-number">2.0.4.</span> <span class="nav-text">Usage</span></a></li></ol></li></ol></li></ol></div>
             
 
           </div>
