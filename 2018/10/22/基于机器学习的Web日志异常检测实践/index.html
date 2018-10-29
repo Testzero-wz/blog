@@ -78,7 +78,7 @@
 
 
 
-  <meta name="keywords" content="Wz" />
+  <meta name="keywords" content="码代码,机器学习," />
 
 
 
@@ -90,6 +90,7 @@
 
 
 <meta name="description" content="前言机器学习，众所周知，对于改善基于正则的流量检测的误报、无法应对未知攻击的现状将起到关键性的作用。本文旨在简述当前接触到的基于机器学习的web异常检测应用以及对应产生的一次实践的经验。对于异常流量，其中一个较为有效的做法是建立白样本的模型，过滤后剩下的都是异常样本这个方法也是比较符合逻辑以及事实的，因为正常流量总是极其相似的，而异常的流量却是各种不同。再者，只收集白样本的确实比同时收集黑白样本来">
+<meta name="keywords" content="码代码,机器学习">
 <meta property="og:type" content="article">
 <meta property="og:title" content="基于机器学习的Web日志异常检测实践">
 <meta property="og:url" content="https://www.wzsite.cn/2018/10/22/基于机器学习的Web日志异常检测实践/index.html">
@@ -120,7 +121,7 @@
 <meta property="og:image" content="https://www.wzsite.cn/2018/10/22/基于机器学习的Web日志异常检测实践/01-16-52.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2018/10/22/基于机器学习的Web日志异常检测实践/01-18-41.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2018/10/22/基于机器学习的Web日志异常检测实践/01-21-27.jpg">
-<meta property="og:updated_time" content="2018-10-29T03:31:58.985Z">
+<meta property="og:updated_time" content="2018-10-29T03:47:14.248Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="基于机器学习的Web日志异常检测实践">
 <meta name="twitter:description" content="前言机器学习，众所周知，对于改善基于正则的流量检测的误报、无法应对未知攻击的现状将起到关键性的作用。本文旨在简述当前接触到的基于机器学习的web异常检测应用以及对应产生的一次实践的经验。对于异常流量，其中一个较为有效的做法是建立白样本的模型，过滤后剩下的都是异常样本这个方法也是比较符合逻辑以及事实的，因为正常流量总是极其相似的，而异常的流量却是各种不同。再者，只收集白样本的确实比同时收集黑白样本来">
@@ -337,6 +338,28 @@
           </span>
 
           
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/安全之旅/" itemprop="url" rel="index">
+                    <span itemprop="name">安全之旅</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
 
           
             
@@ -364,7 +387,7 @@
       
 
       
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>机器学习，众所周知，对于改善基于正则的流量检测的误报、无法应对未知攻击的现状将起到关键性的作用。本文旨在简述当前接触到的基于机器学习的web异常检测应用以及对应产生的一次实践的经验。<br>对于异常流量，其中一个较为有效的做法是<strong>建立白样本的模型，过滤后剩下的都是异常样本</strong><br>这个方法也是比较符合逻辑以及事实的，因为正常流量总是极其相似的，而异常的流量却是各种不同。<br>再者，只收集白样本的确实比同时收集黑白样本来得容易，因为我们所获得的流量基本上都是正常的白样本流量，攻击样本流量所占比例是很小的，采用监督学习（即给黑白样本打标签，让机器学习模型识别是正常还是异常），采集成本过高，单分类模型只需要采集白样本，且允许一定量的误差样本存在，使得我们可以很容易地收集到训练样本。正如吴恩达在机器学习课上提到的——“一个模型的好坏往往不是取决于算法，而是很大程度上取决于数据”。<br>我们的目标是首先将异常访问从日志中剥离出来，标记为异常流量，然后后期目标再是对异常流量进行攻击分类统计。最后，我们的愿景是从攻击中溯源，检测出是否被成功入侵等等。<br>万事开头难。按照我们的初级目标，我们首先了解一下现在常见的各类异常检测模型，再来进行分析、选择。<br>笔者也是刚接触机器学习不久，旨在与大家交流心得体会，不正之处还请斧正，也算是实习三个月这方面的一次总结。</p>
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>机器学习，众所周知，对于改善基于正则的流量检测的误报、无法应对未知攻击的现状将起到关键性的作用。本文旨在简述当前接触到的基于机器学习的web异常检测应用以及对应产生的一次实践的经验。<br>对于异常流量，其中一个较为有效的做法是<strong>建立白样本的模型，过滤后剩下的都是异常样本</strong><br>这个方法也是比较符合逻辑以及事实的，因为正常流量总是极其相似的，而异常的流量却是各种不同。<br>再者，只收集白样本的确实比同时收集黑白样本来得容易，因为我们所获得的流量基本上都是正常的白样本流量，攻击样本流量所占比例是很小的，采用监督学习（即给黑白样本打标签，让机器学习模型识别是正常还是异常），采集成本过高，单分类模型只需要采集白样本，且允许一定量的误差样本存在，使得我们可以很容易地收集到训练样本。正如吴恩达在机器学习课上提到的——“一个模型的好坏往往不是取决于算法，而是很大程度上取决于数据”。<br>我们的目标是首先将异常访问从日志中剥离出来，标记为异常流量，然后后期目标再是对异常流量进行攻击分类统计。最后，我们的愿景是从攻击中溯源，检测出是否被成功入侵等等。<br>万事开头难。按照我们的初级目标，我们首先了解一下现在常见的各类异常检测模型，再来进行分析、选择。<br>笔者也是刚接触机器学习不久，旨在与大家交流心得体会，不正之处还请斧正，也算是实习三个月这方面的一次总结。<br><a id="more"></a></p>
 <h1 id="检测模型"><a href="#检测模型" class="headerlink" title="检测模型"></a>检测模型</h1><h2 id="基于文本序列模型"><a href="#基于文本序列模型" class="headerlink" title="基于文本序列模型"></a>基于文本序列模型</h2><p>这个模型有点像语音识别方面的机器学习。其应用了隐马尔科夫模型，对参数进行了序列化建模。隐马尔科夫模型按照我的理解，简单来说就是对文本序列进行归一化处理的有限状态机，其需要满足无后效性（转换仅与之前的状态有关）以及时齐性（转换状态与时间无关）。<br>对于该模型我并没有太深入地研究，简单地作图来说明其原理或者说步骤：<br>对于某个参数<code>id</code>，其形式大致均为<code>7fad-82ac-3ff2</code>、<code>f30d-a29c-f324</code>等。我们可以id进行如下的建模：</p>
 <img src="/2018/10/22/基于机器学习的Web日志异常检测实践/23.jpeg" alt="23.jpeg" title="">
 <p>若这样分类建模，其对应的状态转换图会较为复杂，其对应的转换概率会基于训练样本计算，会随着样本的改变产生一定的误差，对样本的数量及覆盖范围要求较高(简化版状态图)</p>
@@ -403,7 +426,9 @@
 <h3 id="优点-2"><a href="#优点-2" class="headerlink" title="优点"></a>优点</h3><ol>
 <li>因为属于无监督学习，不需要花大量时间分离出黑白样本供以训练 </li>
 <li>模型预测时间短，达到应用需求</li>
-<li>可以检测到未知攻击<h3 id="缺点-2"><a href="#缺点-2" class="headerlink" title="缺点"></a>缺点</h3></li>
+<li>可以检测到未知攻击</li>
+</ol>
+<h3 id="缺点-2"><a href="#缺点-2" class="headerlink" title="缺点"></a>缺点</h3><ol>
 <li>模型训练时间较长</li>
 <li>单纯的Oneclass SVM对数据泛化的作用小，要求样本具有较高的覆盖性，全面性</li>
 <li>对于新的样本出现，则需要重新训练模型以供检测，而现实应用中合适地重新建模训练要求较高的实时性</li>
@@ -432,10 +457,6 @@
 <th>$remote_user</th>
 <th>[$time_local]</th>
 <th>$request</th>
-<th>$status</th>
-<th>$body_bytes_sent</th>
-<th>$http_referer</th>
-<th>$http_user_agent</th>
 </tr>
 </thead>
 <tbody>
@@ -445,6 +466,20 @@
 <td>-</td>
 <td>[23/Apr/2018:18:12:10 +0800]</td>
 <td>GET / HTTP/1.1</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>$status</th>
+<th>$body_bytes_sent</th>
+<th>$http_referer</th>
+<th>$http_user_agent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
 <td>200</td>
 <td>47268</td>
 <td><a href="https://www.baidu.com" target="_blank" rel="external">https://www.baidu.com</a></td>
@@ -567,6 +602,14 @@
 
     <footer class="post-footer">
       
+        <div class="post-tags">
+          
+            <a href="/tags/码代码/" rel="tag"># 码代码</a>
+          
+            <a href="/tags/机器学习/" rel="tag"># 机器学习</a>
+          
+        </div>
+      
 
       
       
@@ -687,7 +730,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-count">19</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
