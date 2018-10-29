@@ -146,7 +146,7 @@
 <meta property="og:image" content="https://www.wzsite.cn/2018/04/21/又是一年DDCTF/ECB2_1.png">
 <meta property="og:image" content="https://www.wzsite.cn/2018/04/21/又是一年DDCTF/23-30-06.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2018/04/21/又是一年DDCTF/23-37-22.jpg">
-<meta property="og:updated_time" content="2018-04-25T01:36:09.718Z">
+<meta property="og:updated_time" content="2018-10-29T03:31:58.969Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="又是一年DDCTF">
 <meta name="twitter:description" content="前言还记得去年的四、五月份参加的DDCTF混了个名次，蹭了次面试没想到时间过得这么快，今年的DDCTF现在也比完了老了老了这一年我都干了啥.jpg 今年的题比去年的质量好很多，且加上了最有亮点的反作弊系统，每道题每个人的flag不一样，连某些逆向题的源码都不一样，可见十分用心这次学到了很多，希望这样有质量的比赛能够继承下去">
@@ -461,7 +461,8 @@
 <li>结合刚才我们在<code>com.didichuxing.ctf.controller.user.FlagController</code>里面发现的代码逻辑，将第2步得到的<code>email</code>加密值给<code>POST</code>到<code>/flag/getflag/加密的email</code>下，得到加密后的<code>flag</code></li>
 <li>同样的方法下载<code>/WEB-INF/classes/sdl.ks</code>，然后提取出公钥，对签名后的<code>flag</code>进行解密</li>
 </ol>
-<p>然后我第1步就卡住了= =<br>我尝试了很多个email，包括我自己的平台注册<code>email</code>和<code>xxx@didichuxing.com</code>这种<br>然后经Wfox师傅提醒是首页的一个长的离谱的<code>email</code>才反应过来这个骚套路<br>就是这货</p>
+<p>然后我第1步就卡住了= =<br>我尝试了很多个email，包括我自己的平台注册<code>email</code>和<a href="mailto:`xxx@didichuxing.com" target="_blank" rel="external">`xxx@didichuxing.com</a><code>这种
+然后经Wfox师傅提醒是首页的一个长的离谱的</code>email`才反应过来这个骚套路<br>就是这货</p>
 <img src="/2018/04/21/又是一年DDCTF/11-01-58.jpg" alt="11-01-58.jpg" title="">
 <img src="/2018/04/21/又是一年DDCTF/11-02-08.jpg" alt="11-02-08.jpg" title="">
 <p>然后我们可以直接到这个网站(<a href="http://tool.oschina.net/encrypt?type=2" target="_blank" rel="external">http://tool.oschina.net/encrypt</a>)进行<code>HmacSHA256</code>加密</p>
@@ -526,6 +527,8 @@
 <p>代码大致意思是首先生成一个对话的随机key，然后用AES的ECB(Electronic codebook)模式将一段嵌入<code>agent id</code>和<code>flag</code>的<code>message</code>进行加密，密钥就是随机的key，然后输出加密的结果<br>接下来是一个循环，继续利用刚才的密钥对我们接下来输入的信息进行加密然后输出结果<br>ECB加密是分组进行加密的，解密也是分组解密。分组与分组之间的明文产生的密文互相独立，且由于算法的缘故，相同的明文分组在相同的密钥加密下会产生相同的密文<br>加解密流程如下图所示</p>
 <blockquote>
 <p>引用自维基百科<br><img src="/2018/04/21/又是一年DDCTF/22-50-28_1.jpg" alt="22-50-28_1.jpg" title=""></p>
+</blockquote>
+<blockquote>
 <img src="/2018/04/21/又是一年DDCTF/22-50-56_1.jpg" alt="22-50-56_1.jpg" title="">
 </blockquote>
 <p>而我们要做的事是通过这些个分组且明文加密固定密文的特性猜出flag的每一位来<br>题中以16字节为一组，我们举例也拿16字节为一组举例<br>首先我们假设<code>xxxx</code>使我们可控的输入，一般情况下的加密会是这样的</p>
@@ -669,7 +672,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">24</span>
+                  <span class="site-state-item-count">25</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -963,6 +966,28 @@
   
 
   
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
 
   
 

@@ -101,7 +101,7 @@
 <meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-21-47.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-37-40.jpg">
 <meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-40-49.jpg">
-<meta property="og:updated_time" content="2017-12-28T09:34:39.842Z">
+<meta property="og:updated_time" content="2018-10-29T03:31:58.861Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="CCTF（重庆绿盟杯）比赛writeUp">
 <meta name="twitter:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-23-66.jpg">
@@ -379,7 +379,7 @@
 </blockquote>
 <h1 id="WEB2"><a href="#WEB2" class="headerlink" title="WEB2"></a>WEB2</h1><h2 id="MSSQL注入"><a href="#MSSQL注入" class="headerlink" title="MSSQL注入"></a>MSSQL注入</h2><p>比赛当时我找到的是一个shop7z的一个通用注入pkid<br>因为是MSSQL的数据库，不允许limit，故使用order by修改表序列，是一个显式union注入<br><strong>payload:</strong><br><figure class="highlight http"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="attribute">Union%0a/!5000SelECt/%0a12,3,4,5,6,7,8,9,10,12,3,4,5,6,7,8,9,10,12,3,4,5,6,7,8,9,10,12,3,4,5,6,7,8,9,10,12,3,4,5,6,7,8%0aMSysAccessObjects%0aorder%0aby%0a1</span></div></pre></td></tr></table></figure></p>
 <p>因为是MSSQL,我平时积累不多,且把<code>@@version</code>替换上面数字会出false的页面，就懵逼了<br>大早上没吃早餐，被雨淋，还被空调吹得晕乎乎的，就就此放弃琢磨了这一道MSSQL注入，说实话还是积累太少。</p>
-<h1 id="WEB3"><a href="#WEB3" class="headerlink" title="WEB3"></a>WEB3</h1><h2 id="一阶段——上传绕过"><a href="#一阶段——上传绕过" class="headerlink" title="一阶段——上传绕过"></a>一阶段——上传绕过</h2><p><strong>第一步扫描：</strong></p>
+<h1 id="WEB3"><a href="#WEB3" class="headerlink" title="WEB3"></a>WEB3</h1><h2 id="一阶段――上传绕过"><a href="#一阶段――上传绕过" class="headerlink" title="一阶段――上传绕过"></a>一阶段――上传绕过</h2><p><strong>第一步扫描：</strong></p>
 <img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-17-21.jpg" alt="21-17-21.jpg" title="">
 <p>发现开了很多端口<br>其中3389和80和8080是我们特别关注的<br>进去80是一个IIS的建设中的页面，没啥挖掘的<br>8080是一个Apache搭的应用下载市场<br>AWVS扫描发现有用的目录遍历漏洞</p>
 <img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-21-28.jpg" alt="21-21-28.jpg" title="">
@@ -423,7 +423,7 @@
 </blockquote>
 <p>那就十分尴尬了<br>我们能解析php但是并不能执行系统函数</p>
 <h2 id="3389-端口"><a href="#3389-端口" class="headerlink" title="3389 端口"></a>3389 端口</h2><p>由于WEB3是开了3389端口，而且我们又能执行php的大部分代码，故我又产生了一个大胆的想法</p>
-<h3 id="经典后门——粘滞键后门"><a href="#经典后门——粘滞键后门" class="headerlink" title="经典后门——粘滞键后门"></a>经典后门——粘滞键后门</h3><ol>
+<h3 id="经典后门――粘滞键后门"><a href="#经典后门――粘滞键后门" class="headerlink" title="经典后门――粘滞键后门"></a>经典后门――粘滞键后门</h3><ol>
 <li>通过php的copy()函数将C:\WINDOWS\system32\下的sethc.exe替换成cmd.exe</li>
 <li>3389端口远程连接WEB3的靶机</li>
 <li>狂按shift键，召唤出被替换成cmd.exe的程序sethc.exe</li>
@@ -569,7 +569,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">24</span>
+                  <span class="site-state-item-count">25</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -640,7 +640,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#WEB1"><span class="nav-number">1.</span> <span class="nav-text">WEB1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#WEB2"><span class="nav-number">2.</span> <span class="nav-text">WEB2</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#MSSQL注入"><span class="nav-number">2.1.</span> <span class="nav-text">MSSQL注入</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#WEB3"><span class="nav-number">3.</span> <span class="nav-text">WEB3</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#一阶段——上传绕过"><span class="nav-number">3.1.</span> <span class="nav-text">一阶段——上传绕过</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#有问题变量在模板参数tpl处"><span class="nav-number">3.1.0.0.1.</span> <span class="nav-text">有问题变量在模板参数tpl处</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#科普"><span class="nav-number">3.1.1.</span> <span class="nav-text">科普</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#尝试"><span class="nav-number">3.1.2.</span> <span class="nav-text">尝试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分析"><span class="nav-number">3.2.</span> <span class="nav-text">分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#比赛宕机"><span class="nav-number">3.3.</span> <span class="nav-text">比赛宕机</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#发生了两次宕机，其中有一次长达半个多小时，比赛才6个小时欲哭无泪"><span class="nav-number">3.3.0.0.0.1.</span> <span class="nav-text">发生了两次宕机，其中有一次长达半个多小时，比赛才6个小时欲哭无泪</span></a></li></ol></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#比赛继续"><span class="nav-number">3.4.</span> <span class="nav-text">比赛继续</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3389-端口"><span class="nav-number">3.5.</span> <span class="nav-text">3389 端口</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#经典后门——粘滞键后门"><span class="nav-number">3.5.1.</span> <span class="nav-text">经典后门——粘滞键后门</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#至此比赛结束"><span class="nav-number">3.6.</span> <span class="nav-text">至此比赛结束</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">3.6.1.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#WEB1"><span class="nav-number">1.</span> <span class="nav-text">WEB1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#WEB2"><span class="nav-number">2.</span> <span class="nav-text">WEB2</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#MSSQL注入"><span class="nav-number">2.1.</span> <span class="nav-text">MSSQL注入</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#WEB3"><span class="nav-number">3.</span> <span class="nav-text">WEB3</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#一阶段――上传绕过"><span class="nav-number">3.1.</span> <span class="nav-text">一阶段――上传绕过</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#有问题变量在模板参数tpl处"><span class="nav-number">3.1.0.0.1.</span> <span class="nav-text">有问题变量在模板参数tpl处</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#科普"><span class="nav-number">3.1.1.</span> <span class="nav-text">科普</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#尝试"><span class="nav-number">3.1.2.</span> <span class="nav-text">尝试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分析"><span class="nav-number">3.2.</span> <span class="nav-text">分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#比赛宕机"><span class="nav-number">3.3.</span> <span class="nav-text">比赛宕机</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#发生了两次宕机，其中有一次长达半个多小时，比赛才6个小时欲哭无泪"><span class="nav-number">3.3.0.0.0.1.</span> <span class="nav-text">发生了两次宕机，其中有一次长达半个多小时，比赛才6个小时欲哭无泪</span></a></li></ol></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#比赛继续"><span class="nav-number">3.4.</span> <span class="nav-text">比赛继续</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3389-端口"><span class="nav-number">3.5.</span> <span class="nav-text">3389 端口</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#经典后门――粘滞键后门"><span class="nav-number">3.5.1.</span> <span class="nav-text">经典后门――粘滞键后门</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#至此比赛结束"><span class="nav-number">3.6.</span> <span class="nav-text">至此比赛结束</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">3.6.1.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></li></ol></div>
             
 
           </div>
@@ -863,6 +863,28 @@
   
 
   
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
 
   
 
