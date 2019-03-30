@@ -2,30 +2,24 @@
 
 
 
+
+
+
+
+
+
+
+
+
   
 
 
 <html class="theme-next muse use-motion" lang="zh-CN">
 <head>
   <meta charset="UTF-8"/>
-<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
-<meta name="theme-color" content="#222">
-
-
-
-
-
-
-
-
-
-<meta http-equiv="Cache-Control" content="no-transform" />
-<meta http-equiv="Cache-Control" content="no-siteapp" />
-
-
-
-  <meta name="google-site-verification" content="googlea4e6eb27cf4f8663.html" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222"/>
 
 
 
@@ -36,60 +30,75 @@
 
 
 
+  <meta name="google-site-verification" content="googlea4e6eb27cf4f8663.html"/>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2"/>
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1"/>
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/avatar.jpg?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/avatar.jpg?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
 
 
   
-  
-    
-  
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.js" rel="stylesheet" type="text/css" />
 
 
 
 
-
-
-
-  
-
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.0/css/all.min.css" rel="stylesheet" type="text/css" />
-
-<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
-
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
-
-
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/avatar.jpg?v=5.1.4">
-
-
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/avatar.jpg?v=5.1.4">
-
-
-  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
-
-
-  <link rel="manifest" href="/images/manifest.json">
-
-
-  <meta name="msapplication-config" content="/images/browserconfig.xml" />
-
-
-
-  <meta name="keywords" content="CTF,面试," />
-
-
-
-
-
-
-
-
-
-
-<meta name="keywords" content="CTF,面试">
+  <meta name="keywords" content="CTF,面试">
 <meta property="og:type" content="article">
 <meta property="og:title" content="滴滴实习生面经">
 <meta property="og:url" content="https://www.wzsite.cn/2017/09/29/滴滴实习生面经/index.html">
@@ -103,37 +112,19 @@
 
 
 
-<script type="text/javascript" id="hexo.configurations">
-  var NexT = window.NexT || {};
-  var CONFIG = {
-    root: '/',
-    scheme: 'Muse',
-    version: '5.1.4',
-    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
-    fancybox: true,
-    tabs: true,
-    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
-    duoshuo: {
-      userId: '0',
-      author: '博主'
-    },
-    algolia: {
-      applicationID: '',
-      apiKey: '',
-      indexName: '',
-      hits: {"per_page":10},
-      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
-    }
-  };
-</script>
 
 
-
+  
+  
   <link rel="canonical" href="https://www.wzsite.cn/2017/09/29/滴滴实习生面经/"/>
 
 
 
-
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
 
   <title>滴滴实习生面经 | Wz's Blog</title>
   
@@ -144,6 +135,35 @@
 
 
 
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
 
 </head>
 
@@ -159,23 +179,26 @@
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
       <div class="header-inner"><div class="site-brand-wrapper">
-  <div class="site-meta ">
+  <div class="site-meta">
     
 
     <div class="custom-logo-site-title">
-      <a href="/"  class="brand" rel="start">
+      <a href="/" class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
         <span class="site-title">Wz's Blog</span>
         <span class="logo-line-after"><i></i></span>
       </a>
     </div>
+    
       
-        <h1 class="site-subtitle" itemprop="description">安全菜鸡的挖坑填坑之旅</h1>
+        <p class="site-subtitle">安全菜鸡的挖坑填坑之旅</p>
       
+    
+    
   </div>
 
   <div class="site-nav-toggle">
-    <button>
+    <button aria-label="切换导航栏">
       <span class="btn-bar"></span>
       <span class="btn-bar"></span>
       <span class="btn-bar"></span>
@@ -183,65 +206,106 @@
   </div>
 </div>
 
-<nav class="site-nav">
-  
 
+
+<nav class="site-nav">
   
     <ul id="menu" class="menu">
       
         
-        <li class="menu-item menu-item-home">
-          <a href="/" rel="section">
-            
-              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
-            
-            首页
-          </a>
-        </li>
-      
         
-        <li class="menu-item menu-item-archives">
-          <a href="/archives/" rel="section">
-            
-              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
-            
-            浏览
-          </a>
-        </li>
-      
         
-        <li class="menu-item menu-item-categories">
-          <a href="/categories/" rel="section">
-            
-              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
-            
-            分类
-          </a>
-        </li>
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
       
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br/>首页</a>
+
+  </li>
         
-        <li class="menu-item menu-item-tags">
-          <a href="/tags/" rel="section">
-            
-              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
-            
-            标签
-          </a>
-        </li>
-      
         
-        <li class="menu-item menu-item-about">
-          <a href="/about/" rel="section">
-            
-              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
-            
-            关于
-          </a>
-        </li>
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
       
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br/>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br/>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br/>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br/>关于</a>
+
+  </li>
 
       
+      
     </ul>
+  
+
+  
+    
+
   
 
   
@@ -249,12 +313,27 @@
 
 
 
- </div>
+  
+
+
+
+</div>
     </header>
+
+    
+  
+  
+
+  
+
+  <a href="https://github.com/testzero-wz" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
 
     <main id="main" class="main">
       <div class="main-inner">
         <div class="content-wrap">
+          
           <div id="content" class="content">
             
 
@@ -267,21 +346,23 @@
   
   
 
+  
+
   <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
   
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://www.wzsite.cn/2017/09/29/滴滴实习生面经/">
+    <link itemprop="mainEntityOfPage" href="https://www.wzsite.cn/2017/09/29/滴滴实习生面经/"/>
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="W z">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="W z"/>
+      <meta itemprop="description" content=""/>
+      <meta itemprop="image" content="/images/avatar.gif"/>
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wz's Blog">
+      <meta itemprop="name" content="Wz's Blog"/>
     </span>
 
     
@@ -289,11 +370,20 @@
 
         
         
-          <h2 class="post-title" itemprop="name headline">滴滴实习生面经</h2>
+          <h1 class="post-title" itemprop="name headline">滴滴实习生面经
+
+              
+            
+          </h1>
         
 
         <div class="post-meta">
           <span class="post-time">
+
+            
+            
+            
+
             
               <span class="post-meta-item-icon">
                 <i class="fa fa-calendar-o"></i>
@@ -301,18 +391,35 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-09-29T00:43:00+08:00">
-                2017-09-29
-              </time>
+
+              
+                
+              
+
+              <time title="创建时间：2017-09-29 00:43:00" itemprop="dateCreated datePublished" datetime="2017-09-29T00:43:00+08:00">2017-09-29</time>
             
 
             
+              
 
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-01-22 12:54:02" itemprop="dateModified" datetime="2019-01-22T12:54:02+08:00">2019-01-22</time>
+              
             
           </span>
 
           
-            <span class="post-category" >
+            <span class="post-category">
             
               <span class="post-meta-divider">|</span>
             
@@ -323,11 +430,7 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/随笔/" itemprop="url" rel="index">
-                    <span itemprop="name">随笔</span>
-                  </a>
-                </span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/随笔/" itemprop="url" rel="index"><span itemprop="name">随笔</span></a></span>
 
                 
                 
@@ -336,6 +439,7 @@
           
 
           
+            
             
           
 
@@ -364,87 +468,156 @@
         <img src="/2017/09/29/滴滴实习生面经/2-21.jpg" alt="2-21.jpg" title="">
 <a id="more"></a>
 <p>今年5月份参加了滴滴出行举办的DDCTF，在比赛结束的时候成绩还行，得到了滴滴实习生面试的机会，因此记录面试经过，希望对读者面试安全行业有一些帮助。</p>
-<h2 id="一、经过"><a href="#一、经过" class="headerlink" title="一、经过"></a>一、经过</h2><p>DDCTF是一个个人闯关CTF赛，应该是每年都会举办，为的是宣传滴滴以及招揽人才吧。奖励就是前十给予实习名额，第一名有“世界级”导师带飞。<br>由于各种原因（天意？），很遗憾没能进前十，只能止步第三十。本来以为就这么过去了，然后主办方还是给了我面试资格。<br>本着不面白不面，面了得经验的态度，参加了滴滴安排的网上面试。</p>
-<h2 id="二、面试开始"><a href="#二、面试开始" class="headerlink" title="二、面试开始"></a>二、面试开始</h2><p>面试我的是一个年轻小伙，看起来比我只大五六岁的样子。<br>面试网站中间出了点问题，遂换了一个软件面试，总算是能开始面试了。期间我是挺紧张的，毕竟对面是已经就业的大佬。<br>下面是我总结出来面试的问答:</p>
-<h4 id="1-自我介绍"><a href="#1-自我介绍" class="headerlink" title="1. 自我介绍"></a>1. 自我介绍</h4><blockquote>
-<p>答： 我是XX大学信安专业大二的学生XXX。。。（<strong><em>被打断</em></strong>）<br>面： 你才大二呀？<br>答：呃。。。对<br>面：你大二能腾出三个月的时间来实习吗<br>答: 应该是不可以的，但是我还是想面试一下，了解安全行业的面试<br>面：那好吧，咱们继续面试吧<br>答： 嗯。……(<strong><em>简单介绍了一下自己</em></strong>)</p>
+<h2 id="一-经过"><a class="markdownIt-Anchor" href="#一-经过"></a> 一、经过</h2>
+<p>DDCTF是一个个人闯关CTF赛，应该是每年都会举办，为的是宣传滴滴以及招揽人才吧。奖励就是前十给予实习名额，第一名有“世界级”导师带飞。<br>
+由于各种原因（天意？），很遗憾没能进前十，只能止步第三十。本来以为就这么过去了，然后主办方还是给了我面试资格。<br>
+本着不面白不面，面了得经验的态度，参加了滴滴安排的网上面试。</p>
+<h2 id="二-面试开始"><a class="markdownIt-Anchor" href="#二-面试开始"></a> 二、面试开始</h2>
+<p>面试我的是一个年轻小伙，看起来比我只大五六岁的样子。<br>
+面试网站中间出了点问题，遂换了一个软件面试，总算是能开始面试了。期间我是挺紧张的，毕竟对面是已经就业的大佬。<br>
+下面是我总结出来面试的问答:</p>
+<h4 id="1-自我介绍"><a class="markdownIt-Anchor" href="#1-自我介绍"></a> 1. 自我介绍</h4>
+<blockquote>
+<p>答： 我是XX大学信安专业大二的学生XXX。。。（<em><strong>被打断</strong></em>）<br>
+面： 你才大二呀？<br>
+答：呃。。。对<br>
+面：你大二能腾出三个月的时间来实习吗<br>
+答: 应该是不可以的，但是我还是想面试一下，了解安全行业的面试<br>
+面：那好吧，咱们继续面试吧<br>
+答： 嗯。……(<em><strong>简单介绍了一下自己</strong></em>)</p>
 </blockquote>
-<h4 id="2-有什么基础知识"><a href="#2-有什么基础知识" class="headerlink" title="2. 有什么基础知识"></a>2. 有什么基础知识</h4><blockquote>
+<h4 id="2-有什么基础知识"><a class="markdownIt-Anchor" href="#2-有什么基础知识"></a> 2. 有什么基础知识</h4>
+<blockquote>
 <p>答： 我起步比较晚，上大学之后才开始接触电脑技术，才开始学渗透。大一的时候开始接触kali、学习python，C语言、学习内网渗透、无线渗透以及Linux基本操作。大二之后开始学习WEB安全，暑假自学php，搭建网站，摸索一些CTF比赛，主要是WEB方向的题。然后学习了C++，编一些程序。因为要写一些学校服务的爬虫，也想挖一些学校的漏洞，寒假也迫不得已地接触了C#。</p>
 </blockquote>
-<h4 id="3-专业课程"><a href="#3-专业课程" class="headerlink" title="3. 专业课程"></a>3. 专业课程</h4><blockquote>
-<p>答： python，C，C++，汇编，数据结构等<br>面：跟我们学得差不多啊，我们也大概学这些。你成绩怎么样<br>答： （<strong><em>惭愧脸</em></strong>）一般般吧<br>面：（<strong><em>笑</em></strong>）挂过科么<br>答： 挂科啊，不存在的，成绩不好但还是保持不挂科的，成绩只在中上游而已<br>面：好吧。说一下快排的时间复杂度吧<br>答：O（nlogn）<br>面：shell排序呢<br>答：n^1.5左右，看步长，平均应该是n^1.5<br>面：说一下你最熟悉的排序的过程<br>（<strong><em>此时我的内心戏开始多了起来，我说三个N方基本排序吧，显得有点low，说堆排序吧，又得拿纸画才能说明白，快排又突然间有点紧张想不起来。最后我选择说shell排序</em></strong>）<br>答：shell排序吧。(<strong><em>噼里啪啦说了一堆原理，现在想起来我说得有点模糊</em></strong>)</p>
+<h4 id="3-专业课程"><a class="markdownIt-Anchor" href="#3-专业课程"></a> 3. 专业课程</h4>
+<blockquote>
+<p>答： python，C，C++，汇编，数据结构等<br>
+面：跟我们学得差不多啊，我们也大概学这些。你成绩怎么样<br>
+答： （<em><strong>惭愧脸</strong></em>）一般般吧<br>
+面：（<em><strong>笑</strong></em>）挂过科么<br>
+答： 挂科啊，不存在的，成绩不好但还是保持不挂科的，成绩只在中上游而已<br>
+面：好吧。说一下快排的时间复杂度吧<br>
+答：O（nlogn）<br>
+面：shell排序呢<br>
+答：n<sup>1.5左右，看步长，平均应该是n</sup>1.5<br>
+面：说一下你最熟悉的排序的过程<br>
+（<em><strong>此时我的内心戏开始多了起来，我说三个N方基本排序吧，显得有点low，说堆排序吧，又得拿纸画才能说明白，快排又突然间有点紧张想不起来。最后我选择说shell排序</strong></em>）<br>
+答：shell排序吧。(<em><strong>噼里啪啦说了一堆原理，现在想起来我说得有点模糊</strong></em>)</p>
 </blockquote>
-<h4 id="4-关注安全哪一方面"><a href="#4-关注安全哪一方面" class="headerlink" title="4. 关注安全哪一方面"></a>4. 关注安全哪一方面</h4><blockquote>
-<p>答： 最近就是关注WEB多一点，平时也看安全媒体的安全新闻，各安全公众号等等。上次的<code>Eternal Blue</code>也因为安全媒体的文章所以在<code>WannaCry</code>爆发前实践了一下工具。（<strong><em>嘿嘿</em></strong>）</p>
+<h4 id="4-关注安全哪一方面"><a class="markdownIt-Anchor" href="#4-关注安全哪一方面"></a> 4. 关注安全哪一方面</h4>
+<blockquote>
+<p>答： 最近就是关注WEB多一点，平时也看安全媒体的安全新闻，各安全公众号等等。上次的<code>Eternal Blue</code>也因为安全媒体的文章所以在<code>WannaCry</code>爆发前实践了一下工具。（<em><strong>嘿嘿</strong></em>）</p>
 </blockquote>
-<h4 id="5-sql注入，xss原理以及分类"><a href="#5-sql注入，xss原理以及分类" class="headerlink" title="5. sql注入，xss原理以及分类"></a>5. sql注入，xss原理以及分类</h4><blockquote>
-<p>答： sql注入原理大概是过于信任用户输入，未对用户提交参数进行过滤，造成sql语句被插入恶意代码，使得语句变意。我觉得sql注入大致(<strong><em>个人认为而已</em></strong>)分为两种，显式注入和隐式注入<br>显式注入包括Union注入等能直接将注入信息直接在页面显示出来的注入，隐式注入包括布尔注入等，其实我觉得报错盲注，时间盲注，以及一些页面的布尔显示都属于布尔注入，因为它们都是通过布尔二进制信息来传递注入的数据库信息的。网上分的什么Cookie注入，数字型注入，字符型注入，Post注入等都是通过注入方法区分，我觉得都可以归并为显式和隐式，只是可能大家爱这么分而已，个人看法。<br>(<strong><em>当然，这只是我的个人看法，读者不要被误导啦。可以查查资料了解主流的分类</em></strong>)<br>XSS原理大概也是信任用户输入，被插入一些恶意代码，导致页面JS代码被控制。<br>分类的话就是存储型和反射型了，我对这方面也才刚刚起步，也不是很了解，只能通过比赛所看到的来解释一下——反射型是点击、访问被构造过的存在XSS漏洞的网址触发，特点是一碰就给你回应，类似于反射。而存储型就类似于留言，贴吧，论坛等帖子，留言被插入XSS恶意代码，就会一直留在那，一访问就会触发。</p>
+<h4 id="5-sql注入xss原理以及分类"><a class="markdownIt-Anchor" href="#5-sql注入xss原理以及分类"></a> 5. sql注入，xss原理以及分类</h4>
+<blockquote>
+<p>答： sql注入原理大概是过于信任用户输入，未对用户提交参数进行过滤，造成sql语句被插入恶意代码，使得语句变意。我觉得sql注入大致(<em><strong>个人认为而已</strong></em>)分为两种，显式注入和隐式注入<br>
+显式注入包括Union注入等能直接将注入信息直接在页面显示出来的注入，隐式注入包括布尔注入等，其实我觉得报错盲注，时间盲注，以及一些页面的布尔显示都属于布尔注入，因为它们都是通过布尔二进制信息来传递注入的数据库信息的。网上分的什么Cookie注入，数字型注入，字符型注入，Post注入等都是通过注入方法区分，我觉得都可以归并为显式和隐式，只是可能大家爱这么分而已，个人看法。<br>
+(<em><strong>当然，这只是我的个人看法，读者不要被误导啦。可以查查资料了解主流的分类</strong></em>)<br>
+XSS原理大概也是信任用户输入，被插入一些恶意代码，导致页面JS代码被控制。<br>
+分类的话就是存储型和反射型了，我对这方面也才刚刚起步，也不是很了解，只能通过比赛所看到的来解释一下——反射型是点击、访问被构造过的存在XSS漏洞的网址触发，特点是一碰就给你回应，类似于反射。而存储型就类似于留言，贴吧，论坛等帖子，留言被插入XSS恶意代码，就会一直留在那，一访问就会触发。</p>
 </blockquote>
-<h4 id="6-如果只给你一次机会检测是否存在sql注入，你的payload是什么"><a href="#6-如果只给你一次机会检测是否存在sql注入，你的payload是什么" class="headerlink" title="6. 如果只给你一次机会检测是否存在sql注入，你的payload是什么"></a>6. 如果只给你一次机会检测是否存在sql注入，你的payload是什么</h4><blockquote>
-<p>答： (<strong><em>没答出来</em></strong>)因为平时给的机会不会只有一次，所以我选择Fuzz，单引号，各种过滤符号等<br>面：只有一次机会那<br>答：(<strong><em>无辜脸</em></strong>)那我也一时想不出来啦，平时渗透没有这种情况<br>(<strong><em>其实这个问题还是挺有趣的，比如写一个渗透工具，如果你一句话就能测出来有没有漏洞，那么你就不用Fuzz一堆情况来测试了，还是太嫩啦</em></strong>)<br>之后想了一下，类似于这种<code>palyload</code> 就可以实现，当然不局限于此句能实现<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">'or'or(1)#'='or(1)#</div></pre></td></tr></table></figure></p>
+<h4 id="6-如果只给你一次机会检测是否存在sql注入你的payload是什么"><a class="markdownIt-Anchor" href="#6-如果只给你一次机会检测是否存在sql注入你的payload是什么"></a> 6. 如果只给你一次机会检测是否存在sql注入，你的payload是什么</h4>
+<blockquote>
+<p>答： (<em><strong>没答出来</strong></em>)因为平时给的机会不会只有一次，所以我选择Fuzz，单引号，各种过滤符号等<br>
+面：只有一次机会那<br>
+答：(<em><strong>无辜脸</strong></em>)那我也一时想不出来啦，平时渗透没有这种情况<br>
+(<em><strong>其实这个问题还是挺有趣的，比如写一个渗透工具，如果你一句话就能测出来有没有漏洞，那么你就不用Fuzz一堆情况来测试了，还是太嫩啦</strong></em>)<br>
+之后想了一下，类似于这种<code>palyload</code> 就可以实现，当然不局限于此句能实现</p>
 </blockquote>
-<h4 id="7-检测XSS存在步骤，XSS-sql防御"><a href="#7-检测XSS存在步骤，XSS-sql防御" class="headerlink" title="7. 检测XSS存在步骤，XSS,sql防御"></a>7. 检测XSS存在步骤，XSS,sql防御</h4><blockquote>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">'or'or(1)#'='or(1)#</div></pre></td></tr></table></figure>
+<h4 id="7-检测xss存在步骤xsssql防御"><a class="markdownIt-Anchor" href="#7-检测xss存在步骤xsssql防御"></a> 7. 检测XSS存在步骤，XSS,sql防御</h4>
+<blockquote>
 <p>答： 防御部分还没深入学习过，不过按照攻击方式来说防御可以是参数关键字过滤，恶意代码检测就ban，sql语句参数化，避免拼接sql语句，数字参数仅允许数字输入，字符参数就过滤关键字符，单引号括起来等</p>
 </blockquote>
-<h4 id="8-Tcp三次握手，四次挥手原理"><a href="#8-Tcp三次握手，四次挥手原理" class="headerlink" title="8. Tcp三次握手，四次挥手原理"></a>8. Tcp三次握手，四次挥手原理</h4><blockquote>
-<p>答： (<strong><em>太零碎了不记得了就不说啦</em></strong>)</p>
+<h4 id="8-tcp三次握手四次挥手原理"><a class="markdownIt-Anchor" href="#8-tcp三次握手四次挥手原理"></a> 8. Tcp三次握手，四次挥手原理</h4>
+<blockquote>
+<p>答： (<em><strong>太零碎了不记得了就不说啦</strong></em>)</p>
 </blockquote>
-<h4 id="9-Tcp-ip分多少层，分别列举"><a href="#9-Tcp-ip分多少层，分别列举" class="headerlink" title="9. Tcp/ip分多少层，分别列举"></a>9. Tcp/ip分多少层，分别列举</h4><blockquote>
-<p>答： (<strong><em>同上</em></strong>)</p>
+<h4 id="9-tcpip分多少层分别列举"><a class="markdownIt-Anchor" href="#9-tcpip分多少层分别列举"></a> 9. Tcp/ip分多少层，分别列举</h4>
+<blockquote>
+<p>答： (<em><strong>同上</strong></em>)</p>
 </blockquote>
-<h4 id="10-网络结构分七层，分别是什么"><a href="#10-网络结构分七层，分别是什么" class="headerlink" title="10. 网络结构分七层，分别是什么"></a>10. 网络结构分七层，分别是什么</h4><blockquote>
-<p>答：(<strong><em>没答出</em></strong>)<br>面：你们没学计算机网络是吧？<br>答：对下学期才学<br>面：那你怎么知道TCP/IP的？<br>答：买了本《TCP/IP协议》自学了一些<br>面：这样啊，很不错</p>
+<h4 id="10-网络结构分七层分别是什么"><a class="markdownIt-Anchor" href="#10-网络结构分七层分别是什么"></a> 10. 网络结构分七层，分别是什么</h4>
+<blockquote>
+<p>答：(<em><strong>没答出</strong></em>)<br>
+面：你们没学计算机网络是吧？<br>
+答：对下学期才学<br>
+面：那你怎么知道TCP/IP的？<br>
+答：买了本《TCP/IP协议》自学了一些<br>
+面：这样啊，很不错</p>
 </blockquote>
-<h4 id="11-ARP在哪一层"><a href="#11-ARP在哪一层" class="headerlink" title="11. ARP在哪一层"></a>11. ARP在哪一层</h4><blockquote>
-<p>答： (<strong><em>楞了一会</em></strong>)<del>应用层</del>吧<br>面：(<strong><em>笑</em></strong>)你不会是猜的吧？<br>答：排除法排除法，因为那本书没有看到那部分(<strong><em>其实我排除错啦，是网络层！</em></strong>)</p>
+<h4 id="11-arp在哪一层"><a class="markdownIt-Anchor" href="#11-arp在哪一层"></a> 11. ARP在哪一层</h4>
+<blockquote>
+<p>答： (<em><strong>楞了一会</strong></em>)<s>应用层</s>吧<br>
+面：(<em><strong>笑</strong></em>)你不会是猜的吧？<br>
+答：排除法排除法，因为那本书没有看到那部分(***其实我排除错啦，是网络层！***)</p>
 </blockquote>
-<h4 id="12-补充-无线渗透的步骤，思路"><a href="#12-补充-无线渗透的步骤，思路" class="headerlink" title="12.  (补充)无线渗透的步骤，思路"></a>12.  (补充)无线渗透的步骤，思路</h4><blockquote>
+<h4 id="12-补充无线渗透的步骤思路"><a class="markdownIt-Anchor" href="#12-补充无线渗透的步骤思路"></a> 12.  (补充)无线渗透的步骤，思路</h4>
+<blockquote>
 <p>答： 一个跑包抓包，一个PIN，一个社工，一个钓鱼，四种方法……(省略)</p>
 </blockquote>
-<h4 id="13-抓包跑包原理，PIN码原理，钓鱼AP原理"><a href="#13-抓包跑包原理，PIN码原理，钓鱼AP原理" class="headerlink" title="13. 抓包跑包原理，PIN码原理，钓鱼AP原理"></a>13. 抓包跑包原理，PIN码原理，钓鱼AP原理</h4><blockquote>
-<p>答：(<strong><em>太零碎了，想了解就找找资料吧</em></strong>)</p>
+<h4 id="13-抓包跑包原理pin码原理钓鱼ap原理"><a class="markdownIt-Anchor" href="#13-抓包跑包原理pin码原理钓鱼ap原理"></a> 13. 抓包跑包原理，PIN码原理，钓鱼AP原理</h4>
+<blockquote>
+<p>答：(<em><strong>太零碎了，想了解就找找资料吧</strong></em>)</p>
 </blockquote>
-<h4 id="14-平时时间多不多，都拿干什么，有什么兴趣爱好"><a href="#14-平时时间多不多，都拿干什么，有什么兴趣爱好" class="headerlink" title="14. 平时时间多不多，都拿干什么，有什么兴趣爱好"></a>14. 平时时间多不多，都拿干什么，有什么兴趣爱好</h4><blockquote>
+<h4 id="14-平时时间多不多都拿干什么有什么兴趣爱好"><a class="markdownIt-Anchor" href="#14-平时时间多不多都拿干什么有什么兴趣爱好"></a> 14. 平时时间多不多，都拿干什么，有什么兴趣爱好</h4>
+<blockquote>
 <p>答：不算多吧，整天想着哪哪没有学哪哪没有熟悉深入，除了上课就是自学、倒腾，学累了就犒赏一下自己玩游戏，或者反过来，玩了游戏就好好学习这样子，基本上会安排自己学习，毕竟要学的东西太多啦。兴趣爱好就是学习，游戏以及看一些科学或者纪录片</p>
 </blockquote>
-<h4 id="15-玩什么游戏"><a href="#15-玩什么游戏" class="headerlink" title="15. 玩什么游戏"></a>15. 玩什么游戏</h4><blockquote>
-<p>答： 魔兽和地下城<br>面：玩不玩LOL<br>答：(<strong><em>什么？还想开黑？</em></strong>)不玩<br>面：为啥？<br>答：因为玩了魔兽那，没时间玩LOL了，哈哈</p>
+<h4 id="15-玩什么游戏"><a class="markdownIt-Anchor" href="#15-玩什么游戏"></a> 15. 玩什么游戏</h4>
+<blockquote>
+<p>答： 魔兽和地下城<br>
+面：玩不玩LOL<br>
+答：(***什么？还想开黑？***)不玩<br>
+面：为啥？<br>
+答：因为玩了魔兽那，没时间玩LOL了，哈哈</p>
 </blockquote>
-<h4 id="16-说一说你最近读的一本书的整体架构"><a href="#16-说一说你最近读的一本书的整体架构" class="headerlink" title="16. 说一说你最近读的一本书的整体架构"></a>16. 说一说你最近读的一本书的整体架构</h4><blockquote>
-<p>答： (<strong><em>内心戏多了起来</em></strong>)什么书都可以么？<br>面：对，最近读的都可以<br>答：(<strong><em>最近都打比赛写爬虫去了，就说一本工具书吧</em></strong>)那我就选《Python基础教程》吧，一个老外编的python入门的书，写的很好。(<strong><em>噼里啪啦一堆</em></strong>)<br>面：为什么选这本书<br>答：因为最近没读书，只能选本工具书来说啦</p>
+<h4 id="16-说一说你最近读的一本书的整体架构"><a class="markdownIt-Anchor" href="#16-说一说你最近读的一本书的整体架构"></a> 16. 说一说你最近读的一本书的整体架构</h4>
+<blockquote>
+<p>答： (<em><strong>内心戏多了起来</strong></em>)什么书都可以么？<br>
+面：对，最近读的都可以<br>
+答：(<em><strong>最近都打比赛写爬虫去了，就说一本工具书吧</strong></em>)那我就选《Python基础教程》吧，一个老外编的python入门的书，写的很好。(<em><strong>噼里啪啦一堆</strong></em>)<br>
+面：为什么选这本书<br>
+答：因为最近没读书，只能选本工具书来说啦</p>
 </blockquote>
-<h4 id="17-面试官对你的评价"><a href="#17-面试官对你的评价" class="headerlink" title="17. 面试官对你的评价"></a>17. 面试官对你的评价</h4><blockquote>
-<p>面： 我来说说对你的评价吧。首先你自学能力和觉悟很高，能对安全感兴趣，这个很好，安全行业也很需要这方面的人。还有你可以继续学习类似于二进制方向，或者深入学习WEB安全，把某一个领域学好，学精。你现在才大二，还有一年时间来准备将来面试所需要问的知识。你大一大二就能自学这么多，对以后的找工作以及深度发展很有帮助。另外，你真的腾不出时间来实习是么，公司规定要三个月。<br>答：(<strong><em>惭愧脸</em></strong>)嗯，确实腾不出这么多连续的空余时间来实习<br>面：好，如果可能，我跟上面说一下吧</p>
+<h4 id="17-面试官对你的评价"><a class="markdownIt-Anchor" href="#17-面试官对你的评价"></a> 17. 面试官对你的评价</h4>
+<blockquote>
+<p>面： 我来说说对你的评价吧。首先你自学能力和觉悟很高，能对安全感兴趣，这个很好，安全行业也很需要这方面的人。还有你可以继续学习类似于二进制方向，或者深入学习WEB安全，把某一个领域学好，学精。你现在才大二，还有一年时间来准备将来面试所需要问的知识。你大一大二就能自学这么多，对以后的找工作以及深度发展很有帮助。另外，你真的腾不出时间来实习是么，公司规定要三个月。<br>
+答：(<em><strong>惭愧脸</strong></em>)嗯，确实腾不出这么多连续的空余时间来实习<br>
+面：好，如果可能，我跟上面说一下吧</p>
 </blockquote>
-<h4 id="18-你提问面试官环节"><a href="#18-你提问面试官环节" class="headerlink" title="18. 你提问面试官环节"></a>18. 你提问面试官环节</h4><blockquote>
-<p>我：您平时的工作主要是干啥啊，我现在对信安以后的工作内容挺感兴趣的<br>面：我们平时主要是在滴滴负责网络攻防类（<strong><em>？？？不明觉厉</em></strong>），维护网络以及紧急事件响应<br>我：平时工作辛不辛苦那？<br>面：还蛮轻松的，加班不多，除了紧急事件要加班。</p>
+<h4 id="18-你提问面试官环节"><a class="markdownIt-Anchor" href="#18-你提问面试官环节"></a> 18. 你提问面试官环节</h4>
+<blockquote>
+<p>我：您平时的工作主要是干啥啊，我现在对信安以后的工作内容挺感兴趣的<br>
+面：我们平时主要是在滴滴负责网络攻防类（***？？？不明觉厉***），维护网络以及紧急事件响应<br>
+我：平时工作辛不辛苦那？<br>
+面：还蛮轻松的，加班不多，除了紧急事件要加班。</p>
 </blockquote>
 <hr>
-<h2 id="后续"><a href="#后续" class="headerlink" title="后续"></a>后续</h2><p>果不其然，到了下午，北京打来的电话，应该是一个滴滴客服，跟我说第一次面试通过了，但是由于时间不符，就不安排第二次面试了，希望继续关注滴滴出行等等</p>
-<h2 id="至此面试结束"><a href="#至此面试结束" class="headerlink" title="至此面试结束"></a>至此面试结束</h2><p>希望这篇文章给读者一些帮助，也给本人提提醒。</p>
-<p>还是那句<br><strong>愿不忘初心</strong></p>
+<h2 id="后续"><a class="markdownIt-Anchor" href="#后续"></a> 后续</h2>
+<p>果不其然，到了下午，北京打来的电话，应该是一个滴滴客服，跟我说第一次面试通过了，但是由于时间不符，就不安排第二次面试了，希望继续关注滴滴出行等等</p>
+<h2 id="至此面试结束"><a class="markdownIt-Anchor" href="#至此面试结束"></a> 至此面试结束</h2>
+<p>希望这篇文章给读者一些帮助，也给本人提提醒。</p>
+<p>还是那句<br>
+<strong>愿不忘初心</strong></p>
 <p>谢谢</p>
 <hr>
 
       
     </div>
-    
-    
-    
-	<div>
-	  
-		<div>
-    
-		<br>
-		</br>
-        <div style="text-align:center;color: #ccc;font-size:14px">----- 感谢阅读 -----<br></br></div>
-    
-</div>
-	  
-	</div>
+
     
 
+    
+    
+    
+
+    
+
+    
+      
+    
     
 
     
@@ -496,17 +669,10 @@
   </article>
 
 
-
-    <div class="post-spread">
-      
-    </div>
   </div>
 
 
           </div>
-          
-
-
           
 
   
@@ -526,7 +692,6 @@
   </div>
 
   <aside id="sidebar" class="sidebar">
-    
     <div class="sidebar-inner">
 
       
@@ -542,97 +707,168 @@
         </ul>
       
 
-      <section class="site-overview-wrap sidebar-panel">
+      <div class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
               <p class="site-author-name" itemprop="name">W z</p>
-              <p class="site-description motion-element" itemprop="description"></p>
+              <div class="site-description motion-element" itemprop="description"></div>
           </div>
 
-          <nav class="site-state motion-element">
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">26</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
 
-            
-              <div class="site-state-item site-state-posts">
               
-                <a href="/archives/">
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
               
-                  <span class="site-state-item-count">26</span>
-                  <span class="site-state-item-name">日志</span>
-                </a>
-              </div>
-            
 
-            
               
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">20</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
               
-              <div class="site-state-item site-state-categories">
-                <a href="/categories/index.html">
-                  <span class="site-state-item-count">2</span>
-                  <span class="site-state-item-name">分类</span>
-                </a>
-              </div>
-            
+            </nav>
+          
 
-            
-              
-              
-              <div class="site-state-item site-state-tags">
-                <a href="/tags/index.html">
-                  <span class="site-state-item-count">20</span>
-                  <span class="site-state-item-name">标签</span>
-                </a>
-              </div>
-            
-
-          </nav>
+          
 
           
 
           
             <div class="links-of-author motion-element">
-                
-                  <span class="links-of-author-item">
-                    <a href="https://github.com/testzero-wz" target="_blank" title="GitHub">
-                      
-                        <i class="fa fa-fw fa-github"></i>GitHub</a>
-                  </span>
-                
-                  <span class="links-of-author-item">
-                    <a href="mailto:testzero.wz@gmail.com" target="_blank" title="E-Mail">
-                      
-                        <i class="fa fa-fw fa-google"></i>E-Mail</a>
-                  </span>
-                
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/testzero-wz" title="GitHub &rarr; https://github.com/testzero-wz" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:testzero.wz@gmail.com" title="E-Mail &rarr; mailto:testzero.wz@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
             </div>
           
 
           
-          
 
           
           
 
+          
+            
+          
           
 
         </div>
-      </section>
+      </div>
 
       
       <!--noindex-->
-        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
           <div class="post-toc">
 
             
-              
+            
+            
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一、经过"><span class="nav-number">1.</span> <span class="nav-text">一、经过</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二、面试开始"><span class="nav-number">2.</span> <span class="nav-text">二、面试开始</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-自我介绍"><span class="nav-number">2.0.1.</span> <span class="nav-text">1. 自我介绍</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-有什么基础知识"><span class="nav-number">2.0.2.</span> <span class="nav-text">2. 有什么基础知识</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-专业课程"><span class="nav-number">2.0.3.</span> <span class="nav-text">3. 专业课程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-关注安全哪一方面"><span class="nav-number">2.0.4.</span> <span class="nav-text">4. 关注安全哪一方面</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-sql注入，xss原理以及分类"><span class="nav-number">2.0.5.</span> <span class="nav-text">5. sql注入，xss原理以及分类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6-如果只给你一次机会检测是否存在sql注入，你的payload是什么"><span class="nav-number">2.0.6.</span> <span class="nav-text">6. 如果只给你一次机会检测是否存在sql注入，你的payload是什么</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#7-检测XSS存在步骤，XSS-sql防御"><span class="nav-number">2.0.7.</span> <span class="nav-text">7. 检测XSS存在步骤，XSS,sql防御</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#8-Tcp三次握手，四次挥手原理"><span class="nav-number">2.0.8.</span> <span class="nav-text">8. Tcp三次握手，四次挥手原理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#9-Tcp-ip分多少层，分别列举"><span class="nav-number">2.0.9.</span> <span class="nav-text">9. Tcp/ip分多少层，分别列举</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#10-网络结构分七层，分别是什么"><span class="nav-number">2.0.10.</span> <span class="nav-text">10. 网络结构分七层，分别是什么</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#11-ARP在哪一层"><span class="nav-number">2.0.11.</span> <span class="nav-text">11. ARP在哪一层</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#12-补充-无线渗透的步骤，思路"><span class="nav-number">2.0.12.</span> <span class="nav-text">12.  (补充)无线渗透的步骤，思路</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#13-抓包跑包原理，PIN码原理，钓鱼AP原理"><span class="nav-number">2.0.13.</span> <span class="nav-text">13. 抓包跑包原理，PIN码原理，钓鱼AP原理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#14-平时时间多不多，都拿干什么，有什么兴趣爱好"><span class="nav-number">2.0.14.</span> <span class="nav-text">14. 平时时间多不多，都拿干什么，有什么兴趣爱好</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#15-玩什么游戏"><span class="nav-number">2.0.15.</span> <span class="nav-text">15. 玩什么游戏</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#16-说一说你最近读的一本书的整体架构"><span class="nav-number">2.0.16.</span> <span class="nav-text">16. 说一说你最近读的一本书的整体架构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#17-面试官对你的评价"><span class="nav-number">2.0.17.</span> <span class="nav-text">17. 面试官对你的评价</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#18-你提问面试官环节"><span class="nav-number">2.0.18.</span> <span class="nav-text">18. 你提问面试官环节</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#后续"><span class="nav-number">3.</span> <span class="nav-text">后续</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#至此面试结束"><span class="nav-number">4.</span> <span class="nav-text">至此面试结束</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-经过"><span class="nav-number">1.</span> <span class="nav-text"> 一、经过</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-面试开始"><span class="nav-number">2.</span> <span class="nav-text"> 二、面试开始</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-自我介绍"><span class="nav-number">2.0.1.</span> <span class="nav-text"> 1. 自我介绍</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-有什么基础知识"><span class="nav-number">2.0.2.</span> <span class="nav-text"> 2. 有什么基础知识</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-专业课程"><span class="nav-number">2.0.3.</span> <span class="nav-text"> 3. 专业课程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-关注安全哪一方面"><span class="nav-number">2.0.4.</span> <span class="nav-text"> 4. 关注安全哪一方面</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-sql注入xss原理以及分类"><span class="nav-number">2.0.5.</span> <span class="nav-text"> 5. sql注入，xss原理以及分类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6-如果只给你一次机会检测是否存在sql注入你的payload是什么"><span class="nav-number">2.0.6.</span> <span class="nav-text"> 6. 如果只给你一次机会检测是否存在sql注入，你的payload是什么</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#7-检测xss存在步骤xsssql防御"><span class="nav-number">2.0.7.</span> <span class="nav-text"> 7. 检测XSS存在步骤，XSS,sql防御</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#8-tcp三次握手四次挥手原理"><span class="nav-number">2.0.8.</span> <span class="nav-text"> 8. Tcp三次握手，四次挥手原理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#9-tcpip分多少层分别列举"><span class="nav-number">2.0.9.</span> <span class="nav-text"> 9. Tcp/ip分多少层，分别列举</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#10-网络结构分七层分别是什么"><span class="nav-number">2.0.10.</span> <span class="nav-text"> 10. 网络结构分七层，分别是什么</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#11-arp在哪一层"><span class="nav-number">2.0.11.</span> <span class="nav-text"> 11. ARP在哪一层</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#12-补充无线渗透的步骤思路"><span class="nav-number">2.0.12.</span> <span class="nav-text"> 12.  (补充)无线渗透的步骤，思路</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#13-抓包跑包原理pin码原理钓鱼ap原理"><span class="nav-number">2.0.13.</span> <span class="nav-text"> 13. 抓包跑包原理，PIN码原理，钓鱼AP原理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#14-平时时间多不多都拿干什么有什么兴趣爱好"><span class="nav-number">2.0.14.</span> <span class="nav-text"> 14. 平时时间多不多，都拿干什么，有什么兴趣爱好</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#15-玩什么游戏"><span class="nav-number">2.0.15.</span> <span class="nav-text"> 15. 玩什么游戏</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#16-说一说你最近读的一本书的整体架构"><span class="nav-number">2.0.16.</span> <span class="nav-text"> 16. 说一说你最近读的一本书的整体架构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#17-面试官对你的评价"><span class="nav-number">2.0.17.</span> <span class="nav-text"> 17. 面试官对你的评价</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#18-你提问面试官环节"><span class="nav-number">2.0.18.</span> <span class="nav-text"> 18. 你提问面试官环节</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#后续"><span class="nav-number">3.</span> <span class="nav-text"> 后续</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#至此面试结束"><span class="nav-number">4.</span> <span class="nav-text"> 至此面试结束</span></a></li></ol></div>
             
 
           </div>
-        </section>
+        </div>
       <!--/noindex-->
       
 
@@ -640,6 +876,7 @@
 
     </div>
   </aside>
+  
 
 
         
@@ -648,38 +885,27 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
-  <span class="with-love">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
   <span class="author" itemprop="copyrightHolder">W z</span>
 
   
-</div>
 
-
-<div class="powered-by">
-<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
-  本站访客数:<span id="busuanzi_value_site_uv"></span>
-</span>
+  
 </div>
 
 
 
 
-  <span class="post-meta-divider">|</span>
 
-
-
-<div class="powered-by">
- 桂ICP备17008880号
- </div>
 
 
 
 
         
+
 
 
 
@@ -700,11 +926,14 @@
 
     
 
+    
+
+    
   </div>
 
   
 
-<script type="text/javascript">
+<script>
   if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
     window.Promise = null;
   }
@@ -718,96 +947,11 @@
 
 
 
-  
 
 
 
 
 
-
-
-
-
-
-
-
-  
-  
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-  
-
-  
-  
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js"></script>
-  
-
-  
-  
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery_lazyload/1.9.7/jquery.lazyload.min.js"></script>
-  
-
-  
-  
-    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
-  
-
-  
-  
-    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
-  
-
-  
-  
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.js"></script>
-  
-
-
-  
-
-
-  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
-
-  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
-
-
-
-  
-  
-
-  
-  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
-<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
-
-
-
-  
-
-
-  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
-
-
-
-  
-
-
-  
-
-
-
-
-	
-
-
-
-
-
-  
-
-
-
-
-
-  
 
 
 
@@ -821,7 +965,57 @@
 
 
   
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
 
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=7.0.1"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
 
 
 
@@ -831,48 +1025,31 @@
   
 
   
-<script>
-(function(){
-    var bp = document.createElement('script');
-    var curProtocol = window.location.protocol.split(':')[0];
-    if (curProtocol === 'https') {
-        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
-    }
-    else {
-        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
-    }
-    var s = document.getElementsByTagName("script")[0];
-    s.parentNode.insertBefore(bp, s);
-})();
-</script>
-
+  
 
   
   
 
   
-  
-    <script type="text/x-mathjax-config">
-      MathJax.Hub.Config({
-        tex2jax: {
-          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
-          processEscapes: true,
-          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
-        }
-      });
-    </script>
 
-    <script type="text/x-mathjax-config">
-      MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax(), i;
-        for (i=0; i < all.length; i += 1) {
-          all[i].SourceElement().parentNode.className += ' has-jax';
-        }
-      });
-    </script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
   
 
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
 
   
 
