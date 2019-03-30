@@ -99,7 +99,7 @@
 
 
   <meta name="description" content="最近实习之余，打算写一个用来自测用的的web目录扫描的小工具来重新学习以及应用一下python3.5的新特性――async/await。">
-<meta name="keywords" content="码代码,总结">
+<meta name="keywords" content="总结,码代码">
 <meta property="og:type" content="article">
 <meta property="og:title" content="写一个Web目录扫描器">
 <meta property="og:url" content="https://www.wzsite.cn/2018/07/31/写一个Web目录扫描器/index.html">
@@ -472,62 +472,112 @@
 
       
         <img src="/2018/07/31/写一个Web目录扫描器/10-21-23.png" alt="10-21-23.png" title="">
-<p>最近实习之余，打算写一个用来自测用的的web目录扫描的小工具来重新学习以及应用一下python3.5的新特性――<code>async/await</code>。<br><a id="more"></a></p>
-<h2 id="为何要用协程"><a href="#为何要用协程" class="headerlink" title="为何要用协程"></a>为何要用协程</h2><h4 id="历史"><a href="#历史" class="headerlink" title="历史"></a>历史</h4><p>其实协程早在python2就已经实现了(且历史上协程比线程出现的时间更早)，以生成器<code>Genarator</code>的<code>yield/send</code>方式实现了一些功能，但是并不完全，后面py3有了<code>Coroutine</code>的语法糖，用<code>@asyncio.coroutine</code>和<code>yield from</code>来进行协程封装，到3.5后引入了<code>async/await</code>代替之前的用法，使得代码更加简洁易懂。本程序就是使用3.5后的语法<code>async/await</code>写的。<br>至于为何要用协程，这是一个很好的问题。</p>
-<h4 id="线程VS协程"><a href="#线程VS协程" class="headerlink" title="线程VS协程"></a>线程VS协程</h4><p>我们都知道多线程写爬虫能够极大的提高效率，其原因在于爬虫的耗时基本在于网络的I/O等待，而多线程能够在I/O等待的时候调度，去运行另一个线程任务。如果假设两个任务各自需要10秒完成，其中有8秒的I/O等待以及2秒的CPU运算。采用串行的方法依次执行两个任务则需要――简单的相加――20秒。假设线程切换需要0.1秒，若是两个线程同时启动处理，则只需要<code>2+0.1+2+8+0.1=12.2</code>秒即可完成，这些都很好理解。<br>那么协程又是什么呢？<br>协程又称之为微线程、纤程，比线程更轻量级。我们可以先简单地将协程看成是一个可以下断点的函数，其与函数相似――共享线程的栈空间，有着自己的寄存器。一个线程可以有多个协程且协程的调度代价比线程低很多。<br>在我个人理解看来，协程是一个下了断点的函数。在运行到断点之前，是不能参与协程调度的，而到达断点的时候，若碰上了I/O等阻塞则可以跳转到另外一个协（函）程（数）执行它的代码。由此看出，协程的调度： 一、调度是由程序员自己控制的；二、调度是非抢占式的。接着上面的例子，若我们将断点定在I/O阻塞时刻前，然后跳转到另一个协程去执行它的任务，则同样的我们假设协程调度只需要0.01秒，则总的时间是<code>2+0.01+2+8+0.01=12.02</code>秒。看起来是不是和线程的过程差不多？<br>咱们上面讨论的是单核的情况，可线程可以同时在多核并发运行的，当我们核&gt;=2时，咱们任务只需要10秒即可完成，而重点是，<strong>协程的调度只能在一个线程内进行调度</strong>，也就是说只能发挥一个核的作用。<br>是不是瞬间感到很鸡肋？<br>那我为啥还要用协程呢</p>
-<h4 id="The-Infamous-GIL"><a href="#The-Infamous-GIL" class="headerlink" title="The Infamous GIL"></a>The Infamous GIL</h4><p>这是由于<code>Cpython</code>中<code>GIL</code>――全局解释锁(Global Interpreter Lock)的存在，使得我们最熟知、常用的<code>python</code>版本<code>Cpython</code>并不能使得多线程实现并行化，反而用多核跑多线程比单核跑多线程来的效率更低。(<a href="http://www.dabeaz.com/python/GIL.pdf" target="_blank" rel="external">其详细的原因请看这位外国大佬David Beazley的PyCON的PPT</a>，讲得十分之好，有时间我翻译过来再写一篇博客专门讲python的<code>GIL</code>)<br>故python线程并不能发挥多核的优势，而在单核方面又没有协程的效率高，所以选协程写并非仅仅心血来潮。<br>另外原因在于线程需要对争议资源进行加锁，防止发生不安全的更改以操作，对写扫描输出日志也需要进行加锁操作，比较麻烦。而协程并没有这样的顾虑，它对资源并没有争议，故也不需要加锁，程序的逻辑就会很清晰，很好实现。<br>在此多说一句，Python的多线程也并非向我说的那样”一无是处“，对于CPU密集型处理(CPU-bound)，抢占式处理如GUI的响应都是协程的痛点而线程却能够胜任之。<br>而对于I/O密集型的任务，协程则能最大限度的发挥出单核的能力，加之以多进程，实现多核并行计算，使得协程大放异彩。<br>这么说来，协程是需要自己进行调度的，听起来就比线程麻烦，毕竟线程可以依靠操作系统自成一套的调度。python2中的<code>gevent</code>以及python3中的<code>async</code>库将协程调度封装成库，自动识别I/O等阻塞操作，随后进行协程切换调度。我们只需要知道断点放在哪以及功能如何实现就好了。<br>那么接下来就是介绍本菜写的web目录扫描器――<code>wscan</code>了</p>
-<h2 id="wscan"><a href="#wscan" class="headerlink" title="wscan"></a>wscan</h2><h4 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h4><p><strong>wscan</strong>是一个基于协程(asyncio、aiohttp)的网站目录扫描器，用于网站路径的收集以及探测，主要分为两个功能：</p>
+<p>最近实习之余，打算写一个用来自测用的的web目录扫描的小工具来重新学习以及应用一下python3.5的新特性――<code>async/await</code>。</p>
+<a id="more"></a>
+<h2 id="为何要用协程"><a class="markdownIt-Anchor" href="#为何要用协程"></a> 为何要用协程</h2>
+<h4 id="历史"><a class="markdownIt-Anchor" href="#历史"></a> 历史</h4>
+<p>其实协程早在python2就已经实现了(且历史上协程比线程出现的时间更早)，以生成器<code>Genarator</code>的<code>yield/send</code>方式实现了一些功能，但是并不完全，后面py3有了<code>Coroutine</code>的语法糖，用<code>@asyncio.coroutine</code>和<code>yield from</code>来进行协程封装，到3.5后引入了<code>async/await</code>代替之前的用法，使得代码更加简洁易懂。本程序就是使用3.5后的语法<code>async/await</code>写的。<br>
+至于为何要用协程，这是一个很好的问题。</p>
+<h4 id="线程vs协程"><a class="markdownIt-Anchor" href="#线程vs协程"></a> 线程VS协程</h4>
+<p>我们都知道多线程写爬虫能够极大的提高效率，其原因在于爬虫的耗时基本在于网络的I/O等待，而多线程能够在I/O等待的时候调度，去运行另一个线程任务。如果假设两个任务各自需要10秒完成，其中有8秒的I/O等待以及2秒的CPU运算。采用串行的方法依次执行两个任务则需要――简单的相加――20秒。假设线程切换需要0.1秒，若是两个线程同时启动处理，则只需要<code>2+0.1+2+8+0.1=12.2</code>秒即可完成，这些都很好理解。<br>
+那么协程又是什么呢？<br>
+协程又称之为微线程、纤程，比线程更轻量级。我们可以先简单地将协程看成是一个可以下断点的函数，其与函数相似――共享线程的栈空间，有着自己的寄存器。一个线程可以有多个协程且协程的调度代价比线程低很多。<br>
+在我个人理解看来，协程是一个下了断点的函数。在运行到断点之前，是不能参与协程调度的，而到达断点的时候，若碰上了I/O等阻塞则可以跳转到另外一个协（函）程（数）执行它的代码。由此看出，协程的调度： 一、调度是由程序员自己控制的；二、调度是非抢占式的。接着上面的例子，若我们将断点定在I/O阻塞时刻前，然后跳转到另一个协程去执行它的任务，则同样的我们假设协程调度只需要0.01秒，则总的时间是<code>2+0.01+2+8+0.01=12.02</code>秒。看起来是不是和线程的过程差不多？<br>
+咱们上面讨论的是单核的情况，可线程可以同时在多核并发运行的，当我们核&gt;=2时，咱们任务只需要10秒即可完成，而重点是，<strong>协程的调度只能在一个线程内进行调度</strong>，也就是说只能发挥一个核的作用。<br>
+是不是瞬间感到很鸡肋？<br>
+那我为啥还要用协程呢</p>
+<h4 id="the-infamous-gil"><a class="markdownIt-Anchor" href="#the-infamous-gil"></a> The Infamous GIL</h4>
+<p>这是由于<code>Cpython</code>中<code>GIL</code>――全局解释锁(Global Interpreter Lock)的存在，使得我们最熟知、常用的<code>python</code>版本<code>Cpython</code>并不能使得多线程实现并行化，反而用多核跑多线程比单核跑多线程来的效率更低。(<a href="http://www.dabeaz.com/python/GIL.pdf" target="_blank" rel="external">其详细的原因请看这位外国大佬David Beazley的PyCON的PPT</a>，讲得十分之好，有时间我翻译过来再写一篇博客专门讲python的<code>GIL</code>)<br>
+故python线程并不能发挥多核的优势，而在单核方面又没有协程的效率高，所以选协程写并非仅仅心血来潮。<br>
+另外原因在于线程需要对争议资源进行加锁，防止发生不安全的更改以操作，对写扫描输出日志也需要进行加锁操作，比较麻烦。而协程并没有这样的顾虑，它对资源并没有争议，故也不需要加锁，程序的逻辑就会很清晰，很好实现。<br>
+在此多说一句，Python的多线程也并非向我说的那样”一无是处“，对于CPU密集型处理(CPU-bound)，抢占式处理如GUI的响应都是协程的痛点而线程却能够胜任之。<br>
+而对于I/O密集型的任务，协程则能最大限度的发挥出单核的能力，加之以多进程，实现多核并行计算，使得协程大放异彩。<br>
+这么说来，协程是需要自己进行调度的，听起来就比线程麻烦，毕竟线程可以依靠操作系统自成一套的调度。python2中的<code>gevent</code>以及python3中的<code>async</code>库将协程调度封装成库，自动识别I/O等阻塞操作，随后进行协程切换调度。我们只需要知道断点放在哪以及功能如何实现就好了。<br>
+那么接下来就是介绍本菜写的web目录扫描器――<code>wscan</code>了</p>
+<h2 id="wscan"><a class="markdownIt-Anchor" href="#wscan"></a> wscan</h2>
+<h4 id="思路"><a class="markdownIt-Anchor" href="#思路"></a> 思路</h4>
+<p><strong>wscan</strong>是一个基于协程(asyncio、aiohttp)的网站目录扫描器，用于网站路径的收集以及探测，主要分为两个功能：</p>
 <ul>
 <li>路径爆破探测</li>
 <li>网站目录爬取</li>
 </ul>
-<p>然后整理成一张树图展现出网站的结构以及各个路径的响应情况<br>对于路径爆破，我们的思路很快就能出来</p>
+<p>然后整理成一张树图展现出网站的结构以及各个路径的响应情况<br>
+对于路径爆破，我们的思路很快就能出来</p>
 <ol>
 <li>准备个爆破字典，取出一个爆破路径</li>
 <li>请求<code>Target URL</code>+<code>爆破路径</code>，取回响应码</li>
 <li>对响应码进行分析并分类显示结果</li>
 <li>开始下一个路径的爆破</li>
 </ol>
-<p>嗯，就跟如何把大象放进冰箱一样简单的三步走<br>这是基本的串行处理，但是咱们都知道，这样的速度是远远不够的。<br>如果改用协程写，那么我们想要控制这么多个协程，采用任务队列是一个很好的方法。(我是直接拿用aiohttp的Queue来用的)<br>我们将待处理的路径丢进队列，然后开N个协程不断从队列中获取任务，一旦某个协程遇到I/O阻塞则切换到另外一个协程继续运行。所以我们可以将“断点”设置在请求和获取响应之间。(生产者-消费者模型)<br>每个协程的流程图如下：</p>
+<p>嗯，就跟如何把大象放进冰箱一样简单的三步走<br>
+这是基本的串行处理，但是咱们都知道，这样的速度是远远不够的。<br>
+如果改用协程写，那么我们想要控制这么多个协程，采用任务队列是一个很好的方法。(我是直接拿用aiohttp的Queue来用的)<br>
+我们将待处理的路径丢进队列，然后开N个协程不断从队列中获取任务，一旦某个协程遇到I/O阻塞则切换到另外一个协程继续运行。所以我们可以将“断点”设置在请求和获取响应之间。(生产者-消费者模型)<br>
+每个协程的流程图如下：</p>
 <img src="/2018/07/31/写一个Web目录扫描器/22-34-13.jpg" alt="22-34-13.jpg" title="">
-<p>Fuzz的这一部分逻辑十分明了，所以我们能很容易地将其写出来。再多说一句，为了代码的重用性和封装性，应该考虑此时发起请求的协程以及管理其行为的函数与接下来的网站目录爬取兼容，实现代码重用。<br>接下来就是网站目录的爬取，以及绘制一个网站目录结构。<br>一般网站的目录及资源存在于<code>&lt;a&gt;</code>标签的<code>href</code>属性，301,302,307跳转的<code>Location</code>中以及一些资源文件如<code>&lt;script&gt;</code>、<code>img</code>标签的<code>src</code>等等 。<br>我们可以以如下的方式进行页面爬取：<br><img src="/2018/07/31/写一个Web目录扫描器/22-35-36.jpg" alt="22-35-36.jpg" title=""></p>
-<h4 id="细节"><a href="#细节" class="headerlink" title="细节"></a>细节</h4><p>说一下一些细节：</p>
+<p>Fuzz的这一部分逻辑十分明了，所以我们能很容易地将其写出来。再多说一句，为了代码的重用性和封装性，应该考虑此时发起请求的协程以及管理其行为的函数与接下来的网站目录爬取兼容，实现代码重用。<br>
+接下来就是网站目录的爬取，以及绘制一个网站目录结构。<br>
+一般网站的目录及资源存在于<code>&lt;a&gt;</code>标签的<code>href</code>属性，301,302,307跳转的<code>Location</code>中以及一些资源文件如<code>&lt;script&gt;</code>、<code>img</code>标签的<code>src</code>等等 。<br>
+我们可以以如下的方式进行页面爬取：</p>
+<img src="/2018/07/31/写一个Web目录扫描器/22-35-36.jpg" alt="22-35-36.jpg" title="">
+<h4 id="细节"><a class="markdownIt-Anchor" href="#细节"></a> 细节</h4>
+<p>说一下一些细节：</p>
 <ol>
-<li>由于咱们的目录是一个多叉树结构，所以我用<code>dict</code>作为子节点集合写了个结构树类以及对应节点类，作为咱们的基本数据结构。<br>之前是考虑到同一目录下子节点不可重名，所以一开始不采用<code>list</code>而采用了<code>set</code>作为子节点集合，毕竟<code>set</code>可以去重，键唯一，很符合这一个设定，然后用节点类的名字作为<code>set</code>里面<code>__hash__</code>的键，实现了一个简单的文件目录树结构。<br>后来直到需要设定子节点集合里面的节点属性时就发现<code>set</code>找元素并不好找，需要遍历一次才能找到，故决定改用采用同时具有引索又有以上属性的<code>dict</code>实现。嗯，真香。<br>然后遍历树节点取其路径就可以采用很多方法了，深度、广度优先都可以。但是当我们想将树的结构输出(类似于tree命令)时，深度优先是最合适的。(可以动手试一下)</li>
-<li>还有一些异常处理以及URL的拼接是比较麻烦的，因为页面提取到的URL可能是相对路径也可能是其他外联页面的地址(不属于我们爬取的范围)，也有可能是类似于<code>../../../cms/admin.php</code>等比较麻烦的相对路径，所以我直接使用了python3标准库<code>urllib.parse</code>中的<code>urlparse</code>以及<code>urljoin</code>来实现以上功能。<br>为了爬虫能够”健康”地爬取页面，加入了随机User-agent功能以防止被ban掉(当然，挂代理池是最吼的)</li>
+<li>由于咱们的目录是一个多叉树结构，所以我用<code>dict</code>作为子节点集合写了个结构树类以及对应节点类，作为咱们的基本数据结构。<br>
+之前是考虑到同一目录下子节点不可重名，所以一开始不采用<code>list</code>而采用了<code>set</code>作为子节点集合，毕竟<code>set</code>可以去重，键唯一，很符合这一个设定，然后用节点类的名字作为<code>set</code>里面<code>__hash__</code>的键，实现了一个简单的文件目录树结构。<br>
+后来直到需要设定子节点集合里面的节点属性时就发现<code>set</code>找元素并不好找，需要遍历一次才能找到，故决定改用采用同时具有引索又有以上属性的<code>dict</code>实现。嗯，真香。<br>
+然后遍历树节点取其路径就可以采用很多方法了，深度、广度优先都可以。但是当我们想将树的结构输出(类似于tree命令)时，深度优先是最合适的。(可以动手试一下)</li>
+<li>还有一些异常处理以及URL的拼接是比较麻烦的，因为页面提取到的URL可能是相对路径也可能是其他外联页面的地址(不属于我们爬取的范围)，也有可能是类似于<code>../../../cms/admin.php</code>等比较麻烦的相对路径，所以我直接使用了python3标准库<code>urllib.parse</code>中的<code>urlparse</code>以及<code>urljoin</code>来实现以上功能。<br>
+为了爬虫能够&quot;健康&quot;地爬取页面，加入了随机User-agent功能以防止被ban掉(当然，挂代理池是最吼的)</li>
 <li>最后模仿github上的一个项目<code>dirsearch</code>支持了拓展后缀名，以便扫描出适合的后缀名路径。</li>
 <li>本来想加入端口扫描的功能，然后发现直接socket进行TCP连接的方式判断开放与否不仅速度慢并且会留下痕迹，而且我也没准备啥指纹去匹配端口所对应服务，现阶段只是一个探测开放性的一个小功能，还是待我完善之后再加进去吧</li>
 </ol>
-<p>附上代码目录结构：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">wscan</div><div class="line">│  wscan.py</div><div class="line">├─fuzz</div><div class="line">│   │   dirList.txt     <span class="comment">#Fuzz路径文件</span></div><div class="line">│   └─  user_agent.txt    <span class="comment"># 请求所需的User-agent 列表</span></div><div class="line">└─lib </div><div class="line">	├─controller   </div><div class="line">	│  └─ Controller.py    <span class="comment"># 主控制流程</span></div><div class="line">	├─exception</div><div class="line">	│  └─ ScanException.py    <span class="comment"># 异常处理</span></div><div class="line">	├─io</div><div class="line">	│  │  Argument.py    <span class="comment"># 参数接收相关</span></div><div class="line">	│  └─ ColorOutput.py    <span class="comment"># 输出相关</span></div><div class="line">	├─portscan</div><div class="line">	│  └─ portScan.py    <span class="comment"># 端口扫描(由于功能有点简陋，还未加进主程序)</span></div><div class="line">	└─tree</div><div class="line">	   │  DirTree.py    <span class="comment"># 路径树</span></div><div class="line">	   └─ Node.py    <span class="comment"># 节点</span></div></pre></td></tr></table></figure></p>
-<h4 id="Install"><a href="#Install" class="headerlink" title="Install"></a>Install</h4><p>学习了一下怎么上传pypi，终于能够方便地安装了</p>
+<p>附上代码目录结构：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">wscan</div><div class="line">│  wscan.py</div><div class="line">├─fuzz</div><div class="line">│   │   dirList.txt     <span class="comment">#Fuzz路径文件</span></div><div class="line">│   └─  user_agent.txt    <span class="comment"># 请求所需的User-agent 列表</span></div><div class="line">└─lib </div><div class="line">	├─controller   </div><div class="line">	│  └─ Controller.py    <span class="comment"># 主控制流程</span></div><div class="line">	├─exception</div><div class="line">	│  └─ ScanException.py    <span class="comment"># 异常处理</span></div><div class="line">	├─io</div><div class="line">	│  │  Argument.py    <span class="comment"># 参数接收相关</span></div><div class="line">	│  └─ ColorOutput.py    <span class="comment"># 输出相关</span></div><div class="line">	├─portscan</div><div class="line">	│  └─ portScan.py    <span class="comment"># 端口扫描(由于功能有点简陋，还未加进主程序)</span></div><div class="line">	└─tree</div><div class="line">	   │  DirTree.py    <span class="comment"># 路径树</span></div><div class="line">	   └─ Node.py    <span class="comment"># 节点</span></div></pre></td></tr></table></figure>
+<h4 id="install"><a class="markdownIt-Anchor" href="#install"></a> Install</h4>
+<p>学习了一下怎么上传pypi，终于能够方便地安装了</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ pip install wscan</div></pre></td></tr></table></figure>
-<h4 id="Usage"><a href="#Usage" class="headerlink" title="Usage"></a>Usage</h4><p>使用方式：<br><strong>Type</strong> <code>-h</code> <strong>for help</strong> </p>
+<h4 id="usage"><a class="markdownIt-Anchor" href="#usage"></a> Usage</h4>
+<p>使用方式：<br>
+<strong>Type</strong> <code>-h</code> <strong>for help</strong></p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ wscan [-u URL] [-f] [-m] [Extend options]</div></pre></td></tr></table></figure>
 <ul>
-<li><p><strong>-u  URL</strong>:    目标URL</p>
+<li>
+<p><strong>-u  URL</strong>:    目标URL</p>
 </li>
-<li><p><strong>-f</strong>:   启用Fuzz功能</p>
+<li>
+<p><strong>-f</strong>:   启用Fuzz功能</p>
 </li>
-<li><p><strong>-m</strong>:    爬取网站获取网站目录结构</p>
+<li>
+<p><strong>-m</strong>:    爬取网站获取网站目录结构</p>
 </li>
-<li><p><strong>-b  BASE</strong>:     Fuzz的前缀地址  <strong>e.g</strong> -b /cms/app.  然后将会在<code>http[s]://host/cms/app/</code>的基础上进行爆破</p>
+<li>
+<p><strong>-b  BASE</strong>:     Fuzz的前缀地址  <strong>e.g</strong> -b /cms/app.  然后将会在<code>http[s]://host/cms/app/</code>的基础上进行爆破</p>
 </li>
-<li><p><strong>-e  EXTEND</strong>:    爆破的后缀名，默认为php</p>
+<li>
+<p><strong>-e  EXTEND</strong>:    爆破的后缀名，默认为php</p>
 </li>
-<li><p><strong>-max   NUM</strong>:    最大协程数</p>
+<li>
+<p><strong>-max   NUM</strong>:    最大协程数</p>
 </li>
-<li><p><strong>-404   NOT_FOUND</strong>:  自定义404标识, 爬取和Fuzz时会正则匹配该值来判断是不是自定义404页面，减少误报. e.g. “Not found”</p>
+<li>
+<p><strong>-404   NOT_FOUND</strong>:  自定义404标识, 爬取和Fuzz时会正则匹配该值来判断是不是自定义404页面，减少误报. e.g. “Not found”</p>
 </li>
-<li><p><strong>—s</strong>:   爬取静态资源(目前只支持图片<code>img</code>和JS<code>script</code>)</p>
+<li>
+<p><strong>–s</strong>:   爬取静态资源(目前只支持图片<code>img</code>和JS<code>script</code>)</p>
 </li>
-<li><p><strong>-v, -vv</strong>:      详细的输出信息 </p>
+<li>
+<p><strong>-v, -vv</strong>:      详细的输出信息</p>
 </li>
-<li><p><strong>-h</strong>:       帮助</p>
+<li>
+<p><strong>-h</strong>:       帮助</p>
 </li>
 </ul>
-<p>说了这么多<br>最后来一个演示小动画吧:)</p>
+<p>说了这么多<br>
+最后来一个演示小动画吧:)</p>
 <p><img src="https://i.loli.net/2018/10/21/5bcbf4e2841b4.gif" alt="wscan演示"></p>
-<p>欢迎下载使用并提出意见<br><a href="https://github.com/WananpIG/wscan" target="_blank" rel="external">wscan-Github地址</a></p>
+<p>欢迎下载使用并提出意见<br>
+<a href="https://github.com/WananpIG/wscan" target="_blank" rel="external">wscan-Github地址</a></p>
 
       
     </div>
@@ -551,9 +601,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/码代码/" rel="tag"># 码代码</a>
-          
             <a href="/tags/总结/" rel="tag"># 总结</a>
+          
+            <a href="/tags/码代码/" rel="tag"># 码代码</a>
           
         </div>
       
@@ -789,7 +839,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#为何要用协程"><span class="nav-number">1.</span> <span class="nav-text">为何要用协程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#历史"><span class="nav-number">1.0.1.</span> <span class="nav-text">历史</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#线程VS协程"><span class="nav-number">1.0.2.</span> <span class="nav-text">线程VS协程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#The-Infamous-GIL"><span class="nav-number">1.0.3.</span> <span class="nav-text">The Infamous GIL</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#wscan"><span class="nav-number">2.</span> <span class="nav-text">wscan</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#思路"><span class="nav-number">2.0.1.</span> <span class="nav-text">思路</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#细节"><span class="nav-number">2.0.2.</span> <span class="nav-text">细节</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Install"><span class="nav-number">2.0.3.</span> <span class="nav-text">Install</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Usage"><span class="nav-number">2.0.4.</span> <span class="nav-text">Usage</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#为何要用协程"><span class="nav-number">1.</span> <span class="nav-text"> 为何要用协程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#历史"><span class="nav-number">1.0.1.</span> <span class="nav-text"> 历史</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#线程vs协程"><span class="nav-number">1.0.2.</span> <span class="nav-text"> 线程VS协程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#the-infamous-gil"><span class="nav-number">1.0.3.</span> <span class="nav-text"> The Infamous GIL</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#wscan"><span class="nav-number">2.</span> <span class="nav-text"> wscan</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#思路"><span class="nav-number">2.0.1.</span> <span class="nav-text"> 思路</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#细节"><span class="nav-number">2.0.2.</span> <span class="nav-text"> 细节</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#install"><span class="nav-number">2.0.3.</span> <span class="nav-text"> Install</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#usage"><span class="nav-number">2.0.4.</span> <span class="nav-text"> Usage</span></a></li></ol></li></ol></li></ol></div>
             
 
           </div>
