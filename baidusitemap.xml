@@ -4,8 +4,50 @@
 
     
   <url>
+    <loc>https://www.testzero-wz.com/2018/07/08/%E6%98%A5%E6%8B%9B%E9%9A%8F%E7%AC%94/</loc>
+    <lastmod>2020-11-29T13:16:50.143Z</lastmod>
+    <data>
+        <display>
+        <title>春招随笔</title>
+        <pubTime>2018-07-08T10:50:00.000Z</pubTime>
+        
+        <tag>面试</tag>
+         
+         
+           
+             
+              <breadCrumb title="随笔" url="https://www.testzero-wz.com/category/%E9%9A%8F%E7%AC%94/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://www.testzero-wz.com/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/</loc>
+    <lastmod>2020-11-29T11:05:20.299Z</lastmod>
+    <data>
+        <display>
+        <title>大黑阔们是如何帮你发说说的--记一次QQ本地快捷登录漏洞复现</title>
+        <pubTime>2019-01-22T02:19:00.000Z</pubTime>
+        
+        <tag>码代码</tag>
+         
+        <tag>渗透</tag>
+         
+         
+           
+             
+              <breadCrumb title="安全之旅" url="https://www.testzero-wz.com/category/%E5%AE%89%E5%85%A8%E4%B9%8B%E6%97%85/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>https://www.testzero-wz.com/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/</loc>
-    <lastmod>2020-11-29T09:10:48.837Z</lastmod>
+    <lastmod>2020-11-29T09:19:56.332Z</lastmod>
     <data>
         <display>
         <title>基于机器学习的Web日志异常检测实践</title>
@@ -25,28 +67,6 @@
     </url>
 
     
-    
-  <url>
-    <loc>https://www.testzero-wz.com/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/</loc>
-    <lastmod>2020-11-27T09:52:49.840Z</lastmod>
-    <data>
-        <display>
-        <title>记一次QQ本地快捷登录漏洞复现</title>
-        <pubTime>2019-01-22T02:19:00.000Z</pubTime>
-        
-        <tag>码代码</tag>
-         
-        <tag>渗透</tag>
-         
-         
-           
-             
-              <breadCrumb title="安全之旅" url="https://www.testzero-wz.com/category/%E5%AE%89%E5%85%A8%E4%B9%8B%E6%97%85/"/>
-          
-        </display>
-    </data>
-    </url>
-
     
   <url>
     <loc>https://www.testzero-wz.com/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/</loc>
@@ -383,26 +403,6 @@
 
     
   <url>
-    <loc>https://www.testzero-wz.com/2018/07/08/%E6%98%A5%E6%8B%9B%E9%9A%8F%E7%AC%94/</loc>
-    <lastmod>2020-11-27T08:09:07.993Z</lastmod>
-    <data>
-        <display>
-        <title>春招随笔</title>
-        <pubTime>2018-07-08T10:50:00.000Z</pubTime>
-        
-        <tag>面试</tag>
-         
-         
-           
-             
-              <breadCrumb title="随笔" url="https://www.testzero-wz.com/category/%E9%9A%8F%E7%AC%94/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>https://www.testzero-wz.com/2018/03/18/%E5%9F%BA%E4%BA%8ETk%E7%9A%84%E5%A4%9A%E7%BA%BF%E7%A8%8B%E9%80%89%E8%AF%BE%E7%A8%8B%E5%BA%8F/</loc>
     <lastmod>2020-11-27T08:09:07.989Z</lastmod>
     <data>
@@ -552,26 +552,6 @@
            
              
               <breadCrumb title="安全之旅" url="https://www.testzero-wz.com/category/%E5%AE%89%E5%85%A8%E4%B9%8B%E6%97%85/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://www.testzero-wz.com/2099/09/22/Notice/</loc>
-    <lastmod>2020-11-27T08:09:07.969Z</lastmod>
-    <data>
-        <display>
-        <title>Notice</title>
-        <pubTime>2099-09-22T01:14:39.000Z</pubTime>
-        
-        <tag>Notice</tag>
-         
-         
-           
-             
-              <breadCrumb title="随笔" url="https://www.testzero-wz.com/category/%E9%9A%8F%E7%AC%94/"/>
           
         </display>
     </data>
