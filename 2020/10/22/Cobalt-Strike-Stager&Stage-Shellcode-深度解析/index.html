@@ -759,7 +759,7 @@ $$</p>
 <p>开源项目<a href="https://github.com/Sentinel-One/CobaltStrikeParser" target="_blank" rel="noopener">[CobaltStrikeParser]</a>对<strong>解密后的Shellcode</strong>进行配置解析，原本该项目是<strong>用于解析CS dump 内存或PE的</strong>， 现在被我们用来直接解析下载过程中包含的Stage Shellcode（本质上就是解密后的PE文件）。我们直接拿过来封装一层解密以及添加一些Shellcode类型判断即可。</p>
 <p>所谓<strong>磨刀不误砍柴工</strong>，若以后再次抓到样本的通信流量就可以快速地得到CS配置信息，从而快速判断攻 击手法和C&amp;C服务器进行溯源。</p>
 <p>由于32位的shellcode会随即填充一些垃圾数据避免静态查杀，而64位不会，则我们直接用xor64.bin判断是否是64位的shellcode即可。</p>
-<p>效果如下图，详细见附件<strong>cs_stage_parse</strong>：</p>
+<p>效果如下图，<strong>cs_stage_parse</strong>（有时间再上github吧）：</p>
 <p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-深度解析/image-20201022173817069.png" alt="image-20201022173817069"></p>
 <h3 id="3-pe-to-shellcode"><a class="markdownIt-Anchor" href="#3-pe-to-shellcode"></a> 3. PE to Shellcode</h3>
 <p>CS将装载有较完整的恶意功能的PE可执行文件通过<strong>PE_TO_SHELLCODE</strong>技术变成了既可以内存加载执行，也可以像正常EXE文件双击执行的格式。当然，这么做主要还是想将PE文件当做Shellcode执行，从而达到无文件落地目的。</p>
