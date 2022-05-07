@@ -201,60 +201,54 @@
         </header>
 
         <div class="post-content">
-            <h1 id="以蓝队视角看hw手法"><a class="markdownIt-Anchor" href="#以蓝队视角看hw手法"></a> 以蓝队视角看HW手法</h1>
-<h2 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h2>
-<p>HW期间红队采用了大量的攻击手法，如域前置、反向代理服务器、CDN、隐秘隧道以及各类姿势的Shellcode注入、代码执行和木马邮件等等等等。虽然作为防守方，很难知道这些攻击技术的细节和手法，但是我们可以经过一些外部溯源进行再进一步的关联剖析，就能更全面地了解红队真正在使用的手段。毕竟“知己知彼，百战不殆”。</p>
+            <h1 id="以蓝队视角看HW手法"><a href="#以蓝队视角看HW手法" class="headerlink" title="以蓝队视角看HW手法"></a>以蓝队视角看HW手法</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>HW期间红队采用了大量的攻击手法，如域前置、反向代理服务器、CDN、隐秘隧道以及各类姿势的Shellcode注入、代码执行和木马邮件等等等等。虽然作为防守方，很难知道这些攻击技术的细节和手法，但是我们可以经过一些外部溯源进行再进一步的关联剖析，就能更全面地了解红队真正在使用的手段。毕竟“知己知彼，百战不殆”。</p>
 <p>在本文中我们将以截获的两条流量进行展开，讲讲蓝队溯源的思路，学习一下HW过程中出现的手法。</p>
-<h2 id="1-隐匿于cdn背后的cc通信"><a class="markdownIt-Anchor" href="#1-隐匿于cdn背后的cc通信"></a> 1. 隐匿于CDN背后的C&amp;C通信</h2>
-<h3 id="11-案例发现"><a class="markdownIt-Anchor" href="#11-案例发现"></a> 1.1 案例发现</h3>
-<p>2020年HW期间，我们发现了多例利用域前置进行隐匿通信的案例。</p>
+<h2 id="1-隐匿于CDN背后的C-amp-C通信"><a href="#1-隐匿于CDN背后的C-amp-C通信" class="headerlink" title="1. 隐匿于CDN背后的C&amp;C通信"></a>1. 隐匿于CDN背后的C&amp;C通信</h2><h3 id="1-1-案例发现"><a href="#1-1-案例发现" class="headerlink" title="1.1 案例发现"></a>1.1 案例发现</h3><p>2020年HW期间，我们发现了多例利用域前置进行隐匿通信的案例。</p>
 <p>攻击者通过在某云上注册CDN加速服务，利用绑定IP加速不需要认证的漏洞，将高信誉域名重定向到自己的C&amp;C服务器IP。当然，这些高信誉域名并不能和已经在某云CDN服务器中的域名重复，但是可以通过指定二级域名进行规避，即使域名并不属于攻击者，甚至可以是不存在的域名，如<code>never.exit.google.com</code>。</p>
 <p>之后便是域前置的操作，将<code>launcher</code>反连的IP指定为某云CDN服务器，或者可以更加迷惑性一点——指定反连域名为正常使用某云CDN的域名，如<code>cdn.com</code>，受害者机器最终也会拿到某云的CDN服务器IP并连接。在发起的C&amp;C请求中，HTTP头的<code>Host</code>字段需要改成绑定加速的高信誉域名，比如<code>update.***.com</code>，最后CDN服务器拿到请求后会根据<code>Host</code>字段进行转发，与恶意的C&amp;C服务器进行通信。</p>
 <p>如果没接触过域前置，上面的描述可能看起来会有点绕，可以看下面的例子：</p>
-<p><strong>受害者发起使用某云CDN服务的高信誉域名<code>cdn.com</code>的DNS请求，获取到包含CDN服务器IP的响应之后，正常地向该CDN IP发送请求，而请求头中的<code>Host</code>字段修改成了一个伪造的高信誉域名如<code>update.***.com</code>，而CDN服务器会根据<code>Host</code>字段进行转发，将在某云的DNS服务器中寻找伪造的高信誉域名  <code>update.***.com</code>  的IP地址，而某云的DNS服务器之所以能解析<code>update.***.com</code>到C&amp;C服务器的IP地址，是因为上面我们说的漏洞利用操作，最后CDN会获取C&amp;C服务器上的响应并返回给受害者，让受害者认为自己一直在和高信誉的域名<code>cdn.com</code>或HTTP头中的hostname字段，即<code>update.***.com</code>进行通信。</strong></p>
+<p><strong>受害者发起使用某云CDN服务的高信誉域名<code>cdn.com</code>的DNS请求，获取到包含CDN服务器IP的响应之后，正常地向该CDN IP发送请求，而请求头中的<code>Host</code>字段修改成了一个伪造的高信誉域名如`update.*</strong>.com<code>，而CDN服务器会根据</code>Host<code>字段进行转发，将在某云的DNS服务器中寻找伪造的高信誉域名</code>update.<strong><em>.com<code>的IP地址，而某云的DNS服务器之所以能解析</code>update.</em></strong>.com<code>到C&amp;C服务器的IP地址，是因为上面我们说的漏洞利用操作，最后CDN会获取C&amp;C服务器上的响应并返回给受害者，让受害者认为自己一直在和高信誉的域名</code>cdn.com<code>或HTTP头中的hostname字段，即</code>update.<strong>*.com`进行通信。</strong></p>
 <p><img src="/2020/11/12/以蓝队视角看HW手法/Use-Mouyun-for-Domain-Fronting.png" alt="Domain Fronting Using Aliyun"></p>
 <p>如上图所示，在审查流量时看到的只有CDN IP地址、正常采用CDN服务的域名以及<code>Host</code>字段中的高信誉域名，无法获取C&amp;C服务器IP，无法通过简单的BAN IP进行封禁，更无法溯源到攻击者真实的身份，让防守方陷入到“我在明处，而敌人在暗处”的境地，所以域前置技术的运用对于防守方来说无疑是一种巨大的压力。</p>
 <p>其实早有文章披露了CDN加速服务不需要认证，从而导致域前置被滥用的现象。</p>
 <p>Amazon 视白帽子提交的CDN服务的域名认证缺失漏洞为非安全问题（2年前）：</p>
 <blockquote>
-<p>This isn’t really an issue. It’s been reported before by bug bounty hunters and not acknowledged as a cyber security issue.</p>
-<p><a href="https://vincentyiu.com/red-team/domain-fronting/domain-fronting-who-am-i" target="_blank" rel="noopener">https://vincentyiu.com/red-team/domain-fronting/domain-fronting-who-am-i</a></p>
+<p> This isn’t really an issue. It’s been reported before by bug bounty hunters and not acknowledged as a cyber security issue. </p>
+<p> <a href="https://vincentyiu.com/red-team/domain-fronting/domain-fronting-who-am-i" target="_blank" rel="noopener">https://vincentyiu.com/red-team/domain-fronting/domain-fronting-who-am-i</a></p>
 </blockquote>
 <p>国内安全人员也指出某云存在同样的问题：</p>
 <blockquote>
 <p>但由于某云有一个有趣的特点：当 CDN 配置中的源 IP 为自己云的服务器时，加速时会跳过对域名的检验，直接与配置中的域名绑定的源服务器IP进行通信</p>
 <p><a href="https://www.anquanke.com/post/id/195011" target="_blank" rel="noopener">https://www.anquanke.com/post/id/195011</a></p>
 </blockquote>
-<h3 id="12-域前置判断"><a class="markdownIt-Anchor" href="#12-域前置判断"></a> 1.2 域前置判断</h3>
-<p>由于防守方很难通过CDN厂商拿到C&amp;C服务器的IP，故我们先将溯源暂且搁置一边，首先看看我们如何判断该流量利用了域前置的手法。</p>
+<h3 id="1-2-域前置判断"><a href="#1-2-域前置判断" class="headerlink" title="1.2 域前置判断"></a>1.2 域前置判断</h3><p>由于防守方很难通过CDN厂商拿到C&amp;C服务器的IP，故我们先将溯源暂且搁置一边，首先看看我们如何判断该流量利用了域前置的手法。</p>
 <p>首先，先是CS通用检测通过其流量特征使其败露，将其标黑，有了根本的判断数据。虽然攻击队自定义了<code>Beacon</code>通信的配置文件<code>profile</code>，但是我们仍然能将其检出。于是我们得到了一条这样的流量：</p>
-<pre class="highlight"><code class="http"><span class="keyword">GET</span> <span class="string">/require-jquery.js</span> HTTP/1.0
-<span class="attribute">Host</span>: static.***.com
-<span class="attribute">Accept</span>: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
-<span class="attribute">Referer</span>: https://static.aliyun.com/
-<span class="attribute">Accept-Encoding</span>: gzip, deflate
-<span class="attribute">User-Agent</span>: Mozilla/5.0 (Windows Chrome NT 6.3; AppleWebKit/537.36; rv:11.0) like Gecko
-<span class="attribute">Connection</span>: Keep-Alive
-<span class="attribute">Pragma</span>: no-cache
+<pre><code class="lang-http">GET /require-jquery.js HTTP/1.0
+Host: static.***.com
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Referer: https://static.aliyun.com/
+Accept-Encoding: gzip, deflate
+User-Agent: Mozilla/5.0 (Windows Chrome NT 6.3; AppleWebKit/537.36; rv:11.0) like Gecko
+Connection: Keep-Alive
+Pragma: no-cache
 </code></pre>
 <p>我们如何判断这条CS流量是不是域前置呢？</p>
 <p>单从流量上看很难判断是否使用了域前置，网上目前的检测思路是基于<code>Host</code>字段与HTTPS握手中的SNI（Server Name Indicator）字段或者配合RDNS拿到的域名进行匹配，观察请求域名和<code>Host</code>域名是否一致。前者需要TLS解密审计，后者需要RDNS记录，都比较难以简单地完成，更何况目前我们并不具备这些条件。</p>
 <p>换个思路，既然内部RDNS未完成则我们可以借助外部RDNS记录。取出这条请求的目的IP地址查询威胁情报库的RDNS记录，发现该IP被大量的域名解析过，由此猜测该IP对应的服务器应该是一个CDN服务器。</p>
 <p><img src="/2020/11/12/以蓝队视角看HW手法/image-20201117093150610.png" alt="image-20201117093150610"></p>
 <p>将这些域名选取一条出来查询DNS记录，会发现域名都通过CNAME指向了<code>kunlun**.com</code>，也是CDN接入的常规操作。</p>
-<pre class="highlight"><code class="">$ nslookup img0.jiaheu.com 8.8.8.8
-Server:		8.8.8.8
-Address:	8.8.8.8#53
+<pre><code>$ nslookup img0.jiaheu.com 8.8.8.8
+Server:        8.8.8.8
+Address:    8.8.8.8#53
 
 Non-authoritative answer:
-img0.jiaheu.com	canonical name = img0.jiaheu.com.w.kunlunar.com.
-Name:	img0.jiaheu.com.w.kunlunar.com
+img0.jiaheu.com    canonical name = img0.jiaheu.com.w.kunlunar.com.
+Name:    img0.jiaheu.com.w.kunlunar.com
 Address: 58.215.145.152
-</code></pre>
-<p>通过搜索引擎不难查出域名<code>kunlun**.com</code>均为某云CDN域名。或者我们可以查看该IP的SSL证书，一般CDN服务器的SSL证书的<code>Subject</code>字段都会显示出自己所属的厂商：<img src="/2020/11/12/以蓝队视角看HW手法/image-20201117094313566.png" alt="image-20201117094313566"></p>
+</code></pre><p>通过搜索引擎不难查出域名<code>kunlun**.com</code>均为某云CDN域名。或者我们可以查看该IP的SSL证书，一般CDN服务器的SSL证书的<code>Subject</code>字段都会显示出自己所属的厂商：<img src="/2020/11/12/以蓝队视角看HW手法/image-20201117094313566.png" alt="image-20201117094313566"></p>
 <p>接下来我们挖一下<code>Host</code>字段的域名<code>static.***.com</code>。</p>
 <p>该域名在正常的DNS服务器下无法得到A记录，只能查询到顶级域名<code>miscrosoft.com.</code>，而在某云的DNS服务器上能找到对应的A记录，说明该域名很可能只在某云上配置生效。如何配置参考文章：<a href="https://vincentyiu.com/red-team/domain-fronting/alibaba-cdn-domain-fronting" target="_blank" rel="noopener">alibaba-cdn-domain-fronting</a>。</p>
-<pre class="highlight"><code class="bash">$ dig -t A static.***.com 
+<pre><code class="lang-bash">$ dig -t A static.***.com 
 
 ;; OPT PSEUDOSECTION:
 ; EDNS: version: 0, flags:; udp: 1232
@@ -273,8 +267,7 @@ $ dig -t A static.***.com. @ns3.kunlungr.com
 static.***.com.   60      IN      A       223.144.130.224
 </code></pre>
 <p>而获得的A记录<code>223.144.130.224</code>也仅仅是某云CDN的另一个服务器的IP。</p>
-<h3 id="13-继续深挖"><a class="markdownIt-Anchor" href="#13-继续深挖"></a> 1.3 继续深挖</h3>
-<p>威胁情报会将恶意请求的域名和IP和恶意样本关联，那么一般的操作是将请求中的<code>Host</code>字段提取出来作为URL的一部分进行关联，故尝试在威胁情报库中搜寻域名<code>static.***.com</code>，很幸运地关联到了一个已知样本（样本扫描日期已更新，实际上第一次扫描在HW期间），看样子是被防守方查杀后上传的。</p>
+<h3 id="1-3-继续深挖"><a href="#1-3-继续深挖" class="headerlink" title="1.3 继续深挖"></a>1.3 继续深挖</h3><p>威胁情报会将恶意请求的域名和IP和恶意样本关联，那么一般的操作是将请求中的<code>Host</code>字段提取出来作为URL的一部分进行关联，故尝试在威胁情报库中搜寻域名<code>static.***.com</code>，很幸运地关联到了一个已知样本（样本扫描日期已更新，实际上第一次扫描在HW期间），看样子是被防守方查杀后上传的。</p>
 <p><img src="/2020/11/12/以蓝队视角看HW手法/image-20201118094638474.png" alt="image-20201118094638474"></p>
 <p>简单地逆向查看一下该样本，发现是一个用Go写的Shellcode加载器，基本逻辑是将shellcode加载进内存，异或解密，再申请空间执行之，很常规的Shellcode操作。</p>
 <p><img src="/2020/11/12/以蓝队视角看HW手法/image-20201117200440645.png" alt="image-20201117200440645"></p>
@@ -285,7 +278,7 @@ static.***.com.   60      IN      A       223.144.130.224
 <p>有了请求的URL，我们就可以通过CDN将Stage下载回来分析其配置文件。</p>
 <p><img src="/2020/11/12/以蓝队视角看HW手法/image-20201118094444316.png" alt="image-20201118094444316"></p>
 <p>简单地写一个针对流量中Stage的解析脚本：</p>
-<pre class="highlight"><code class="">$ parse_stage.py &quot;e4d92f233e943107f7f013b589663445c85f696697fd71a631c96951aa98fce6&quot;
+<pre><code>$ parse_stage.py &quot;e4d92f233e943107f7f013b589663445c85f696697fd71a631c96951aa98fce6&quot;
 [+] Trying offset:  0
 [*] Arch: &lt;x64&gt;
 [*] File Mode: &lt;raw&gt;
@@ -303,7 +296,7 @@ MaxGetSize                       - 1404939
 Jitter                           - 37
 MaxDNS                           - 255
 PublicKey                        - b&quot;0\x81\x9f0\r\x06\t*\x86H\x86\xf7\r\x01\x01\x01\x05\x00\x03\x81\x8d\x000\x81\x89\x02\x81\x81\x00\x87\x05\xa4\xf07#-4\x03\x16\xe4\xc5l\xb1\x9b\x01y_\x88\x8a\xf86E\xe5-\xaf\xb1\xb5\xad\xfc\x
-af^\xd4%\xb1\x8ay\xac-\x14#\xa7:{\x8ag\xc6\x8c\n\x1b!\xc1\x96\xbe\x96\xd3\xbf2\xfd\xefx\x16\x02\xc5\xd0S\xee\xfc\x98w6y\x17\x97\xa5R\xc2OQ\xebT[\x87T}\x1e\xc3T?Cc\xe1\xb7S\t\xe5\x10\x08;.\xb7+\xc2\x1bnG\x9d\xf8!\xc5\xc5'n\xf
+af^\xd4%\xb1\x8ay\xac-\x14#\xa7:{\x8ag\xc6\x8c\n\x1b!\xc1\x96\xbe\x96\xd3\xbf2\xfd\xefx\x16\x02\xc5\xd0S\xee\xfc\x98w6y\x17\x97\xa5R\xc2OQ\xebT[\x87T}\x1e\xc3T?Cc\xe1\xb7S\t\xe5\x10\x08;.\xb7+\xc2\x1bnG\x9d\xf8!\xc5\xc5&#39;n\xf
 7O\xc8k\xc8\x9f\x1c\x86,E.\xba\xc6\xfb/\x02\x03\x01\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
 x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00&quot;
 C2Server                         - ftp.xxx.com,/require-jquery-v1.js
@@ -320,7 +313,7 @@ HttpPost_Metadata                - Accept: text/html,application/xhtml+xml,appli
                                    Referer: http://cdn.bootcss.com/
                                    Accept-Encoding: gzip, deflate
                                    __cfduid
-SpawnTo                          - b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+SpawnTo                          - b&#39;\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00&#39;
 PipeName                         -
 DNS_Idle                         - 114.114.114.114
 DNS_Sleep                        - 0
@@ -355,12 +348,10 @@ ProcInject_Execute               - CreateThread
 ProcInject_AllocationMethod      - VirtualAllocEx
 bUsesCookies                     - True
 HostHeader                       - Host: static.***.com
-
-</code></pre>
-<p>不难看出，攻击队重新修改了网络流传的jquery配置文件，将C&amp;C流量伪装成jquery流量，并且加入了一些HTTP头，如<code>Referer: https://static.aliyun.com/</code>， <code>Referer: http://cdn.bootcss.com/</code>使得流量更接近真实的静态文件，并且这个配置文件完全符合我们之前抓到的CS流量所有特征。</p>
+</code></pre><p>不难看出，攻击队重新修改了网络流传的jquery配置文件，将C&amp;C流量伪装成jquery流量，并且加入了一些HTTP头，如<code>Referer: https://static.aliyun.com/</code>， <code>Referer: http://cdn.bootcss.com/</code>使得流量更接近真实的静态文件，并且这个配置文件完全符合我们之前抓到的CS流量所有特征。</p>
 <p>于是我们有了新的收获——用于伪装通信的高信誉域名<code>ftp.xxx.com</code>。（伪装成另一高信誉域名）</p>
-<h3 id="14-样本关联"><a class="markdownIt-Anchor" href="#14-样本关联"></a> 1.4 样本关联</h3>
-<p>进一步的，我们拿到了更多的投递样本，可以看到基本都是恶意MSI包或者Go shellcode loader。而文件的名字明显是利用鱼叉邮件投递恶意文件而取的迷惑性文件名。</p>
+<h3 id="1-4-样本关联"><a href="#1-4-样本关联" class="headerlink" title="1.4 样本关联"></a>1.4 样本关联</h3><p>进一步的，我们拿到了更多的投递样本，可以看到基本都是恶意MSI包或者Go shellcode loader。而文件的名字明显是利用鱼叉邮件投递恶意文件而取的迷惑性文件名。</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -392,30 +383,23 @@ HostHeader                       - Host: static.***.com
 </tr>
 </tbody>
 </table>
+</div>
 <p>这些样本全都使用了域前置技术，并且大多数都使用了Go语言编译成可执行文件，放进MSI或者以其他手段组合投递。</p>
-<h3 id="15-案例总结"><a class="markdownIt-Anchor" href="#15-案例总结"></a> 1.5 案例总结</h3>
-<ol>
-<li>
-<p>域前置技术仍被红队大量使用，其一般情况下无法溯源（有CDN内部人员除外），只能通过一些其他的层面暴露出更多细节才能继续跟踪，如样本之间的关联性，关联到更多域名，甚至是攻击测试早期域名；又如样本细节暴露攻击者身份，像制作工具时留下的一些路径信息等；</p>
+<h3 id="1-5-案例总结"><a href="#1-5-案例总结" class="headerlink" title="1.5 案例总结"></a>1.5 案例总结</h3><ol>
+<li><p>域前置技术仍被红队大量使用，其一般情况下无法溯源（有CDN内部人员除外），只能通过一些其他的层面暴露出更多细节才能继续跟踪，如样本之间的关联性，关联到更多域名，甚至是攻击测试早期域名；又如样本细节暴露攻击者身份，像制作工具时留下的一些路径信息等；</p>
 </li>
-<li>
-<p>域前置技术无法通过封IP等简单粗暴的封禁手段阻止其通信，应到受控主机上进行对应的查杀手段；</p>
+<li><p>域前置技术无法通过封IP等简单粗暴的封禁手段阻止其通信，应到受控主机上进行对应的查杀手段；</p>
 </li>
-<li>
-<p>Go shellcode加载器的运用，可能是因为当前杀软对Go语言编译成的可执行文件还不能很好的支持。</p>
+<li><p>Go shellcode加载器的运用，可能是因为当前杀软对Go语言编译成的可执行文件还不能很好的支持。</p>
 <p><a href="http://www.smatrix.org/forum/forum.php?mod=viewthread&amp;tid=104" target="_blank" rel="noopener"> <strong>远控免杀专题(32)-Go加载shellcode免杀-3种方式(VT免杀率7-70)</strong> </a></p>
 </li>
-<li>
-<p>CDN厂商应在注册服务时，验证域名的归属，否则大量高信誉域名的伪装通信（甚至加上HTTPS时，你甚至检测不出该流量是否为恶意流量），会让更多的攻击者隐藏在CDN身后进行攻击，给溯源造成极大困难。</p>
+<li><p>CDN厂商应在注册服务时，验证域名的归属，否则大量高信誉域名的伪装通信（甚至加上HTTPS时，你甚至检测不出该流量是否为恶意流量），会让更多的攻击者隐藏在CDN身后进行攻击，给溯源造成极大困难。</p>
 </li>
-<li>
-<p>题外话：对于CDN厂商来说，第1、2点的难题是不存在的，而是存在于外部安全人员，甚至是使用CDN服务的客户们。</p>
+<li><p>题外话：对于CDN厂商来说，第1、2点的难题是不存在的，而是存在于外部安全人员，甚至是使用CDN服务的客户们。</p>
 </li>
 </ol>
-<h2 id="2-某省级hw"><a class="markdownIt-Anchor" href="#2-某省级hw"></a> 2. 某省级HW</h2>
-<p>不同于上面所述的案例，这次的主角没有使用域前置或转发服务器等隐匿技术，由CS流量检测暴露了通信IP，进而遭到“反制”，溯源到个人，这是红队极力避免出现的情况。</p>
-<h3 id="21-反制思路"><a class="markdownIt-Anchor" href="#21-反制思路"></a> 2.1 反制思路</h3>
-<p>简单地说一下反制思路：</p>
+<h2 id="2-某省级HW"><a href="#2-某省级HW" class="headerlink" title="2. 某省级HW"></a>2. 某省级HW</h2><p>不同于上面所述的案例，这次的主角没有使用域前置或转发服务器等隐匿技术，由CS流量检测暴露了通信IP，进而遭到“反制”，溯源到个人，这是红队极力避免出现的情况。</p>
+<h3 id="2-1-反制思路"><a href="#2-1-反制思路" class="headerlink" title="2.1 反制思路"></a>2.1 反制思路</h3><p>简单地说一下反制思路：</p>
 <ol>
 <li>虽然自定义了CobaltStrike配置文件，但仍检出为Beacon流量。由于未使用隐藏技术，我们直接得到真实的TeamServer IP地址；</li>
 <li>扫描TeamServer发现诸多开放服务，其中就包括CS TeamServer通信端口；</li>
@@ -430,8 +414,7 @@ HostHeader                       - Host: static.***.com
 <p>在Redirector服务器上，一般会验证请求的有效性，减少暴露的风险。如检查HTTP请求资源，HTTP头，Cookie等，若是不符合则重定向到类似于<code>google.com</code>这样的正常域名，否则重定向到TeamServer。而TeamServer作为最后一道防线，也会进行加固，如设置Iptables，仅允许Redirector服务器连接C2通信端口，防止互联网引擎扫描获取到额外的信息；也会设置只有指定的IP才能和TeamServer的控制交互端口进行连接，防止类似控制通信端口暴露在互联网中。</p>
 <p>此处可以参考<a href="https://wikileaks.org/vault8/" target="_blank" rel="noopener">维基解密披露</a>的CIA Hive工具的通信基础设施架构：</p>
 <p><img src="/2020/11/12/以蓝队视角看HW手法/hive.png" alt="hive"></p>
-<h3 id="22-反制步骤"><a class="markdownIt-Anchor" href="#22-反制步骤"></a> 2.2 反制步骤</h3>
-<p>由于直接得到了TeamServer的IP，于是我们的扫描、渗透流程就简单得多了。</p>
+<h3 id="2-2-反制步骤"><a href="#2-2-反制步骤" class="headerlink" title="2.2 反制步骤"></a>2.2 反制步骤</h3><p>由于直接得到了TeamServer的IP，于是我们的扫描、渗透流程就简单得多了。</p>
 <p>通过扫描端口发现CS 控制端口被更改过，并且证书签名也是自定义过的，说明是有一些防止溯源的措施的，但是疏漏了一点：TeamServer 的通信密码。</p>
 <p>通过一段时间的TeamServer通信密码暴破，我们进入到了Cobalt Strike的控制面板中（密码看起来并不弱，但实际上很弱）。</p>
 <p><img src="/2020/11/12/以蓝队视角看HW手法/pannel.png" alt="pannel"></p>
@@ -446,8 +429,7 @@ HostHeader                       - Host: static.***.com
 <p>同时，我们也发现攻击队确实喜欢使用<code>frp</code>和<code>xsocks</code>等代理工具，也会使用一些常见的漏扫工具，比如fscan和otter_scan，还有域内信息搜集工具bloodhunt（这个工具动静比较大，用的人基本上都收获了一堆警告）。</p>
 <p>从收获而来的样本来看，大多数都是经过upx加壳的Go Shellcode加载器，基本都是<a href="https://github.com/sh4hin/GoPurple" target="_blank" rel="noopener">sh4hin - GoPurple</a>以及<a href="https://github.com/C-Sto/BananaPhone" target="_blank" rel="noopener">C-Sto -  BananaPhone</a>。</p>
 <p>再一次验证了，Go Shellcode加载器的运用确实非常多。</p>
-<h3 id="23-溯源信息"><a class="markdownIt-Anchor" href="#23-溯源信息"></a> 2.3 溯源信息</h3>
-<p>拿到了真实姓名拼音，后续的溯源倒是挺顺的。由于是安全从业者，几个知名的安全论坛和知乎都发现了他的ID，并且发现此人之前活跃各类路由器和硬件论坛，这些陈年烂谷子也能翻出非常多的个人信息，毕竟“互联网是有记忆的”。</p>
+<h3 id="2-3-溯源信息"><a href="#2-3-溯源信息" class="headerlink" title="2.3 溯源信息"></a>2.3 溯源信息</h3><p>拿到了真实姓名拼音，后续的溯源倒是挺顺的。由于是安全从业者，几个知名的安全论坛和知乎都发现了他的ID，并且发现此人之前活跃各类路由器和硬件论坛，这些陈年烂谷子也能翻出非常多的个人信息，毕竟“互联网是有记忆的”。</p>
 <p>一般拿到邮箱、QQ和微信这种强相关的信息，拿到手机号码就比较轻松了，拿到手机之后，一般也会通过支付宝进行验证，这些手段都很常见，就不一一列举了。当然，想要拿到身份证这类更隐私的信息，一个得看他有没有参加什么比赛公开过信息，或者证书、专利之类的，另一个就是看所谓的“社工库”和你的搜寻技巧了。</p>
 <p>此步骤所获信息仅通过正常的搜索引擎搜寻获得，未经过“社工库”的查询：</p>
 <p><img src="/2020/11/12/以蓝队视角看HW手法/info.png" alt="info"></p>
@@ -522,20 +504,5 @@ HostHeader                       - Host: static.***.com
 <script>hljs.highlightAll();</script>
 
     </div>
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-        tex2jax: {
-            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-            processEscapes: true
-        }
-    });
-    MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax();
-        for (var i = 0; i < all.length; ++i)
-            all[i].SourceElement().parentNode.className += ' has-jax';
-    });
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 </body>
 </html>

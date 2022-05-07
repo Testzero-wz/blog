@@ -201,27 +201,19 @@
         </header>
 
         <div class="post-content">
-            <p><img src="/2017/11/20/2017-LCTF-use_your_IDA/151145228598.jpg" alt=""></p>
-<a id="more"></a>
+            <p><img src="/2017/11/20/2017-LCTF-use_your_IDA/151145228598.jpg" alt=""><br><a id="more"></a></p>
 <blockquote>
-<p>一个很有质量的比赛，题目都是花了心思，且有专门的人维护的，很用心，点赞</p>
+<p> 一个很有质量的比赛，题目都是花了心思，且有专门的人维护的，很用心，点赞</p>
 </blockquote>
-<h1 id="引言"><a class="markdownIt-Anchor" href="#引言"></a> 引言</h1>
-<p>最近学习了一些 win32 的皮毛，正好有个LCTF的比赛，故专门找逆向来做，连web老本行都没做(其实是不会做，题目很有水准)，本来想做几题的，没想到逆向第一题就这么有质量，近乎花了一天时间才做出来，不得不说这个比赛很用心</p>
-<h1 id="use_your_ida"><a class="markdownIt-Anchor" href="#use_your_ida"></a> use_your_IDA</h1>
-<p>拿到题目丢PEiD,并无异样</p>
+<h1 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h1><p>最近学习了一些 win32 的皮毛，正好有个LCTF的比赛，故专门找逆向来做，连web老本行都没做(其实是不会做，题目很有水准)，本来想做几题的，没想到逆向第一题就这么有质量，近乎花了一天时间才做出来，不得不说这个比赛很用心</p>
+<h1 id="use-your-IDA"><a href="#use-your-IDA" class="headerlink" title="use_your_IDA"></a>use_your_IDA</h1><p>拿到题目丢PEiD,并无异样</p>
 <p><img src="/2017/11/20/2017-LCTF-use_your_IDA/12-34-06.jpg" alt=""></p>
-<p>一个win32 Console 程序<br>
-尝试运行，要求输入flag，输入即flag，很常规的逆向套路</p>
+<p>一个win32 Console 程序<br>尝试运行，要求输入flag，输入即flag，很常规的逆向套路</p>
 <p><img src="/2017/11/20/2017-LCTF-use_your_IDA/12-35-47.jpg" alt=""></p>
-<p>既然没壳，直接上IDA和Ollydbg看看，动静结合嘛<br>
-上IDA流程图</p>
+<p>既然没壳，直接上IDA和Ollydbg看看，动静结合嘛<br>上IDA流程图</p>
 <p><img src="/2017/11/20/2017-LCTF-use_your_IDA/12-48-53.jpg" alt=""></p>
-<p>首先看到printf了欢迎词，然后调用了两个函数<code>sub_40108F</code>和<code>sub_4010A1</code>,随后判断内存里Key_word的值是否为零，为零就成功打印Congratulation!，不是则打印Wrong!<br>
-不要问我这些函数你打开之后不是这个名字，当然是因为我分析了功能之后修改了函数名啊。。。<br>
-通过在Ollydbg里面修改寄存器和跳转，到达测试函数单步调试然后查看效果就好了，这个方法比纯静态的方法快，也能更直观地观察到函数作用<br>
-首先看一下第一个函数<code>sub_40108F</code></p>
-<pre class="highlight"><code class="asm">sub_40108F      proc near
+<p>首先看到printf了欢迎词，然后调用了两个函数<code>sub_40108F</code>和<code>sub_4010A1</code>,随后判断内存里Key_word的值是否为零，为零就成功打印Congratulation!，不是则打印Wrong!<br>不要问我这些函数你打开之后不是这个名字，当然是因为我分析了功能之后修改了函数名啊。。。<br>通过在Ollydbg里面修改寄存器和跳转，到达测试函数单步调试然后查看效果就好了，这个方法比纯静态的方法快，也能更直观地观察到函数作用<br>首先看一下第一个函数<code>sub_40108F</code></p>
+<pre><code class="lang-asm">sub_40108F      proc near
 .text:0040108F                 push    ebp
 .text:00401090                 mov     ebp, esp
 .text:00401092                 sub     esp, 13h
@@ -231,9 +223,8 @@
 .text:0040109F                 pop     ebp
 .text:004010A0                 retn
 </code></pre>
-<p>申请了<code>0x13</code>即19个字节的栈空间，然后将栈地址作为参数传入<code>sub_43B3E8</code><br>
-再来看看函数<code>sub_43B3E8</code></p>
-<pre class="highlight"><code class="asm">.text:0043B3E8 sub_43B3E8      proc near           
+<p>申请了<code>0x13</code>即19个字节的栈空间，然后将栈地址作为参数传入<code>sub_43B3E8</code><br>再来看看函数<code>sub_43B3E8</code></p>
+<pre><code class="lang-asm">.text:0043B3E8 sub_43B3E8      proc near           
 ;存各个寄存器，最后一个存eax,里面有一个刚才申请的栈地址  
 .text:0043B3E8                 push    ebx
 .text:0043B3E9                 push    ecx
@@ -271,25 +262,17 @@
 .text:0043B43B sub_43B3E8      endp
 </code></pre>
 <p>有了上次解题的经验可以看出此处有溢出漏洞，栈只有19个字节，但是读取起码有255个字节，但是目前还不知道怎么用，姑且留着备用</p>
-<p>在分析下一个函数<code>sub_4010A1</code>之前来看一下影响Key_word的代码在哪<br>
-Key_word初始化为2</p>
+<p>在分析下一个函数<code>sub_4010A1</code>之前来看一下影响Key_word的代码在哪<br>Key_word初始化为2</p>
 <p><img src="/2017/11/20/2017-LCTF-use_your_IDA/14-44-52.jpg" alt=""></p>
 <p><img src="/2017/11/20/2017-LCTF-use_your_IDA/14-43-27.jpg" alt=""></p>
-<p><img src="/2017/11/20/2017-LCTF-use_your_IDA/14-43-41.jpg" alt=""><br>
-可以看到在函数<code>sub_4010A1</code>中对<code>Key_word</code>的操作只是加一减一，并不能将<code>Key_word</code>变成0<br>
-观察到最后一行有一个操作是将<code>Key_word</code>减二的操作，但是地址在<code>42f90E</code>,所以我们不难猜测，出题人的思路就是故意留出溢出漏洞，让我们找到正确的检验函数地址然后通过检验输入值，然后得到flag<br>
-通过简单地观察函数<code>sub_4010A1</code>，不难看出无论你输入啥，都会跳转到<code>Wrong</code>函数，然后输出<code>Wrong!</code>，程序退出，这也验证了我们的想法<br>
-那么，是不是有点熟悉的味道？</p>
+<p><img src="/2017/11/20/2017-LCTF-use_your_IDA/14-43-41.jpg" alt=""><br>可以看到在函数<code>sub_4010A1</code>中对<code>Key_word</code>的操作只是加一减一，并不能将<code>Key_word</code>变成0<br>观察到最后一行有一个操作是将<code>Key_word</code>减二的操作，但是地址在<code>42f90E</code>,所以我们不难猜测，出题人的思路就是故意留出溢出漏洞，让我们找到正确的检验函数地址然后通过检验输入值，然后得到flag<br>通过简单地观察函数<code>sub_4010A1</code>，不难看出无论你输入啥，都会跳转到<code>Wrong</code>函数，然后输出<code>Wrong!</code>，程序退出，这也验证了我们的想法<br>那么，是不是有点熟悉的味道？</p>
 <p>是的，看雪CTF的第二题(我上篇文章分析的题)的思路！</p>
 <p><img src="/2017/11/20/2017-LCTF-use_your_IDA/20-33-51.jpg" alt=""></p>
-<h2 id="寻找突破口"><a class="markdownIt-Anchor" href="#寻找突破口"></a> 寻找突破口</h2>
-<p>经过一阵查找，发现了一个函数将内存改来改去，然后最后执行了一个将<code>Key_word</code>-2的操作，然后跳回到了我们原来的主函数比较<code>Key_word</code>的地方<br>
-确定是这里没错了</p>
+<h2 id="寻找突破口"><a href="#寻找突破口" class="headerlink" title="寻找突破口"></a>寻找突破口</h2><p>经过一阵查找，发现了一个函数将内存改来改去，然后最后执行了一个将<code>Key_word</code>-2的操作，然后跳回到了我们原来的主函数比较<code>Key_word</code>的地方<br>确定是这里没错了</p>
 <p><img src="/2017/11/20/2017-LCTF-use_your_IDA/14-59-03.jpg" alt=""></p>
 <p>构造函数跳过来吧</p>
-<p>地址是<code>413142</code>，由上面我们分析的溢出漏洞，我们可以在函数<code>sub_40108F</code>的<code>return</code>处构造地址，很容易得出跳转的payload<br>
-<code>19*&quot;1&quot;+'abcd'+B1A</code></p>
-<pre class="highlight"><code class="asm">.text:0040108F sub_40108F      proc near             
+<p>地址是<code>413142</code>，由上面我们分析的溢出漏洞，我们可以在函数<code>sub_40108F</code>的<code>return</code>处构造地址，很容易得出跳转的payload<br><code>19*&quot;1&quot;+&#39;abcd&#39;+B1A</code></p>
+<pre><code class="lang-asm">.text:0040108F sub_40108F      proc near             
 .text:0040108F                 push    ebp
 .text:00401090                 mov     ebp, esp
 .text:00401092                 sub     esp, 13h
@@ -300,13 +283,14 @@ Key_word初始化为2</p>
 .text:004010A0                 retn
 .text:004010A0 sub_40108F      endp
 
+`
 </code></pre>
-<pre class="highlight"><code class="python"><span class="number">1111111111111111111</span>abcdB1A <span class="comment">#其中B1A为地址413142对应的小端存储ASCLL码，abcd为40109F 处pop的ebp，然后才是return，所以要加上4位数给它pop，然后return就可以跳到我们想要的地方</span>
+<pre><code class="lang-python">1111111111111111111abcdB1A #其中B1A为地址413142对应的小端存储ASCLL码，abcd为40109F 处pop的ebp，然后才是return，所以要加上4位数给它pop，然后return就可以跳到我们想要的地方
 </code></pre>
 <p>当我们跳转到地址为<code>413142</code>的地方执行的时候，我们发现，这仍然是一个检验flag的函数，重点是，它离咱们的目标——<code>Key_word</code>-2 有3万+行汇编代码</p>
 <p>emmmmmmmm…</p>
 <p>先不管，我们先把这段超长的函数分析一下结构</p>
-<pre class="highlight"><code class="asm">
+<pre><code class="lang-asm">
 .text:00413142                 mov     ebp, esp
 .text:00413144                 sub     esp, 1Ch
 .text:00413147                 mov     ebx, esp
@@ -345,15 +329,12 @@ Key_word初始化为2</p>
 .text:004131B4                 xor     eax, 2Fh
 .text:004131B7                 mov     [ebx+2], al
 </code></pre>
-<p>接下来的函数全是这种将栈内的数取出来，加一个数或减去另外一个数，重复几次加减，然后异或一下再存回去原来的位置<br>
-逻辑简单是简单，主要还是太长的，几万行代码。。。我的天？</p>
+<p>接下来的函数全是这种将栈内的数取出来，加一个数或减去另外一个数，重复几次加减，然后异或一下再存回去原来的位置<br>逻辑简单是简单，主要还是太长的，几万行代码。。。我的天？</p>
 <p>在Ollydbg中运行trace来跟踪跳转后这个函数到底干嘛了(我不会说我一开始是用二分法分析函数的。。。)</p>
-<p><img src="/2017/11/20/2017-LCTF-use_your_IDA/15-33-30.jpg" alt=""><br>
-注意到，前面都是一些所谓的加减异或来加密我们输入的数值，然后在地址<br>
-<code>42EE4A</code>处我们发现了跳转函数，让我们输出了Wrong!</p>
+<p><img src="/2017/11/20/2017-LCTF-use_your_IDA/15-33-30.jpg" alt=""><br>注意到，前面都是一些所谓的加减异或来加密我们输入的数值，然后在地址<br><code>42EE4A</code>处我们发现了跳转函数，让我们输出了Wrong!</p>
 <p><img src="/2017/11/20/2017-LCTF-use_your_IDA/15-33-47.jpg" alt=""></p>
 <p>跳转到此函数分析</p>
-<pre class="highlight"><code class="asm">0042EE36     mov ecx,0x3    ;三次循环
+<pre><code class="lang-asm">0042EE36     mov ecx,0x3    ;三次循环
 0042EE3B     mov edx,0x0    ;偏移置零
 0042EE40     mov eax,dword ptr ds:[edx+0x43F058] ;将内存中某个位置的值取出放入eax
 0042EE46     cmp dword ptr ds:[edx+ebx+0x1],eax     ;比较我们输入的前四位
@@ -361,90 +342,84 @@ Key_word初始化为2</p>
 0042EE50     add edx,0x4
 0042EE53     loopd short use_your.0042EE40  ;循环
 </code></pre>
-<p>不难看出，这段函数检验了我们输入的前12个输入<br>
-我们发现<code>ds:[0x43F058]</code>处的值是定值(可以结合查看静态IDA得到结论）<br>
-那么我们现在的思路就是逆向加密函数，然后再和结果配对</p>
+<p>不难看出，这段函数检验了我们输入的前12个输入<br>我们发现<code>ds:[0x43F058]</code>处的值是定值(可以结合查看静态IDA得到结论）<br>那么我们现在的思路就是逆向加密函数，然后再和结果配对</p>
 <p>那么问题来了，这么长的函数我们怎么办</p>
 <p>又没有哪个脚本可以直接定位到这个跳转函数不运行然后通过ollydbg里面的代码直接爆破</p>
 <p><strong>陷入僵局</strong></p>
-<h2 id="破釜沉舟"><a class="markdownIt-Anchor" href="#破釜沉舟"></a> 破釜沉舟</h2>
-<p>既然这么多代码，结合我之前用python处理过很多数据，那我就将你当成数据处理的题目，把加减、异或等操作分析出来，然后用python进行运算，将输入进行爆破<br>
-其实我心里也没谱，毕竟这么新奇的做法，反正也当练手，无所谓了</p>
+<h2 id="破釜沉舟"><a href="#破釜沉舟" class="headerlink" title="破釜沉舟"></a>破釜沉舟</h2><p>既然这么多代码，结合我之前用python处理过很多数据，那我就将你当成数据处理的题目，把加减、异或等操作分析出来，然后用python进行运算，将输入进行爆破<br>其实我心里也没谱，毕竟这么新奇的做法，反正也当练手，无所谓了</p>
 <ol>
 <li>将加密函数的代码从Olldbg中(也可以在IDA里面)复制出来，放人一个文本</li>
 <li>写脚本分析文本内对每个栈内数据进行的加减、异或等操作</li>
 <li>运算得出结果，与内存中提取出来的数据进行比对，不对则改变输入，继续运算，直到匹配为止</li>
 </ol>
-<pre class="highlight"><code class="python"><span class="comment">#coding:utf-8</span>
-<span class="keyword">import</span> re
-check_list = [<span class="number">0x666</span>,<span class="number">0xF2</span> ,<span class="number">0x6E</span> ,<span class="number">0xD1</span>,<span class="number">0xB1</span> ,<span class="number">0x7E</span>, <span class="number">0x8B</span> ,<span class="number">0x3E</span> ,<span class="number">0x8E</span> ,<span class="number">0xB1</span> ,<span class="number">0x67</span> ,<span class="number">0x6E</span> ,<span class="number">0xE2</span>,<span class="number">0x666</span>,<span class="number">0x666</span>,<span class="number">0x666</span>,<span class="number">0x666</span>,<span class="number">0x2F</span>,<span class="number">0xB0</span>,<span class="number">0xEC</span>,<span class="number">0x00</span>] <span class="comment">#将内存里面的数值提出出来放入数组，0x666为无关值</span>
+<pre><code class="lang-python">#coding:utf-8
+import re
+check_list = [0x666,0xF2 ,0x6E ,0xD1,0xB1 ,0x7E, 0x8B ,0x3E ,0x8E ,0xB1 ,0x67 ,0x6E ,0xE2,0x666,0x666,0x666,0x666,0x2F,0xB0,0xEC,0x00] #将内存里面的数值提出出来放入数组，0x666为无关值
 
-<span class="function"><span class="keyword">def</span> <span class="title">find</span><span class="params">(hexStr,realHex)</span>:</span>
-    file = open(<span class="string">r"your_path\check_lctf.txt"</span>,<span class="string">"rb"</span>)
+def find(hexStr,realHex):
+    file = open(r&quot;your_path\check_lctf.txt&quot;,&quot;rb&quot;)
     lines = file.readlines()
     m_list=[]
-    flag=<span class="number">0</span>
-    count=<span class="number">0</span>
-<span class="comment">#分析算法模块</span>
-    <span class="keyword">for</span> i <span class="keyword">in</span> lines:
-        <span class="keyword">if</span> re.match(<span class="string">".*?movzx eax,byte ptr ds:\[ebx\+0x"</span>+str(hex(hexStr))[<span class="number">2</span>:].upper()+<span class="string">"\]"</span>,i):
-            flag=<span class="number">1</span>
-            count+=<span class="number">1</span>
-        <span class="keyword">if</span> re.match(<span class="string">".*?mov byte ptr ds:\[ebx\+0x"</span>+str(hex(hexStr))[<span class="number">2</span>:].upper()+<span class="string">"\],al"</span>,i):
-            flag=<span class="number">0</span>
-        <span class="keyword">if</span> flag:
-            <span class="keyword">if</span> flag&gt;<span class="number">1</span>:
+    flag=0
+    count=0
+#分析算法模块
+    for i in lines:
+        if re.match(&quot;.*?movzx eax,byte ptr ds:\[ebx\+0x&quot;+str(hex(hexStr))[2:].upper()+&quot;\]&quot;,i):
+            flag=1
+            count+=1
+        if re.match(&quot;.*?mov byte ptr ds:\[ebx\+0x&quot;+str(hex(hexStr))[2:].upper()+&quot;\],al&quot;,i):
+            flag=0
+        if flag:
+            if flag&gt;1:
                 m_list.append(i)
-            flag+=<span class="number">1</span>
-        <span class="keyword">if</span> flag==<span class="number">0</span> <span class="keyword">and</span> len(m_list):
-            p_flag=<span class="number">0</span>
-            p_reg=<span class="string">""</span>
+            flag+=1
+        if flag==0 and len(m_list):
+            p_flag=0
+            p_reg=&quot;&quot;
 
-            <span class="keyword">for</span> t <span class="keyword">in</span> m_list:
-                pl = re.findall(<span class="string">".*?(push|pop) (eax|ebx)"</span>,t)
-                <span class="keyword">if</span> len(pl)&gt;<span class="number">0</span>:
-                    <span class="keyword">if</span> pl[<span class="number">0</span>][<span class="number">0</span>]==<span class="string">"push"</span>:
-                        p_flag=<span class="number">1</span>
-                        p_reg=pl[<span class="number">0</span>][<span class="number">1</span>]
+            for t in m_list:
+                pl = re.findall(&quot;.*?(push|pop) (eax|ebx)&quot;,t)
+                if len(pl)&gt;0:
+                    if pl[0][0]==&quot;push&quot;:
+                        p_flag=1
+                        p_reg=pl[0][1]
                         pl=[]
-                        <span class="keyword">continue</span>
+                        continue
 
-                    <span class="keyword">if</span>  p_flag <span class="keyword">and</span> pl[<span class="number">0</span>][<span class="number">0</span>]==<span class="string">"pop"</span> <span class="keyword">and</span> p_reg==pl[<span class="number">0</span>][<span class="number">1</span>]:
-                        p_flag=<span class="number">0</span>
+                    if  p_flag and pl[0][0]==&quot;pop&quot; and p_reg==pl[0][1]:
+                        p_flag=0
                         pl=[]
-                <span class="comment">#分析运算</span>
-                <span class="keyword">if</span> p_flag==<span class="number">0</span>:
-                    lt = re.findall(<span class="string">".*?(sub|add|xor) eax,(0x[0-9A-Z]+)"</span>,t)
-                    <span class="keyword">if</span> len(lt)&gt;<span class="number">0</span>:
-                        <span class="keyword">if</span> lt[<span class="number">0</span>][<span class="number">0</span>]==<span class="string">"add"</span>:
-                           <span class="comment"># print "add ",hex(int(lt[0][1],16))</span>
-                            realHex+=int(lt[<span class="number">0</span>][<span class="number">1</span>],<span class="number">16</span>)
-                        <span class="keyword">if</span> lt[<span class="number">0</span>][<span class="number">0</span>]==<span class="string">"sub"</span>:
-                          <span class="comment">#  print "sub ",hex(int(lt[0][1],16))</span>
-                            realHex-=int(lt[<span class="number">0</span>][<span class="number">1</span>],<span class="number">16</span>)
-                        <span class="keyword">if</span> lt[<span class="number">0</span>][<span class="number">0</span>]==<span class="string">"xor"</span>:
-                          <span class="comment">#  print "xor ",hex(int(lt[0][1],16))</span>
-                            realHex^=int(lt[<span class="number">0</span>][<span class="number">1</span>],<span class="number">16</span>)
-                        realHex %= <span class="number">0x100</span>
+                #分析运算
+                if p_flag==0:
+                    lt = re.findall(&quot;.*?(sub|add|xor) eax,(0x[0-9A-Z]+)&quot;,t)
+                    if len(lt)&gt;0:
+                        if lt[0][0]==&quot;add&quot;:
+                           # print &quot;add &quot;,hex(int(lt[0][1],16))
+                            realHex+=int(lt[0][1],16)
+                        if lt[0][0]==&quot;sub&quot;:
+                          #  print &quot;sub &quot;,hex(int(lt[0][1],16))
+                            realHex-=int(lt[0][1],16)
+                        if lt[0][0]==&quot;xor&quot;:
+                          #  print &quot;xor &quot;,hex(int(lt[0][1],16))
+                            realHex^=int(lt[0][1],16)
+                        realHex %= 0x100
             m_list=[]
     file.close()
-    <span class="keyword">return</span> realHex
+    return realHex
 l=[]
-<span class="keyword">for</span> j <span class="keyword">in</span> range(<span class="number">1</span>,<span class="number">13</span>):<span class="comment">#爆破输入范围</span>
-    <span class="keyword">print</span> <span class="string">"Processing : "</span>,j
-    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">256</span>):<span class="comment">#输入字符范围</span>
-        <span class="keyword">if</span> find(j,i)==check_list[j]:
-            <span class="keyword">print</span> <span class="string">"Find answer: check_list["</span>,j,<span class="string">"]"</span>,<span class="string">"=&gt;"</span>,i
-            l.append(hex(i)[<span class="number">2</span>:])
-            <span class="keyword">break</span>
-<span class="keyword">print</span> <span class="string">""</span>.join(l)
-<span class="keyword">print</span> <span class="string">""</span>.join(l).decode(<span class="string">"hex"</span>)
-
+for j in range(1,13):#爆破输入范围
+    print &quot;Processing : &quot;,j
+    for i in range(256):#输入字符范围
+        if find(j,i)==check_list[j]:
+            print &quot;Find answer: check_list[&quot;,j,&quot;]&quot;,&quot;=&gt;&quot;,i
+            l.append(hex(i)[2:])
+            break
+print &quot;&quot;.join(l)
+print &quot;&quot;.join(l).decode(&quot;hex&quot;)
 </code></pre>
 <p>。。。万万没想到，这破招，居然成了，感谢作者没有将运算搞复杂，不然我得写死。</p>
-<p>我们可以借助python分析加密算法，跑个3分钟，得出前12位flag为<code>W1ecom_to_L</code><br>
-(算法和程序就不优化了，毕竟比赛时间不允许，能用就好，轻喷)</p>
-<pre class="highlight"><code class="text">Processing :  1
+<p>我们可以借助python分析加密算法，跑个3分钟，得出前12位flag为<code>W1ecom_to_L</code><br>(算法和程序就不优化了，毕竟比赛时间不允许，能用就好，轻喷)</p>
+<pre><code class="lang-text">Processing :  1
 Find answer: check_list[ 1 ] =&gt; 87
 Processing :  2
 Find answer: check_list[ 2 ] =&gt; 101
@@ -472,28 +447,24 @@ Find answer: check_list[ 12 ] =&gt; 76
 We1come_to_L
 </code></pre>
 <p>然后我们再如法炮制，将<code>We1come_to_L1111111abcdB1A</code>输入调试，run trace跟踪函数执行，发现有一处是检验咱们跳转来的地址的</p>
-<pre class="highlight"><code class="asm">.text:0042F3A1                 cmp     eax, 413F42h
+<pre><code class="lang-asm">.text:0042F3A1                 cmp     eax, 413F42h
 .text:0042F3A6                 jnz     loc_42F91A   ;不相等则跳转到Wrong函数
 </code></pre>
 <p>可以观察到,<code>eax</code>跟<code>413F42</code>比较，而eax是在这里存入的</p>
-<pre class="highlight"><code class="asm">.text:0042EE55                 mov     eax, [edx+ebx+0Ch]   ;将栈底+4位置的数据，即我们构造的溢出地址，放进eax
+<pre><code class="lang-asm">.text:0042EE55                 mov     eax, [edx+ebx+0Ch]   ;将栈底+4位置的数据，即我们构造的溢出地址，放进eax
 .text:0042EE59                 add     eax, 0A00h
 .text:0042EE5E                 push    eax  ；加了A00h后入栈
 </code></pre>
-<p>接下来一百多行的代码都是push eax 进去再pop 出来再push进去<br>
-最后在<code>42F3A1</code>比较的eax就是加了A00h的溢出地址<br>
-我们构造的溢出地址是<code>413142</code>加上<code>A00h</code>后也不是<code>413F42h</code>啊<br>
-但是我们程序却没有在此跳转，说明我们构造的地址是对的<br>
-终于我们在<code>42F10E</code>处找到了一条异或的语句</p>
-<pre class="highlight"><code class="asm">.text:0042F10E                 xor     eax, 400h
+<p>接下来一百多行的代码都是push eax 进去再pop 出来再push进去<br>最后在<code>42F3A1</code>比较的eax就是加了A00h的溢出地址<br>我们构造的溢出地址是<code>413142</code>加上<code>A00h</code>后也不是<code>413F42h</code>啊<br>但是我们程序却没有在此跳转，说明我们构造的地址是对的<br>终于我们在<code>42F10E</code>处找到了一条异或的语句</p>
+<pre><code class="lang-asm">.text:0042F10E                 xor     eax, 400h
 </code></pre>
 <p>。。。这个出题人还真是调皮</p>
 <p>好了，我们继续跟踪函数执行</p>
-<pre class="highlight"><code class="asm">.text:0042F3AE                 mov eax,dword ptr ds:[edx+ebx+0x5] ;输入的第17至20位数据
+<pre><code class="lang-asm">.text:0042F3AE                 mov eax,dword ptr ds:[edx+ebx+0x5] ;输入的第17至20位数据
 .text:0042F3B2                 push eax
 
      ......                    ......
-     
+
 .text:0042F900                 pop     eax
 .text:0042F901                 and     eax, 0FFFFFFh    ；将第20个输入抹去(置零)
 .text:0042F906                 cmp     eax, dword ptr unk_43F05C[edx]   ;ds:[43F068]=00ECB02F
@@ -501,10 +472,9 @@ We1come_to_L
 .text:0042F90E                 sub     Key_word, 2
 .text:0042F915                 jmp     loc_40106E   ;跳回去咱们start函数判断Key_word是否为零的地方
 </code></pre>
-<p>可以看出只检验了17~19位输入，20位置零后再比较的，所以是啥都无所谓<br>
-而且我们还观察到，对17<sub>19位加密只有上面我们写脚本的那几万行汇编进行过，之后的函数都没有动，所以我们一样可以用之前的脚本爆破计算出17-19位flag，只需要把对应数据输入且for循环的范围从1</sub>12改成17~19</p>
+<p>可以看出只检验了17~19位输入，20位置零后再比较的，所以是啥都无所谓<br>而且我们还观察到，对17~19位加密只有上面我们写脚本的那几万行汇编进行过，之后的函数都没有动，所以我们一样可以用之前的脚本爆破计算出17-19位flag，只需要把对应数据输入且for循环的范围从1~12改成17~19</p>
 <p>运行脚本，输入如下</p>
-<pre class="highlight"><code class="text">Processing :  17
+<pre><code class="lang-text">Processing :  17
 Find answer: check_list[ 17 ] =&gt; 48
 Processing :  18
 Find answer: check_list[ 18 ] =&gt; 49
@@ -515,15 +485,13 @@ Find answer: check_list[ 19 ] =&gt; 55
 </code></pre>
 <p>然后我们整合一下flag——<code>We1come_to_L1111017abcdB1A</code></p>
 <p><img src="/2017/11/20/2017-LCTF-use_your_IDA/23-36-45.jpg" alt=""></p>
-<p>emmmmmmm…</p>
+<p>emmmmmmm…..</p>
 <p>这么随便的flag么</p>
-<p>然后去比赛网站上看，提示多解的四位为<code>ctf2</code><br>
-那么想当然的,我们可以得到<code>We1come_to_Lctf2017abcdB1A</code></p>
+<p>然后去比赛网站上看，提示多解的四位为<code>ctf2</code><br>那么想当然的,我们可以得到<code>We1come_to_Lctf2017abcdB1A</code></p>
 <p>。。那么还是有4位是多解啊</p>
 <p>然后怎么提交都不对，加比赛群找到出题人，出题人回应把payload去掉就好了</p>
 <p>。。。。</p>
-<p>所以最后提交的falg是<code>We1come_to_Lctf2017B1A</code><br>
-本题至此结束</p>
+<p>所以最后提交的falg是<code>We1come_to_Lctf2017B1A</code><br>本题至此结束</p>
 <p><strong>总结</strong></p>
 <blockquote>
 <ul>
@@ -598,20 +566,5 @@ Find answer: check_list[ 19 ] =&gt; 55
 <script>hljs.highlightAll();</script>
 
     </div>
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-        tex2jax: {
-            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-            processEscapes: true
-        }
-    });
-    MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax();
-        for (var i = 0; i < all.length; ++i)
-            all[i].SourceElement().parentNode.className += ' has-jax';
-    });
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 </body>
 </html>

