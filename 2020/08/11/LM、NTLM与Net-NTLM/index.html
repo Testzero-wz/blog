@@ -201,10 +201,13 @@
         </header>
 
         <div class="post-content">
-            <h2 id="1-本地密码认证"><a href="#1-本地密码认证" class="headerlink" title="1. 本地密码认证"></a>1. 本地密码认证</h2><p> windows并不保存明文密码，只保存密码的Hash。本地密码认证时，操作系统会使用用户输入的密码作为凭证去与系统中的密码进行验证 ，路径为<code>%SystemRoot%\system32\config\sam</code>。</p>
-<pre><code>过程：winlogon.exe -&gt; 接收用户输入 -&gt; lsass.exe -&gt; (认证)
-</code></pre><p>在用户注销、重启、锁屏后，操作系统会让winlogon显示登录界面，待输入过后将密码交给lsass.exe，这个进程的内存中会存一份明文密码，将明文密码加密成NTLM Hash，对SAM数据库比较认证。 mimikatz就是通过抓去lsass.exe的内存获取本地的明文密码的。</p>
-<h3 id="1-1-LM-Hash"><a href="#1-1-LM-Hash" class="headerlink" title="1.1 LM Hash"></a>1.1 LM Hash</h3><p>在Windows xp、visa、Server 03 等早期Window系统，使用的是LM Hash(LAN Manager Hash)，由于其使用了DES加密并且对固定的字符串<code>KGS!@#$％</code>进行加密，容易遭受攻击，目前已被弃用。</p>
+            <h2 id="1-本地密码认证"><a class="markdownIt-Anchor" href="#1-本地密码认证"></a> 1. 本地密码认证</h2>
+<p>windows并不保存明文密码，只保存密码的Hash。本地密码认证时，操作系统会使用用户输入的密码作为凭证去与系统中的密码进行验证 ，路径为<code>%SystemRoot%\system32\config\sam</code>。</p>
+<pre class="highlight"><code class="">过程：winlogon.exe -&gt; 接收用户输入 -&gt; lsass.exe -&gt; (认证)
+</code></pre>
+<p>在用户注销、重启、锁屏后，操作系统会让winlogon显示登录界面，待输入过后将密码交给lsass.exe，这个进程的内存中会存一份明文密码，将明文密码加密成NTLM Hash，对SAM数据库比较认证。 mimikatz就是通过抓去lsass.exe的内存获取本地的明文密码的。</p>
+<h3 id="11-lm-hash"><a class="markdownIt-Anchor" href="#11-lm-hash"></a> 1.1 LM Hash</h3>
+<p>在Windows xp、visa、Server 03 等早期Window系统，使用的是LM Hash(LAN Manager Hash)，由于其使用了DES加密并且对固定的字符串<code>KGS!@#$％</code>进行加密，容易遭受攻击，目前已被弃用。</p>
 <p><img src="/2020/08/11/LM、NTLM与Net-NTLM/LM-Hash.png" alt="LM Hash"></p>
 <p>具体的LM Hash的计算算法如下</p>
 <ol>
@@ -214,18 +217,20 @@
 <li>将上面的2个Key，使用DES算法，分别加密固定字符串<code>KGS!@#$％</code>，得到2个8字节的密文；</li>
 <li>2个8字节的密文连成1个16字节的密文，称为LM Hash。</li>
 </ol>
-<pre><code class="lang-C">LMHash1 = DES(DOSCHARSET(UPPERCASE(password)), &quot;KGS!@#$％&quot;)
-LMHash2 = DES(DOSCHARSET(UPPERCASE(password)), &quot;KGS!@#$％&quot;)
+<pre class="highlight"><code class="C">LMHash1 = DES(DOSCHARSET(UPPERCASE(password)), <span class="string">"KGS!@#$％"</span>)
+LMHash2 = DES(DOSCHARSET(UPPERCASE(password)), <span class="string">"KGS!@#$％"</span>)
 LMHash = LMHash1 + LMHash2
 </code></pre>
 <p><em>注：Win server 2008开始禁用LM Hash</em></p>
-<h3 id="1-2-NT-Hash（AKA-NTLM-Hash）"><a href="#1-2-NT-Hash（AKA-NTLM-Hash）" class="headerlink" title="1.2 NT Hash（AKA. NTLM Hash）"></a>1.2 NT Hash（AKA. NTLM Hash）</h3><p>目前Windows系统使用的是NT Hash，有些资料也称为NTLM Hash。</p>
-<pre><code class="lang-C">NT Hash = MD4(UTF-16-LE(password)) 
+<h3 id="12-nt-hashaka-ntlm-hash"><a class="markdownIt-Anchor" href="#12-nt-hashaka-ntlm-hash"></a> 1.2 NT Hash（AKA. NTLM Hash）</h3>
+<p>目前Windows系统使用的是NT Hash，有些资料也称为NTLM Hash。</p>
+<pre class="highlight"><code class="C">NT Hash = MD4(UTF<span class="number">-16</span>-LE(password)) 
 NTLM Hash = LM Hash + NT Hash
 </code></pre>
-<p> mimikatz提取的hash为NTLM Hash = LM Hash + NT Hash</p>
+<p>mimikatz提取的hash为NTLM Hash = LM Hash + NT Hash</p>
 <p>由于目前Windows系统已经禁用了LM Hash，所以一般获取到的LM Hash是一个空密码的Hash，对我们没有利用价值也没有影响。</p>
-<h2 id="2-网络环境下的密码认证——Net-NTLM"><a href="#2-网络环境下的密码认证——Net-NTLM" class="headerlink" title="2. 网络环境下的密码认证——Net-NTLM"></a>2. 网络环境下的密码认证——Net-NTLM</h2><p>Net-NTLM (New Technology LAN Manager)是<code>telnet</code>一种验证身份方式 ，目的是为了避免使用明文的密码进行认证传输， 旨在为用户提供身份验证，完整性和机密性。 其包括三个版本NTLMv1, NTLMv2 , NTLM2 Session 。</p>
+<h2 id="2-网络环境下的密码认证net-ntlm"><a class="markdownIt-Anchor" href="#2-网络环境下的密码认证net-ntlm"></a> 2. 网络环境下的密码认证——Net-NTLM</h2>
+<p>Net-NTLM (New Technology LAN Manager)是<code>telnet</code>一种验证身份方式 ，目的是为了避免使用明文的密码进行认证传输， 旨在为用户提供身份验证，完整性和机密性。 其包括三个版本NTLMv1, NTLMv2 , NTLM2 Session 。</p>
 <p>Net-NTLM认证采用质询/应答（Challenge/Response）的消息交换模式，流程如下：</p>
 <ol>
 <li>客户端向服务器发送一个请求，请求中包含明文的登录用户名。服务器会提前存储登录用户名和对应的密码hash；</li>
@@ -233,55 +238,62 @@ NTLM Hash = LM Hash + NT Hash
 <li>客户端接收到Challenge后，使用登录用户的密码hash对Challenge加密，获得Challenge2(这个结果被称为response)，将response发送给服务器；</li>
 <li>服务器接收客户端加密后的response，比较Challenge1和Challenge2，如果相同，验证成功。</li>
 </ol>
-<h3 id="2-1-Net-NTLMv1"><a href="#2-1-Net-NTLMv1" class="headerlink" title="2.1 Net-NTLMv1"></a>2.1 Net-NTLMv1</h3><pre><code class="lang-python">C = 8-byte server challenge, random
-K1 , K2 , K3 = NTLM-Hash + &quot;\x00&quot;*5    # 21 Bytes
-K1 = K1 + &quot;\x00&quot;
-K2 = K2 + &quot;\x00&quot;
-K3 = K3 + &quot;\x00&quot;
-response = DES(K1,C) + DES(K2,C) + DES(K3,C)    # 24 Bytes
+<h3 id="21-net-ntlmv1"><a class="markdownIt-Anchor" href="#21-net-ntlmv1"></a> 2.1 Net-NTLMv1</h3>
+<pre class="highlight"><code class="python">C = <span class="number">8</span>-byte server challenge, random
+K1 , K2 , K3 = NTLM-Hash + <span class="string">"\x00"</span>*<span class="number">5</span>    <span class="comment"># 21 Bytes</span>
+K1 = K1 + <span class="string">"\x00"</span>
+K2 = K2 + <span class="string">"\x00"</span>
+K3 = K3 + <span class="string">"\x00"</span>
+response = DES(K1,C) + DES(K2,C) + DES(K3,C)    <span class="comment"># 24 Bytes</span>
 </code></pre>
-<h3 id="2-1-Net-NTLMv2"><a href="#2-1-Net-NTLMv2" class="headerlink" title="2.1 Net-NTLMv2"></a>2.1 Net-NTLMv2</h3><p>Net-NTLMv2是Net-NTLMv1的增强版，询问流程相同，其不同之处在于：</p>
+<h3 id="21-net-ntlmv2"><a class="markdownIt-Anchor" href="#21-net-ntlmv2"></a> 2.1 Net-NTLMv2</h3>
+<p>Net-NTLMv2是Net-NTLMv1的增强版，询问流程相同，其不同之处在于：</p>
 <ul>
 <li>NTLM v1的Challenge有8位，NTLM v2的Challenge为16位。</li>
 <li>NTLM v1的主要加密算法是DES，NTLM v2的主要加密算法是HMAC-MD5</li>
 </ul>
-<pre><code class="lang-python">SC = 8-byte server challenge, random
-CC = 8-byte client challenge, random
+<pre class="highlight"><code class="python">SC = <span class="number">8</span>-byte server challenge, random
+CC = <span class="number">8</span>-byte client challenge, random
 Blob = (Blob_signature, Timestamp, ClientNonce, Domain name, etc)
-v2-Hash = HMAC-MD5(NT-Hash, to_hex_str(user_name+domain name))  # NT-Hash as key
-LMv2 = HMAC-MD5(v2-Hash, SC+CC)    # v2-Hash as key
-NTv2 = HMAC-MD5(v2-Hash, SC+Blob)    # v2-Hash as key
+v2-Hash = HMAC-MD5(NT-Hash, to_hex_str(user_name+domain name))  <span class="comment"># NT-Hash as key</span>
+LMv2 = HMAC-MD5(v2-Hash, SC+CC)	<span class="comment"># v2-Hash as key</span>
+NTv2 = HMAC-MD5(v2-Hash, SC+Blob)	<span class="comment"># v2-Hash as key</span>
 response1 = LMv2 + CC  
 response2 = NTv2 + Blob     
-# HMAC_MD5 is a alia of NTv2 in hashcat
-# so we can define response2 as blow:
-# response2 = HMAC_MD5 + Blob
+<span class="comment"># HMAC_MD5 is a alia of NTv2 in hashcat</span>
+<span class="comment"># so we can define response2 as blow:</span>
+<span class="comment"># response2 = HMAC_MD5 + Blob  </span>
 </code></pre>
 <p>其中<code>LMv2</code>在实际抓包中均为全<code>0</code>，Blob的结构如图：</p>
 <p><img src="/2020/08/11/LM、NTLM与Net-NTLM/image-20200811205026735.png" alt="LM Hash"></p>
 <p>Hashcat接收的Net-NTLM v2 Hash结构如下：</p>
-<pre><code>username::domain:challenge:HMAC-MD5:blob
-</code></pre><p>其中<code>HMAC-MD5</code>就是上面的<code>NTv2 = HMAC-MD5(v2-Hash, SC+Blob)</code>，也是抓包得到的数据包中的<code>NTProofStr</code>：</p>
+<pre class="highlight"><code class="">username::domain:challenge:HMAC-MD5:blob
+</code></pre>
+<p>其中<code>HMAC-MD5</code>就是上面的<code>NTv2 = HMAC-MD5(v2-Hash, SC+Blob)</code>，也是抓包得到的数据包中的<code>NTProofStr</code>：</p>
 <p><img src="/2020/08/11/LM、NTLM与Net-NTLM/NTProofStr.png" alt="NTProofStr.png"></p>
-<h2 id="3-再来说说Pass-The-Hash攻击"><a href="#3-再来说说Pass-The-Hash攻击" class="headerlink" title="3. 再来说说Pass The Hash攻击"></a>3. 再来说说Pass The Hash攻击</h2><p>可以看到无论是本地密码认证还是网络环境下的密码认证，<strong>基本的凭证都是NTLM Hash，这也是Pth攻击能够成功的原因。</strong></p>
+<h2 id="3-再来说说pass-the-hash攻击"><a class="markdownIt-Anchor" href="#3-再来说说pass-the-hash攻击"></a> 3. 再来说说Pass The Hash攻击</h2>
+<p>可以看到无论是本地密码认证还是网络环境下的密码认证，<strong>基本的凭证都是NTLM Hash，这也是Pth攻击能够成功的原因。</strong></p>
 <p>我们使用mimikatz、gethashs.exe等工具获取到本地的NT Hash之后，就可以尝试进行远程登录了:</p>
 <ol>
-<li><p>可以碰撞相同密码的远程主机，再在远程主机上继续dumphash，获得更多账户的hash，鸡生蛋蛋又生鸡，然后在战利品里面寻找具有域管理员登陆过的机器；</p>
+<li>
+<p>可以碰撞相同密码的远程主机，再在远程主机上继续dumphash，获得更多账户的hash，鸡生蛋蛋又生鸡，然后在战利品里面寻找具有域管理员登陆过的机器；</p>
 </li>
-<li><p>利用当前账号的权限进行远程操作，扩大战果。如powershell、psexec、wmic、schtasks、at等等。</p>
+<li>
+<p>利用当前账号的权限进行远程操作，扩大战果。如powershell、psexec、wmic、schtasks、at等等。</p>
 </li>
 </ol>
 <p><strong>需要注意的是，SMB协议可以通过NTLM协议来完成认证，也可以通过Kerberos协议完成。</strong></p>
 <p>Kerberos协议比较复杂，可以再开一篇文章在单独谈谈，目前我们只需要知道这两种协议都可以利用NTLM Hash来进行认证SMB服务即可。</p>
 <p>当然， Kerberos已经是域环境下的默认安全认证协议了，当客户端提供Server的SPN（service principal name）访问时，会使用 Kerberos协议进行认证；而以IP地址访问服务端时，将使用NTLM协议进行身份认证。</p>
-<pre><code class="lang-shell"># Kerberos
+<pre class="highlight"><code class="shell"><span class="meta">#</span><span class="bash"> Kerberos</span>
 psexec domain.com/administrator@domain.com -hash &lt;NTLM Hash&gt; -c &lt;Command&gt;
-# NTLM
-psexec administrator@10.200.1.1 -hash &lt;NTLM Hash&gt; -c &lt;Command&gt;
+<span class="meta">#</span><span class="bash"> NTLM</span>
+psexec administrator@10.200.1.1 -hash &lt;NTLM Hash&gt; -c &lt;Command&gt;  
 </code></pre>
 <p><strong>此时无论那种方式，最根本的凭证都是NTLM Hash，即Pass The Hash攻击仍然是奏效的。</strong></p>
-<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p> <a href="https://payloads.online/archivers/2018-11-30/1" target="_blank" rel="noopener">https://payloads.online/archivers/2018-11-30/1</a> </p>
-<p> [<a href="http://d1iv3.me/2018/12/08/LM-Hash%E3%80%81NTLM-Hash%E3%80%81Net-NTLMv1%E3%80%81Net-NTLMv2%E8%AF%A6%E8%A7%A3http://d1iv3.me/2018/12/08/LM-Hash、NTLM-Hash、Net-NTLMv1、Net-NTLMv2详解" target="_blank" rel="noopener">http://d1iv3.me/2018/12/08/LM-Hash%E3%80%81NTLM-Hash%E3%80%81Net-NTLMv1%E3%80%81Net-NTLMv2%E8%AF%A6%E8%A7%A3http://d1iv3.me/2018/12/08/LM-Hash、NTLM-Hash、Net-NTLMv1、Net-NTLMv2详解</a>) </p>
+<h2 id="参考文章"><a class="markdownIt-Anchor" href="#参考文章"></a> 参考文章</h2>
+<p><a href="https://payloads.online/archivers/2018-11-30/1" target="_blank" rel="noopener">https://payloads.online/archivers/2018-11-30/1</a></p>
+<p>[<a href="http://d1iv3.me/2018/12/08/LM-Hash%E3%80%81NTLM-Hash%E3%80%81Net-NTLMv1%E3%80%81Net-NTLMv2%E8%AF%A6%E8%A7%A3http://d1iv3.me/2018/12/08/LM-Hash%E3%80%81NTLM-Hash%E3%80%81Net-NTLMv1%E3%80%81Net-NTLMv2%E8%AF%A6%E8%A7%A3" target="_blank" rel="noopener">http://d1iv3.me/2018/12/08/LM-Hash、NTLM-Hash、Net-NTLMv1、Net-NTLMv2详解http://d1iv3.me/2018/12/08/LM-Hash、NTLM-Hash、Net-NTLMv1、Net-NTLMv2详解</a>)</p>
 
         </div>
 

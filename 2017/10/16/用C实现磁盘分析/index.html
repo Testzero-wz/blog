@@ -206,448 +206,453 @@
 <p>由于实验需要写一个分区表的分析程序，时间比较多就写了个适用于GPT和 MBR分区的通用程序</p>
 </blockquote>
 <a id="more"></a>
-<p>没啥特别的亮点，主要还是可以通用地分析磁盘分区以及适用两种磁盘格式<br>本程序是字符界面，之前的是图形化界面，规划得有点丑，就不献丑了<br>自带分析、提取数据函数，若想继续分析其他也可在此基础上添加。在此只演示GPT下的FAT32分区分析<br><strong>注：需管理员权限运行，否则无法得到分区信息</strong></p>
-<h3 id="分区-驱动器Drive类"><a href="#分区-驱动器Drive类" class="headerlink" title="分区/驱动器Drive类"></a>分区/驱动器Drive类</h3><pre><code class="lang-C">#pragma once
-#include&lt;string&gt;
-#include&lt;string.h&gt;
-#include&lt;windows.h&gt;
-using namespace std;
-enum DriveType {
-    NTFS, FAT32, GPT, UNKNOWN
+<p>没啥特别的亮点，主要还是可以通用地分析磁盘分区以及适用两种磁盘格式<br>
+本程序是字符界面，之前的是图形化界面，规划得有点丑，就不献丑了<br>
+自带分析、提取数据函数，若想继续分析其他也可在此基础上添加。在此只演示GPT下的FAT32分区分析<br>
+<strong>注：需管理员权限运行，否则无法得到分区信息</strong></p>
+<h3 id="分区驱动器drive类"><a class="markdownIt-Anchor" href="#分区驱动器drive类"></a> 分区/驱动器Drive类</h3>
+<pre class="highlight"><code class="C"><span class="meta">#<span class="meta-keyword">pragma</span> once</span>
+<span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;string&gt;</span></span>
+<span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;string.h&gt;</span></span>
+<span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;windows.h&gt;</span></span>
+<span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;
+<span class="keyword">enum</span> DriveType {
+	NTFS, FAT32, GPT, UNKNOWN
 };
-class Drive {
-public:
-//通用属性
+<span class="class"><span class="keyword">class</span> <span class="title">Drive</span> {</span>
+<span class="keyword">public</span>:
+<span class="comment">//通用属性</span>
 
-    DriveType type;
-    int cluster;        //单位：扇区
-    int sector;
-    string label;        //卷标
-    bool active;
+	DriveType type;
+	<span class="keyword">int</span> cluster;		<span class="comment">//单位：扇区</span>
+	<span class="keyword">int</span> sector;
+	<span class="built_in">string</span> label;		<span class="comment">//卷标</span>
+	<span class="keyword">bool</span> active;
 
-    //Bytes
-    long long offset;
-    long long size;
-    TCHAR msg[512];
-//FAT32属性
-    int reversedSector;
-    int FATSector;
+	<span class="comment">//Bytes</span>
+	<span class="keyword">long</span> <span class="keyword">long</span> offset;
+	<span class="keyword">long</span> <span class="keyword">long</span> size;
+	TCHAR msg[<span class="number">512</span>];
+<span class="comment">//FAT32属性</span>
+	<span class="keyword">int</span> reversedSector;
+	<span class="keyword">int</span> FATSector;
 
-    //Bytes
-    long long rootOffset;
-    long long FATOffest;
-//NTFS属性
-    //待补充
-    Drive(void) {
-        active = false;
-        memset(msg, -1, sizeof(msg));
-    }
-    ~Drive(void) {
-    }
+	<span class="comment">//Bytes</span>
+	<span class="keyword">long</span> <span class="keyword">long</span> rootOffset;
+	<span class="keyword">long</span> <span class="keyword">long</span> FATOffest;
+<span class="comment">//NTFS属性</span>
+    <span class="comment">//待补充</span>
+	Drive(<span class="keyword">void</span>) {
+		active = <span class="literal">false</span>;
+		<span class="built_in">memset</span>(msg, <span class="number">-1</span>, <span class="keyword">sizeof</span>(msg));
+	}
+	~Drive(<span class="keyword">void</span>) {
+	}
 };
 </code></pre>
-<h3 id="主程序"><a href="#主程序" class="headerlink" title="主程序"></a>主程序</h3><pre><code class="lang-C">#include &lt;stdio.h&gt;
-#include&lt;windows.h&gt;
-#include&lt;String&gt;
-#include&lt;Vector&gt;
-#include&quot;Drive.h&quot;
+<h3 id="主程序"><a class="markdownIt-Anchor" href="#主程序"></a> 主程序</h3>
+<pre class="highlight"><code class="C"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span>
+<span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;windows.h&gt;</span></span>
+<span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;String&gt;</span></span>
+<span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;Vector&gt;</span></span>
+<span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">"Drive.h"</span></span>
 
-using namespace std;
+<span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;
 
-#define NULL_16 (unsigned char *)&quot;\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00&quot;
-#define NULL_8  (unsigned char *)&quot;\x00\x00\x00\x00\x00\x00\x00\x00&quot;
-#define NULL_4 (unsigned char *)&quot;\x00\x00\x00\x00&quot;
-#define NULL_2 (unsigned char *)&quot;\x00\x00&quot;
-
-
-//读取磁盘在此修改
-#define __READ &quot;\\\\.\\PHYSICALDRIVE0&quot;
-
-#define EFI_FLAG (unsigned char *)&quot;EFI PART&quot;
-#define NTFS_SYMBOL (unsigned char *)&quot;NTFS    &quot;
-#define FAT32_SYMBOL (unsigned char *)&quot;MSDOS5.0&quot;
-
-#define PARTITION_FLAG_LEN 8
-#define OFFSET_DPT 446
-#define SECTOR_LEN  512
-
-long LODWORD(long long a);
-long HIDWORD(long long a);
-double ConvertToGB(long long size);
-double ConvertToMB(long long size);
-double ConvertToKB(long long size);
-void ComfortableDataExpress(long long a,TCHAR * str);
-double ComfortableData(long long a);
-unsigned long long HexStringToLong(unsigned char * a,int len);
-
-void TranslateData(unsigned char * a,int len, unsigned char * b,bool Remove_zero=0);
-
-void Analysis_GPT(long long offset ,int show_analysis=0);
-DriveType Analysis_Partition_Type(unsigned char *a ,int show_analysis=0);
-void Analysis_DPT(unsigned char *a ,int show_analysis=0,bool extendFlag=0,long long posOffset=0);
-DWORD ReadDisk(unsigned char* &amp;out,long start,long High,DWORD size,int pos=0);
-bool Check(unsigned char * a,unsigned char *  str,int len=4);
-
-static vector&lt;Drive&gt;DriveList;
-static bool GPT_FLAG=0,MBR_FLAG=0,exFlag=1;;    //磁盘类型
-static long long MainExtenedOffset=0;
+<span class="meta">#<span class="meta-keyword">define</span> NULL_16 (unsigned char *)<span class="meta-string">"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"</span></span>
+<span class="meta">#<span class="meta-keyword">define</span> NULL_8  (unsigned char *)<span class="meta-string">"\x00\x00\x00\x00\x00\x00\x00\x00"</span></span>
+<span class="meta">#<span class="meta-keyword">define</span> NULL_4 (unsigned char *)<span class="meta-string">"\x00\x00\x00\x00"</span></span>
+<span class="meta">#<span class="meta-keyword">define</span> NULL_2 (unsigned char *)<span class="meta-string">"\x00\x00"</span></span>
 
 
-int main()
-{
-    char buff[512];
-    unsigned char* a;
-    ReadDisk(a,NULL,NULL,512);
-    printf(&quot;\n主分区DPT分析：\n&quot;);
-    Analysis_DPT(&amp;a[OFFSET_DPT],1,0,NULL);
-    printf(&quot;分区个数:%d\n&quot;,DriveList.size());
-    printf(&quot;FAT32磁盘信息如下：\n&quot;);
-    printf(&quot;    -------------------------------------------\n&quot;);
-    for(int i=0;i&lt;DriveList.size();i++)
-        {
-            if(DriveList[i].type==FAT32)
-            {
-                printf(&quot;    分区序号：%d\n&quot;,i);
-                ComfortableDataExpress(DriveList[i].size,buff);
-                printf(&quot;    分区大小: %s  \n&quot;,buff );
-                printf(&quot;    分区偏移:%I64d 字节\n&quot;,DriveList[i].offset);
-                printf(&quot;    簇:%d 个扇区\n&quot;,DriveList[i].cluster);
-                printf(&quot;    保留扇区:%d 个\n&quot;,DriveList[i].reversedSector);
-                printf(&quot;    FAT表偏移:%I64d 字节\n&quot;,DriveList[i].FATOffest);
-                printf(&quot;    FAT表扇区:%d 个\n&quot;,DriveList[i].FATSector);
-                printf(&quot;    根目录偏移:%I64d 字节\n&quot;,DriveList[i].rootOffset);
-                printf(&quot;    -------------------------------------------\n&quot;);
+<span class="comment">//读取磁盘在此修改</span>
+<span class="meta">#<span class="meta-keyword">define</span> __READ <span class="meta-string">"\\\\.\\PHYSICALDRIVE0"</span></span>
 
-            }
-        }
-    return 0;
+<span class="meta">#<span class="meta-keyword">define</span> EFI_FLAG (unsigned char *)<span class="meta-string">"EFI PART"</span></span>
+<span class="meta">#<span class="meta-keyword">define</span> NTFS_SYMBOL (unsigned char *)<span class="meta-string">"NTFS    "</span></span>
+<span class="meta">#<span class="meta-keyword">define</span> FAT32_SYMBOL (unsigned char *)<span class="meta-string">"MSDOS5.0"</span></span>
+
+<span class="meta">#<span class="meta-keyword">define</span> PARTITION_FLAG_LEN 8</span>
+<span class="meta">#<span class="meta-keyword">define</span> OFFSET_DPT 446</span>
+<span class="meta">#<span class="meta-keyword">define</span> SECTOR_LEN  512</span>
+
+<span class="function"><span class="keyword">long</span> <span class="title">LODWORD</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> a)</span></span>;
+<span class="function"><span class="keyword">long</span> <span class="title">HIDWORD</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> a)</span></span>;
+<span class="function"><span class="keyword">double</span> <span class="title">ConvertToGB</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> size)</span></span>;
+<span class="function"><span class="keyword">double</span> <span class="title">ConvertToMB</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> size)</span></span>;
+<span class="function"><span class="keyword">double</span> <span class="title">ConvertToKB</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> size)</span></span>;
+<span class="function"><span class="keyword">void</span> <span class="title">ComfortableDataExpress</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> a,TCHAR * str)</span></span>;
+<span class="function"><span class="keyword">double</span> <span class="title">ComfortableData</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> a)</span></span>;
+<span class="function"><span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> <span class="title">HexStringToLong</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">char</span> * a,<span class="keyword">int</span> len)</span></span>;
+
+<span class="function"><span class="keyword">void</span> <span class="title">TranslateData</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">char</span> * a,<span class="keyword">int</span> len, <span class="keyword">unsigned</span> <span class="keyword">char</span> * b,<span class="keyword">bool</span> Remove_zero=<span class="number">0</span>)</span></span>;
+
+<span class="function"><span class="keyword">void</span> <span class="title">Analysis_GPT</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> offset ,<span class="keyword">int</span> show_analysis=<span class="number">0</span>)</span></span>;
+<span class="function">DriveType <span class="title">Analysis_Partition_Type</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">char</span> *a ,<span class="keyword">int</span> show_analysis=<span class="number">0</span>)</span></span>;
+<span class="function"><span class="keyword">void</span> <span class="title">Analysis_DPT</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">char</span> *a ,<span class="keyword">int</span> show_analysis=<span class="number">0</span>,<span class="keyword">bool</span> extendFlag=<span class="number">0</span>,<span class="keyword">long</span> <span class="keyword">long</span> posOffset=<span class="number">0</span>)</span></span>;
+<span class="function">DWORD <span class="title">ReadDisk</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">char</span>* &amp;out,<span class="keyword">long</span> start,<span class="keyword">long</span> High,DWORD size,<span class="keyword">int</span> pos=<span class="number">0</span>)</span></span>;
+<span class="function"><span class="keyword">bool</span> <span class="title">Check</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">char</span> * a,<span class="keyword">unsigned</span> <span class="keyword">char</span> *  str,<span class="keyword">int</span> len=<span class="number">4</span>)</span></span>;
+
+<span class="keyword">static</span> <span class="built_in">vector</span>&lt;Drive&gt;DriveList;
+<span class="keyword">static</span> <span class="keyword">bool</span> GPT_FLAG=<span class="number">0</span>,MBR_FLAG=<span class="number">0</span>,exFlag=<span class="number">1</span>;;	<span class="comment">//磁盘类型</span>
+<span class="keyword">static</span> <span class="keyword">long</span> <span class="keyword">long</span> MainExtenedOffset=<span class="number">0</span>;
+
+
+<span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span>
+</span>{
+	<span class="keyword">char</span> buff[<span class="number">512</span>];
+	<span class="keyword">unsigned</span> <span class="keyword">char</span>* a;
+	ReadDisk(a,<span class="literal">NULL</span>,<span class="literal">NULL</span>,<span class="number">512</span>);
+	<span class="built_in">printf</span>(<span class="string">"\n主分区DPT分析：\n"</span>);
+	Analysis_DPT(&amp;a[OFFSET_DPT],<span class="number">1</span>,<span class="number">0</span>,<span class="literal">NULL</span>);
+	<span class="built_in">printf</span>(<span class="string">"分区个数:%d\n"</span>,DriveList.size());
+	<span class="built_in">printf</span>(<span class="string">"FAT32磁盘信息如下：\n"</span>);
+	<span class="built_in">printf</span>(<span class="string">"	-------------------------------------------\n"</span>);
+	<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;DriveList.size();i++)
+		{
+			<span class="keyword">if</span>(DriveList[i].type==FAT32)
+			{
+				<span class="built_in">printf</span>(<span class="string">"	分区序号：%d\n"</span>,i);
+				ComfortableDataExpress(DriveList[i].size,buff);
+				<span class="built_in">printf</span>(<span class="string">"	分区大小: %s  \n"</span>,buff );
+				<span class="built_in">printf</span>(<span class="string">"	分区偏移:%I64d 字节\n"</span>,DriveList[i].offset);
+				<span class="built_in">printf</span>(<span class="string">"	簇:%d 个扇区\n"</span>,DriveList[i].cluster);
+				<span class="built_in">printf</span>(<span class="string">"	保留扇区:%d 个\n"</span>,DriveList[i].reversedSector);
+				<span class="built_in">printf</span>(<span class="string">"	FAT表偏移:%I64d 字节\n"</span>,DriveList[i].FATOffest);
+				<span class="built_in">printf</span>(<span class="string">"	FAT表扇区:%d 个\n"</span>,DriveList[i].FATSector);
+				<span class="built_in">printf</span>(<span class="string">"	根目录偏移:%I64d 字节\n"</span>,DriveList[i].rootOffset);
+				<span class="built_in">printf</span>(<span class="string">"	-------------------------------------------\n"</span>);
+
+			}
+		}
+	<span class="keyword">return</span> <span class="number">0</span>;
 }
 
 
 
-/*------------------------------------------------------------------------------------------------*/
-//进制转换
-double ConvertToGB(long long size)
- {
-     return size/1024.0/1024.0/1024.0;
+<span class="comment">/*------------------------------------------------------------------------------------------------*/</span>
+<span class="comment">//进制转换</span>
+<span class="function"><span class="keyword">double</span> <span class="title">ConvertToGB</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> size)</span>
+ </span>{
+	 <span class="keyword">return</span> size/<span class="number">1024.0</span>/<span class="number">1024.0</span>/<span class="number">1024.0</span>;
  }
- double ConvertToMB(long long size)
- {
-     return size/1024.0/1024.0;
+ <span class="function"><span class="keyword">double</span> <span class="title">ConvertToMB</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> size)</span>
+ </span>{
+	 <span class="keyword">return</span> size/<span class="number">1024.0</span>/<span class="number">1024.0</span>;
  }
- double ConvertToKB(long long size)
- {
-     return size/1024.0;
+ <span class="function"><span class="keyword">double</span> <span class="title">ConvertToKB</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> size)</span>
+ </span>{
+	 <span class="keyword">return</span> size/<span class="number">1024.0</span>;
  }
 
-void ComfortableDataExpress(long long a,TCHAR * str)
-{
-    if(ConvertToGB(a)&gt;=1)sprintf(str,TEXT(&quot;%.2lf GB&quot;),ConvertToGB(a));
-    else if(ConvertToMB(a)&gt;=1)sprintf(str,TEXT(&quot;%.2lf MB&quot;),ConvertToMB(a));
-    else sprintf(str,TEXT(&quot;%.2lf KB&quot;),ConvertToKB(a));
+<span class="function"><span class="keyword">void</span> <span class="title">ComfortableDataExpress</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> a,TCHAR * str)</span>
+</span>{
+	<span class="keyword">if</span>(ConvertToGB(a)&gt;=<span class="number">1</span>)<span class="built_in">sprintf</span>(str,TEXT(<span class="string">"%.2lf GB"</span>),ConvertToGB(a));
+	<span class="keyword">else</span> <span class="keyword">if</span>(ConvertToMB(a)&gt;=<span class="number">1</span>)<span class="built_in">sprintf</span>(str,TEXT(<span class="string">"%.2lf MB"</span>),ConvertToMB(a));
+	<span class="keyword">else</span> <span class="built_in">sprintf</span>(str,TEXT(<span class="string">"%.2lf KB"</span>),ConvertToKB(a));
 }
 
-double ComfortableData(long long a)
-{
-    if(ConvertToGB(a)&gt;=1)return ConvertToGB(a);
-    else if(ConvertToMB(a)&gt;=1)return ConvertToMB(a);
-    else return ConvertToKB(a);
+<span class="function"><span class="keyword">double</span> <span class="title">ComfortableData</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> a)</span>
+</span>{
+	<span class="keyword">if</span>(ConvertToGB(a)&gt;=<span class="number">1</span>)<span class="keyword">return</span> ConvertToGB(a);
+	<span class="keyword">else</span> <span class="keyword">if</span>(ConvertToMB(a)&gt;=<span class="number">1</span>)<span class="keyword">return</span> ConvertToMB(a);
+	<span class="keyword">else</span> <span class="keyword">return</span> ConvertToKB(a);
 }
-long LODWORD(long long a)
-{
-    return (DWORD)a;
+<span class="function"><span class="keyword">long</span> <span class="title">LODWORD</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> a)</span>
+</span>{
+	<span class="keyword">return</span> (DWORD)a;
 }
-long HIDWORD(long long a)
-{
-    return (a&gt;&gt;32);
+<span class="function"><span class="keyword">long</span> <span class="title">HIDWORD</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> a)</span>
+</span>{
+	<span class="keyword">return</span> (a&gt;&gt;<span class="number">32</span>);
 }
 
 
-/*------------------------------------------------------------------------------------------------*/
-//读取硬盘
+<span class="comment">/*------------------------------------------------------------------------------------------------*/</span>
+<span class="comment">//读取硬盘</span>
 
-DWORD ReadDisk(unsigned char* &amp;out,long start,long High,DWORD size,int pos)
-{
-    /*OVERLAPPED over = { 0 };
-    over.Offset = start;  */
+<span class="function">DWORD <span class="title">ReadDisk</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">char</span>* &amp;out,<span class="keyword">long</span> start,<span class="keyword">long</span> High,DWORD size,<span class="keyword">int</span> pos)</span>
+</span>{
+    <span class="comment">/*OVERLAPPED over = { 0 };
+    over.Offset = start;  */</span>
 
     HANDLE handle = CreateFile(
         TEXT(__READ),
         GENERIC_READ,
         FILE_SHARE_READ|FILE_SHARE_WRITE,
-        0,
+        <span class="number">0</span>,
         OPEN_EXISTING,
-        0,
-        0);
-    if (handle == INVALID_HANDLE_VALUE)return 0;
-    unsigned char* buffer = new unsigned char[size + 1];
-    SetFilePointer(handle, start, &amp;High, pos);
+        <span class="number">0</span>,
+        <span class="number">0</span>);
+	<span class="keyword">if</span> (handle == INVALID_HANDLE_VALUE)<span class="keyword">return</span> <span class="number">0</span>;
+    <span class="keyword">unsigned</span> <span class="keyword">char</span>* buffer = <span class="keyword">new</span> <span class="keyword">unsigned</span> <span class="keyword">char</span>[size + <span class="number">1</span>];
+	SetFilePointer(handle, start, &amp;High, pos);
     DWORD readsize;
-    if (ReadFile(handle, buffer, size, &amp;readsize, NULL) == 0)
+    <span class="keyword">if</span> (ReadFile(handle, buffer, size, &amp;readsize, <span class="literal">NULL</span>) == <span class="number">0</span>)
     {
         CloseHandle(handle);
-        return 0;
+        <span class="keyword">return</span> <span class="number">0</span>;
     }
-    buffer[size] = 0;
+    buffer[size] = <span class="number">0</span>;
     out = buffer;
 
 
-    return size;
+    <span class="keyword">return</span> size;
 }
-/*------------------------------------------------------------------------------------------------*/
+<span class="comment">/*------------------------------------------------------------------------------------------------*/</span>
 
 
 
-/*------------------------------------------------------------------------------------------------*/
-//判断字符
+<span class="comment">/*------------------------------------------------------------------------------------------------*/</span>
+<span class="comment">//判断字符</span>
 
- bool Check(unsigned char * a,unsigned char * str,int len)
- {
-     for(int i=0;i&lt;len;i++)
-     {
-         if(a[i]!=str[i])return false;
-     }
-     return true;
+ <span class="function"><span class="keyword">bool</span> <span class="title">Check</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">char</span> * a,<span class="keyword">unsigned</span> <span class="keyword">char</span> * str,<span class="keyword">int</span> len)</span>
+ </span>{
+	 <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;len;i++)
+	 {
+		 <span class="keyword">if</span>(a[i]!=str[i])<span class="keyword">return</span> <span class="literal">false</span>;
+	 }
+	 <span class="keyword">return</span> <span class="literal">true</span>;
  }
 
-/*------------------------------------------------------------------------------------------------*/
+<span class="comment">/*------------------------------------------------------------------------------------------------*/</span>
 
 
-/*------------------------------------------------------------------------------------------------*/
-//十六进制字符转十进制数字
- unsigned long long HexStringToLong(unsigned char * a,int len)
- {
-     unsigned long long num=0,t=0;
-     for(int i =0;i&lt;len;i++)
-     {
-         t=a[i];
-         for(int j=i;j&gt;0;j--){
-             t*=256;
-         }
-         num+=t;
-     }
-     return num;
+<span class="comment">/*------------------------------------------------------------------------------------------------*/</span>
+<span class="comment">//十六进制字符转十进制数字</span>
+ <span class="function"><span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> <span class="title">HexStringToLong</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">char</span> * a,<span class="keyword">int</span> len)</span>
+ </span>{
+ 	<span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> num=<span class="number">0</span>,t=<span class="number">0</span>;
+ 	<span class="keyword">for</span>(<span class="keyword">int</span> i =<span class="number">0</span>;i&lt;len;i++)
+ 	{
+ 		t=a[i];
+ 		<span class="keyword">for</span>(<span class="keyword">int</span> j=i;j&gt;<span class="number">0</span>;j--){
+ 			t*=<span class="number">256</span>;
+ 		}
+ 		num+=t;
+ 	}
+ 	<span class="keyword">return</span> num;
  }
 
-//获取字符信息
- void TranslateData(unsigned char * a,int len, unsigned char * b,bool Remove_zero)
-   {
-         int zero_num=0;
-         int char_num=0;
-         if (len){
-             for (int i = 0; i &lt; len; i++){
-                 if (Remove_zero)
-                 {
-                     if(a[i]==0)
-                     {zero_num++;
-                     continue;
-                     }
-                 }
-                 char_num++;
-                 b[i-zero_num]=a[i];
-             }
-         }
-         b[char_num]=0;
-         sprintf((char *)b,&quot;%s&quot;,b);
+<span class="comment">//获取字符信息</span>
+ <span class="function"><span class="keyword">void</span> <span class="title">TranslateData</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">char</span> * a,<span class="keyword">int</span> len, <span class="keyword">unsigned</span> <span class="keyword">char</span> * b,<span class="keyword">bool</span> Remove_zero)</span>
+   </span>{
+ 	    <span class="keyword">int</span> zero_num=<span class="number">0</span>;
+ 		<span class="keyword">int</span> char_num=<span class="number">0</span>;
+ 		<span class="keyword">if</span> (len){
+ 			<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; len; i++){
+ 				<span class="keyword">if</span> (Remove_zero)
+ 				{
+ 					<span class="keyword">if</span>(a[i]==<span class="number">0</span>)
+ 					{zero_num++;
+ 					<span class="keyword">continue</span>;
+ 					}
+ 				}
+ 				char_num++;
+ 				b[i-zero_num]=a[i];
+ 			}
+ 		}
+ 		b[char_num]=<span class="number">0</span>;
+ 		<span class="built_in">sprintf</span>((<span class="keyword">char</span> *)b,<span class="string">"%s"</span>,b);
   }
 
- /*------------------------------------------------------------------------------------------------*/
+ <span class="comment">/*------------------------------------------------------------------------------------------------*/</span>
 
 
 
-/*------------------------------------------------------------------------------------------------*/
-//分析DPT
+<span class="comment">/*------------------------------------------------------------------------------------------------*/</span>
+<span class="comment">//分析DPT</span>
 
- void Analysis_DPT(unsigned char *a ,int show_analysis,bool extenedFlag,long long posOffset)
- {
-      TCHAR buff[512];
-      unsigned char * BUFFER;
-      long long offset=0;
-      unsigned char * partition_sector;
-      for (int i=0;i&lt;4;i++)
-      {
-          if(Check(&amp;a[i*16],NULL_16,16))break;
-          else
-          {
-               if (show_analysis)
-             {
-                 printf(&quot; 活动分区标志: %02x |&quot;, a[0+i*16]);
+ <span class="function"><span class="keyword">void</span> <span class="title">Analysis_DPT</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">char</span> *a ,<span class="keyword">int</span> show_analysis,<span class="keyword">bool</span> extenedFlag,<span class="keyword">long</span> <span class="keyword">long</span> posOffset)</span>
+ </span>{
+ 	 TCHAR buff[<span class="number">512</span>];
+ 	 <span class="keyword">unsigned</span> <span class="keyword">char</span> * BUFFER;
+ 	 <span class="keyword">long</span> <span class="keyword">long</span> offset=<span class="number">0</span>;
+ 	 <span class="keyword">unsigned</span> <span class="keyword">char</span> * partition_sector;
+ 	 <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">4</span>;i++)
+ 	 {
+ 		 <span class="keyword">if</span>(Check(&amp;a[i*<span class="number">16</span>],NULL_16,<span class="number">16</span>))<span class="keyword">break</span>;
+ 		 <span class="keyword">else</span>
+ 		 {
+ 			  <span class="keyword">if</span> (show_analysis)
+ 			{
+ 				<span class="built_in">printf</span>(<span class="string">" 活动分区标志: %02x |"</span>, a[<span class="number">0</span>+i*<span class="number">16</span>]);
 
-                 printf(&quot; 分区类型标志: %02x |&quot;, a[4+i*16]);
+ 				<span class="built_in">printf</span>(<span class="string">" 分区类型标志: %02x |"</span>, a[<span class="number">4</span>+i*<span class="number">16</span>]);
 
-                 printf(&quot; 偏移扇区: %I64d |&quot;, HexStringToLong(&amp;a[8+i*16],4));
+ 				<span class="built_in">printf</span>(<span class="string">" 偏移扇区: %I64d |"</span>, HexStringToLong(&amp;a[<span class="number">8</span>+i*<span class="number">16</span>],<span class="number">4</span>));
 
-                 ComfortableDataExpress(512*HexStringToLong(&amp;a[12+i*16],4),buff);
-                 printf(&quot; 磁盘大小: %s  |\n&quot;,buff );
-             }
+ 				ComfortableDataExpress(<span class="number">512</span>*HexStringToLong(&amp;a[<span class="number">12</span>+i*<span class="number">16</span>],<span class="number">4</span>),buff);
+ 				<span class="built_in">printf</span>(<span class="string">" 磁盘大小: %s  |\n"</span>,buff );
+ 			}
 
-              offset=512*HexStringToLong(&amp;a[8+i*16],4);
-              if(Check(&amp;a[4+i*16],(unsigned char *)&quot;\x0f&quot;,1) || (i==1 &amp;&amp; extenedFlag))
-              {
+ 			 offset=<span class="number">512</span>*HexStringToLong(&amp;a[<span class="number">8</span>+i*<span class="number">16</span>],<span class="number">4</span>);
+ 			 <span class="keyword">if</span>(Check(&amp;a[<span class="number">4</span>+i*<span class="number">16</span>],(<span class="keyword">unsigned</span> <span class="keyword">char</span> *)<span class="string">"\x0f"</span>,<span class="number">1</span>) || (i==<span class="number">1</span> &amp;&amp; extenedFlag))
+ 			 {
 
-                  if(exFlag){
-                     MainExtenedOffset = 512*HexStringToLong(&amp;a[8+i*16],4);
-                     exFlag=0;
-                  }
-                  if(extenedFlag)offset+=MainExtenedOffset;
+ 				 <span class="keyword">if</span>(exFlag){
+ 					MainExtenedOffset = <span class="number">512</span>*HexStringToLong(&amp;a[<span class="number">8</span>+i*<span class="number">16</span>],<span class="number">4</span>);
+ 					exFlag=<span class="number">0</span>;
+ 				 }
+ 				 <span class="keyword">if</span>(extenedFlag)offset+=MainExtenedOffset;
 
-                  printf(&quot; 偏移扇区: %I64d |\n&quot;, HexStringToLong(&amp;a[8+i*16],4));
+ 				 <span class="built_in">printf</span>(<span class="string">" 偏移扇区: %I64d |\n"</span>, HexStringToLong(&amp;a[<span class="number">8</span>+i*<span class="number">16</span>],<span class="number">4</span>));
 
-                  ReadDisk(partition_sector,LODWORD(offset),HIDWORD(offset),SECTOR_LEN);
-                  Analysis_DPT(&amp;partition_sector[OFFSET_DPT],1,1,offset);
-                  return ;
-              }
+ 				 ReadDisk(partition_sector,LODWORD(offset),HIDWORD(offset),SECTOR_LEN);
+ 				 Analysis_DPT(&amp;partition_sector[OFFSET_DPT],<span class="number">1</span>,<span class="number">1</span>,offset);
+ 				 <span class="keyword">return</span> ;
+ 			 }
 
 
-              if(extenedFlag)offset+=posOffset;
-              ReadDisk(partition_sector,LODWORD(offset),HIDWORD(offset),SECTOR_LEN);
-              //ShowData(partition_sector,512);
-              if(Analysis_Partition_Type(partition_sector)!=GPT)
-              {
-                  printf(&quot;\n检测到该磁盘为MBR磁盘!\n\n&quot;);
-                  Drive drive;
-                  //活动分区标志
-                  if(a[0+i*16]==0x80)drive.active=true;
-                  //盘位移
-                  if(!extenedFlag)
-                  offset=512*HexStringToLong(&amp;a[8+i*16],4);//计算逻辑分区的位移
-                  drive.offset=offset;//存入位移
-                  drive.size=512*HexStringToLong(&amp;a[12+i*16],4);//盘大小
+ 			 <span class="keyword">if</span>(extenedFlag)offset+=posOffset;
+ 			 ReadDisk(partition_sector,LODWORD(offset),HIDWORD(offset),SECTOR_LEN);
+ 			 <span class="comment">//ShowData(partition_sector,512);</span>
+ 			 <span class="keyword">if</span>(Analysis_Partition_Type(partition_sector)!=GPT)
+ 			 {
+ 				 <span class="built_in">printf</span>(<span class="string">"\n检测到该磁盘为MBR磁盘!\n\n"</span>);
+ 				 Drive drive;
+ 				 <span class="comment">//活动分区标志</span>
+ 				 <span class="keyword">if</span>(a[<span class="number">0</span>+i*<span class="number">16</span>]==<span class="number">0x80</span>)drive.active=<span class="literal">true</span>;
+ 				 <span class="comment">//盘位移</span>
+ 				 <span class="keyword">if</span>(!extenedFlag)
+ 				 offset=<span class="number">512</span>*HexStringToLong(&amp;a[<span class="number">8</span>+i*<span class="number">16</span>],<span class="number">4</span>);<span class="comment">//计算逻辑分区的位移</span>
+ 				 drive.offset=offset;<span class="comment">//存入位移</span>
+ 				 drive.size=<span class="number">512</span>*HexStringToLong(&amp;a[<span class="number">12</span>+i*<span class="number">16</span>],<span class="number">4</span>);<span class="comment">//盘大小</span>
 
-                  //开始跳转至盘分析
+ 				 <span class="comment">//开始跳转至盘分析</span>
 
-                  ReadDisk(BUFFER,LODWORD(offset),HIDWORD(offset),1*SECTOR_LEN);
-                  drive.type = Analysis_Partition_Type(BUFFER);
-                  switch(drive.type)
-                  {
-                  case NTFS:
-                      break;
-                  case FAT32:
-                     drive.cluster = HexStringToLong(&amp;BUFFER[0x0d],1);
-                     drive.reversedSector=HexStringToLong(&amp;BUFFER[0x0e],2);
-                     drive.FATOffest = drive.reversedSector * SECTOR_LEN;
-                     drive.FATSector = HexStringToLong(&amp;BUFFER[0x24],4);
-                     drive.rootOffset = drive.FATOffest + SECTOR_LEN * drive.FATSector *2;
-                     break;
-                  case UNKNOWN:
-                      break;
-                  }
-                  DriveList.push_back(drive);
-              }
+ 				 ReadDisk(BUFFER,LODWORD(offset),HIDWORD(offset),<span class="number">1</span>*SECTOR_LEN);
+ 				 drive.type = Analysis_Partition_Type(BUFFER);
+ 				 <span class="keyword">switch</span>(drive.type)
+ 				 {
+ 				 <span class="keyword">case</span> NTFS:
+ 					 <span class="keyword">break</span>;
+ 				 <span class="keyword">case</span> FAT32:
+ 					drive.cluster = HexStringToLong(&amp;BUFFER[<span class="number">0x0d</span>],<span class="number">1</span>);
+ 					drive.reversedSector=HexStringToLong(&amp;BUFFER[<span class="number">0x0e</span>],<span class="number">2</span>);
+ 					drive.FATOffest = drive.reversedSector * SECTOR_LEN;
+ 					drive.FATSector = HexStringToLong(&amp;BUFFER[<span class="number">0x24</span>],<span class="number">4</span>);
+ 					drive.rootOffset = drive.FATOffest + SECTOR_LEN * drive.FATSector *<span class="number">2</span>;
+ 					<span class="keyword">break</span>;
+ 				 <span class="keyword">case</span> UNKNOWN:
+ 					 <span class="keyword">break</span>;
+ 				 }
+ 				 DriveList.push_back(drive);
+ 			 }
 
-              else
-              {
-                  printf(&quot;\n检测到该磁盘为GPT磁盘!\n\n&quot;);
-                  Analysis_GPT(offset,1);
-              }
-          }
-      }
+ 			 <span class="keyword">else</span>
+ 			 {
+ 				 <span class="built_in">printf</span>(<span class="string">"\n检测到该磁盘为GPT磁盘!\n\n"</span>);
+ 				 Analysis_GPT(offset,<span class="number">1</span>);
+ 			 }
+ 		 }
+ 	 }
   }
 
 
- /*------------------------------------------------------------------------------------------------*/
-/*------------------------------------------------------------------------------------------------*/
+ <span class="comment">/*------------------------------------------------------------------------------------------------*/</span>
+<span class="comment">/*------------------------------------------------------------------------------------------------*/</span>
 
 
- DriveType Analysis_Partition_Type(unsigned char *a ,int show_analysis)
- {
+ <span class="function">DriveType <span class="title">Analysis_Partition_Type</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">char</span> *a ,<span class="keyword">int</span> show_analysis)</span>
+ </span>{
 
-           if(Check(a,EFI_FLAG,PARTITION_FLAG_LEN))
-           {
-               GPT_FLAG=1;
-               if(show_analysis)printf(&quot; 磁盘为GPT磁盘!\n&quot;);
-               return GPT;
-           }
-           else if(Check(&amp;a[3],NTFS_SYMBOL,PARTITION_FLAG_LEN))
-           {
-               if(show_analysis)printf(&quot;分区格式：%-10s|&quot;,&quot;NTFS&quot;);
-               return NTFS;
-           }
-           else if(Check(&amp;a[3],FAT32_SYMBOL,PARTITION_FLAG_LEN))
-           {
-               if(show_analysis)printf(&quot;分区格式：%-10s|&quot;,&quot;FAT32&quot;);
-               return FAT32;
-           }
-           else
-           {
-               if(show_analysis)printf(&quot;分区格式：%-10s|&quot;,&quot;UNKNOWN&quot;);
-               return UNKNOWN;
-           }
-       }
+  		 <span class="keyword">if</span>(Check(a,EFI_FLAG,PARTITION_FLAG_LEN))
+  		 {
+  			 GPT_FLAG=<span class="number">1</span>;
+  			 <span class="keyword">if</span>(show_analysis)<span class="built_in">printf</span>(<span class="string">" 磁盘为GPT磁盘!\n"</span>);
+  			 <span class="keyword">return</span> GPT;
+  		 }
+  		 <span class="keyword">else</span> <span class="keyword">if</span>(Check(&amp;a[<span class="number">3</span>],NTFS_SYMBOL,PARTITION_FLAG_LEN))
+  		 {
+  			 <span class="keyword">if</span>(show_analysis)<span class="built_in">printf</span>(<span class="string">"分区格式：%-10s|"</span>,<span class="string">"NTFS"</span>);
+  			 <span class="keyword">return</span> NTFS;
+  		 }
+  		 <span class="keyword">else</span> <span class="keyword">if</span>(Check(&amp;a[<span class="number">3</span>],FAT32_SYMBOL,PARTITION_FLAG_LEN))
+  		 {
+  			 <span class="keyword">if</span>(show_analysis)<span class="built_in">printf</span>(<span class="string">"分区格式：%-10s|"</span>,<span class="string">"FAT32"</span>);
+  			 <span class="keyword">return</span> FAT32;
+  		 }
+  		 <span class="keyword">else</span>
+  		 {
+  			 <span class="keyword">if</span>(show_analysis)<span class="built_in">printf</span>(<span class="string">"分区格式：%-10s|"</span>,<span class="string">"UNKNOWN"</span>);
+  			 <span class="keyword">return</span> UNKNOWN;
+  		 }
+  	 }
 
-/*------------------------------------------------------------------------------------------------*/
-
-
+<span class="comment">/*------------------------------------------------------------------------------------------------*/</span>
 
 
-/*------------------------------------------------------------------------------------------------*/
- //解析GPT头
 
- void Analysis_GPT(long  long offset,int show_analysis)
- {
 
-     TCHAR buff[512];
-     unsigned char * GPT_PT;
-     unsigned char * BUFFER;
-     ReadDisk(GPT_PT,LODWORD(offset),HIDWORD(offset),32*SECTOR_LEN);
-     long long GPT_Offset =  HexStringToLong(&amp;GPT_PT[0x48],8)*512;
-     long long Offset=0;
-     ReadDisk(GPT_PT,LODWORD(GPT_Offset),HIDWORD(GPT_Offset),32*SECTOR_LEN);
+<span class="comment">/*------------------------------------------------------------------------------------------------*/</span>
+ <span class="comment">//解析GPT头</span>
 
-     for(int i=0;i&lt;128;i++)
-     {
-         if(Check(&amp;GPT_PT[i*128],NULL_16,16))break;
-         Drive drive;
-         //初始化GPT磁盘的分区属性
+ <span class="function"><span class="keyword">void</span> <span class="title">Analysis_GPT</span><span class="params">(<span class="keyword">long</span>  <span class="keyword">long</span> offset,<span class="keyword">int</span> show_analysis)</span>
+ </span>{
 
-         //分区大小
-         drive.size = 512*(HexStringToLong(&amp;GPT_PT[i*128+0x28],8)-HexStringToLong(&amp;GPT_PT[i*128+0x20],8) );
-         //GPT头自带72字节的分区信息
-         TranslateData(&amp;GPT_PT[i*128+0x38],72,(unsigned char *)drive.msg,true);
-         //分区偏移
-         Offset=512*(HexStringToLong(&amp;GPT_PT[i*128+0x20],8));
-         drive.offset = Offset;
-         ReadDisk(BUFFER,LODWORD(Offset),HIDWORD(Offset),1*SECTOR_LEN);
-         drive.type = Analysis_Partition_Type(BUFFER);
-         switch(drive.type)
-         {
-         case NTFS:
-             break;
-         case FAT32:
+ 	TCHAR buff[<span class="number">512</span>];
+ 	<span class="keyword">unsigned</span> <span class="keyword">char</span> * GPT_PT;
+ 	<span class="keyword">unsigned</span> <span class="keyword">char</span> * BUFFER;
+ 	ReadDisk(GPT_PT,LODWORD(offset),HIDWORD(offset),<span class="number">32</span>*SECTOR_LEN);
+ 	<span class="keyword">long</span> <span class="keyword">long</span> GPT_Offset =  HexStringToLong(&amp;GPT_PT[<span class="number">0x48</span>],<span class="number">8</span>)*<span class="number">512</span>;
+ 	<span class="keyword">long</span> <span class="keyword">long</span> Offset=<span class="number">0</span>;
+ 	ReadDisk(GPT_PT,LODWORD(GPT_Offset),HIDWORD(GPT_Offset),<span class="number">32</span>*SECTOR_LEN);
 
-             drive.cluster = HexStringToLong(&amp;BUFFER[0x0d],1);
-             drive.reversedSector=HexStringToLong(&amp;BUFFER[0x0e],2);
-             drive.FATOffest = drive.reversedSector * SECTOR_LEN;
-             drive.FATSector = HexStringToLong(&amp;BUFFER[0x24],4);
-             drive.rootOffset = drive.FATOffest + SECTOR_LEN * drive.FATSector *2;
-             break;
-         case UNKNOWN:
-             break;
+ 	<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">128</span>;i++)
+ 	{
+ 		<span class="keyword">if</span>(Check(&amp;GPT_PT[i*<span class="number">128</span>],NULL_16,<span class="number">16</span>))<span class="keyword">break</span>;
+ 		Drive drive;
+ 		<span class="comment">//初始化GPT磁盘的分区属性</span>
 
-         }
+ 		<span class="comment">//分区大小</span>
+ 		drive.size = <span class="number">512</span>*(HexStringToLong(&amp;GPT_PT[i*<span class="number">128</span>+<span class="number">0x28</span>],<span class="number">8</span>)-HexStringToLong(&amp;GPT_PT[i*<span class="number">128</span>+<span class="number">0x20</span>],<span class="number">8</span>) );
+ 		<span class="comment">//GPT头自带72字节的分区信息</span>
+ 		TranslateData(&amp;GPT_PT[i*<span class="number">128</span>+<span class="number">0x38</span>],<span class="number">72</span>,(<span class="keyword">unsigned</span> <span class="keyword">char</span> *)drive.msg,<span class="literal">true</span>);
+ 		<span class="comment">//分区偏移</span>
+ 		Offset=<span class="number">512</span>*(HexStringToLong(&amp;GPT_PT[i*<span class="number">128</span>+<span class="number">0x20</span>],<span class="number">8</span>));
+ 		drive.offset = Offset;
+ 		ReadDisk(BUFFER,LODWORD(Offset),HIDWORD(Offset),<span class="number">1</span>*SECTOR_LEN);
+ 		drive.type = Analysis_Partition_Type(BUFFER);
+ 		<span class="keyword">switch</span>(drive.type)
+ 		{
+ 		<span class="keyword">case</span> NTFS:
+ 			<span class="keyword">break</span>;
+ 		<span class="keyword">case</span> FAT32:
 
-         DriveList.push_back(drive);
+ 			drive.cluster = HexStringToLong(&amp;BUFFER[<span class="number">0x0d</span>],<span class="number">1</span>);
+ 			drive.reversedSector=HexStringToLong(&amp;BUFFER[<span class="number">0x0e</span>],<span class="number">2</span>);
+ 			drive.FATOffest = drive.reversedSector * SECTOR_LEN;
+ 			drive.FATSector = HexStringToLong(&amp;BUFFER[<span class="number">0x24</span>],<span class="number">4</span>);
+ 			drive.rootOffset = drive.FATOffest + SECTOR_LEN * drive.FATSector *<span class="number">2</span>;
+ 			<span class="keyword">break</span>;
+ 		<span class="keyword">case</span> UNKNOWN:
+ 			<span class="keyword">break</span>;
 
-         if(show_analysis)
-             {
+ 		}
 
-                 ComfortableDataExpress(512*(HexStringToLong(&amp;GPT_PT[i*128+0x28],8)-HexStringToLong(&amp;GPT_PT[i*128+0x20],8) ),buff );
-                 printf(&quot; 磁盘大小: %-10s  |&quot;,buff );
-                 TranslateData(&amp;GPT_PT[i*128+0x38],72,(unsigned char *)buff,true);
-                 Offset=512*(HexStringToLong(&amp;GPT_PT[i*128+0x20],8));
-                 ReadDisk(BUFFER,LODWORD(Offset),HIDWORD(Offset),1*SECTOR_LEN);
-                 Analysis_Partition_Type(BUFFER,1);
-                 printf(&quot; GPT磁盘分区信息: %-30s |\n&quot;,buff);
+ 		DriveList.push_back(drive);
 
-             }
-     }
-     printf(&quot;\n&quot;);
+ 		<span class="keyword">if</span>(show_analysis)
+ 			{
+
+ 				ComfortableDataExpress(<span class="number">512</span>*(HexStringToLong(&amp;GPT_PT[i*<span class="number">128</span>+<span class="number">0x28</span>],<span class="number">8</span>)-HexStringToLong(&amp;GPT_PT[i*<span class="number">128</span>+<span class="number">0x20</span>],<span class="number">8</span>) ),buff );
+ 				<span class="built_in">printf</span>(<span class="string">" 磁盘大小: %-10s  |"</span>,buff );
+ 				TranslateData(&amp;GPT_PT[i*<span class="number">128</span>+<span class="number">0x38</span>],<span class="number">72</span>,(<span class="keyword">unsigned</span> <span class="keyword">char</span> *)buff,<span class="literal">true</span>);
+ 				Offset=<span class="number">512</span>*(HexStringToLong(&amp;GPT_PT[i*<span class="number">128</span>+<span class="number">0x20</span>],<span class="number">8</span>));
+ 				ReadDisk(BUFFER,LODWORD(Offset),HIDWORD(Offset),<span class="number">1</span>*SECTOR_LEN);
+ 				Analysis_Partition_Type(BUFFER,<span class="number">1</span>);
+ 				<span class="built_in">printf</span>(<span class="string">" GPT磁盘分区信息: %-30s |\n"</span>,buff);
+
+ 			}
+ 	}
+ 	<span class="built_in">printf</span>(<span class="string">"\n"</span>);
  }
 
- /*------------------------------------------------------------------------------------------------*/
+ <span class="comment">/*------------------------------------------------------------------------------------------------*/</span>
 </code></pre>
 <p>输出结果:</p>
-<pre><code class="lang-bash">主分区DPT分析：
+<pre class="highlight"><code class="bash">主分区DPT分析：
  活动分区标志: 00 | 分区类型标志: ee | 偏移扇区: 1 | 磁盘大小: 465.76 GB  |
 
 检测到该磁盘为GPT磁盘!
@@ -667,25 +672,25 @@ DWORD ReadDisk(unsigned char* &amp;out,long start,long High,DWORD size,int pos)
 
 分区个数:12
 FAT32磁盘信息如下：
-    -------------------------------------------
-    分区序号：0
-    分区大小: 500.00 MB  
-    分区偏移:1048576 字节
-    簇:8 个扇区
-    保留扇区:6206 个
-    FAT表偏移:3177472 字节
-    FAT表扇区:993 个
-    根目录偏移:4194304 字节
-    -------------------------------------------
-    分区序号：1
-    分区大小: 40.00 MB  
-    分区偏移:525336576 字节
-    簇:1 个扇区
-    保留扇区:7038 个
-    FAT表偏移:3603456 字节
-    FAT表扇区:577 个
-    根目录偏移:4194304 字节
-    -------------------------------------------
+	-------------------------------------------
+	分区序号：0
+	分区大小: 500.00 MB  
+	分区偏移:1048576 字节
+	簇:8 个扇区
+	保留扇区:6206 个
+	FAT表偏移:3177472 字节
+	FAT表扇区:993 个
+	根目录偏移:4194304 字节
+	-------------------------------------------
+	分区序号：1
+	分区大小: 40.00 MB  
+	分区偏移:525336576 字节
+	簇:1 个扇区
+	保留扇区:7038 个
+	FAT表偏移:3603456 字节
+	FAT表扇区:577 个
+	根目录偏移:4194304 字节
+	-------------------------------------------
 </code></pre>
 
         </div>
