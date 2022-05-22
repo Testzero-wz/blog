@@ -120,6 +120,69 @@
             <div class="container">
     
     
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+			expand_toc()
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
 
     
     <article class="post-wrap">
@@ -149,12 +212,16 @@
         </header>
 
         <div class="post-content">
-            <p><img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/19-29-11.png"> &gt;
-逆向入坑的试炼，跌跌撞撞地做完，也算是快速得积累了一些逆向的经验，很多地方不甚了了，望见谅</p>
+            <p><img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/19-29-11.png"></p>
+<blockquote>
+<p>逆向入坑的试炼，跌跌撞撞地做完，也算是快速得积累了一些逆向的经验，很多地方不甚了了，望见谅</p>
+</blockquote>
 <a id="more"></a>
 <p>看雪的CTF都是一些逆向题，对于最近想要入门逆向的我很具有吸引力，正在自学win32汇编的我想来练手，看到第一题太简单了，故第二题也想一起做了，然后发现事情并没有那么简单(后来事实证明这个比赛不适合入门，2333)
-<strong>进入正题</strong> ## 分析 PE分析软件告诉我这是一个未加壳的win32
-console程序 (巧了，我正在学win32 汇编)</p>
+<strong>进入正题</strong></p>
+<h2 id="分析">分析</h2>
+<p>PE分析软件告诉我这是一个未加壳的win32 console程序
+(巧了，我正在学win32 汇编)</p>
 <p><img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/19-30-37.jpg"></p>
 <p>随直接丢IDA静态分析一下</p>
 <p><img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/19-33-41.jpg">
@@ -164,16 +231,18 @@ console程序 (巧了，我正在学win32 汇编)</p>
 在看接下来的两个函数<code>sub_401090</code>和<code>sub_4010E0</code></p>
 <p><img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/19-39-50.jpg"> <img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/19-40-00.jpg">
 看样子只要v1和v0满足这两个判断的要求就能将<code>dword_41B034--</code>两次，就能打印出<code>"You get it!\n"</code>了</p>
-<p>随后我就没啥好说的了，可以直接写脚本跑出来v0和v1就好了 ## 陷入僵局
-然后我看了一下别人的WP，发现事情果然没有那么简单</p>
+<p>随后我就没啥好说的了，可以直接写脚本跑出来v0和v1就好了</p>
+<h2 id="陷入僵局">陷入僵局</h2>
+<p>然后我看了一下别人的WP，发现事情果然没有那么简单</p>
 <p>还是太naive啦</p>
 <p>原来这两个条件是无解的</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span> <span class="op">*</span> (v1 <span class="op">-</span> v0) <span class="op">+</span> v1 <span class="op">==</span> <span class="bn">0x8F503A42</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dv">17</span> <span class="op">*</span> (v1 <span class="op">-</span> v0) <span class="op">+</span> v1 <span class="op">==</span> <span class="bn">0xF3A94883</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#两式相减</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="dv">12</span><span class="op">*</span>(v1<span class="op">-</span>v0)<span class="op">=</span><span class="dv">1683557953</span>(奇数)</span></code></pre></div>
-<p>这就非常的尴尬了 ## 还是太naive
-再看第一个函数<code>sub_401050</code>的汇编代码</p>
+<p>这就非常的尴尬了</p>
+<h2 id="还是太naive">还是太naive</h2>
+<p>再看第一个函数<code>sub_401050</code>的汇编代码</p>
 <p>IDA反出来的代码不太利于理解，直接放Ollydbg的反汇编代码，等会反正会用到它</p>
 <p><img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/20-04-43.jpg"></p>
 <pre class="x86asm"><code>sub esp,0xC
@@ -203,12 +272,13 @@ retn</code></pre>
 <p>如果我们想直接跳到打印<code>"You get it!\n"</code>函数的地址</p>
 <p><img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/20-21-43.jpg">
 可以将字符串后三个字符构造为对应ascl码为0x2f 0x10
-0x40的字符串就可以跳转到<code>YouGotit</code>了 ## 再次陷入僵局
-然而事情还是没有那么简单
+0x40的字符串就可以跳转到<code>YouGotit</code>了</p>
+<h2 id="再次陷入僵局">再次陷入僵局</h2>
+<p>然而事情还是没有那么简单
 比赛规定了咱们只能输入数字和字母，而对应ASCLL码为0x2f 0x10
 0x40的字符串并不是都是字母和数字 emmmmmmmm...... 果然不适合入门</p>
-<p><img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/20-27-21.jpg"> ##
-好戏才刚刚开始</p>
+<p><img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/20-27-21.jpg"></p>
+<h2 id="好戏才刚刚开始">好戏才刚刚开始</h2>
 <p>通过观(kan)察(WP)我们注意到有一段很奇怪的数据段</p>
 <p><img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/20-30-52.jpg">
 然后还是通过观(kan)察(WP)发现这些数据居然都是代码，而且还是加了花的代码
@@ -218,8 +288,10 @@ retn</code></pre>
 <p><img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/20-33-51.jpg">
 该数据段的地址为<code>0x00413131</code>对应的ASCLL码字符串为<code>11A</code>
 到此，我们可以看出这到题的思路就是构造缓冲区溢出，跳转到这个加了花的数据段上执行，然后分析得出flag</p>
-<p>看到了大佬的WP中的一句话 &gt;
-可以看到很多跳转指令。熟悉的人一眼就明白。这里其实是花指令。而且是最简单的花指令。就是来回跳一跳，吓唬吓唬你而已。相信我。所有的花指令都是纸老虎。复杂的花指令可以用插件记录程序流程分析一下脱花。简单的花指令（就像本题中遇到的这种）根本不用鸟它。完全是战五渣。直接gang正面……</p>
+<p>看到了大佬的WP中的一句话</p>
+<blockquote>
+<p>可以看到很多跳转指令。熟悉的人一眼就明白。这里其实是花指令。而且是最简单的花指令。就是来回跳一跳，吓唬吓唬你而已。相信我。所有的花指令都是纸老虎。复杂的花指令可以用插件记录程序流程分析一下脱花。简单的花指令（就像本题中遇到的这种）根本不用鸟它。完全是战五渣。直接gang正面……</p>
+</blockquote>
 <p>于是我充满信心，开始了我第一次去花之旅 打开Ollydbg开始动态调试
 (恩，这是我第一次动态调试)
 构造字符串<code>11223344556611A</code>使得咱们能给够跳转到0x00413131处执行</p>
@@ -229,9 +301,13 @@ retn</code></pre>
 <img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/20-44-26.jpg"></p>
 <p>emmmmmm..... 这么多的花指令跳转，让我瑟瑟发抖</p>
 <p>借助上面大佬的"教诲"壮胆，硬着头皮执行了下去
-去花的原则是(当然我也不知道这样对不对,是不是一个好方法) &gt; +
-上一步指令和跳转所依赖的标志位无关的直接跳过 &gt; +
-若是遇到依赖的标志位的跳转分支则下断点，选择其中一个跟进，不行的话就重新来，进入另一个分支</p>
+去花的原则是(当然我也不知道这样对不对,是不是一个好方法)</p>
+<blockquote>
+<ul>
+<li>上一步指令和跳转所依赖的标志位无关的直接跳过</li>
+<li>若是遇到依赖的标志位的跳转分支则下断点，选择其中一个跟进，不行的话就重新来，进入另一个分支</li>
+</ul>
+</blockquote>
 <p>历经两天课下时间的动态调试，终于把花给去掉了
 整理如下(可能与各位大佬整理的有出入)：</p>
 <pre class="x86asm"><code>;将输入的前12个字符分割为3个长度为4字节的子字符串S1，S2，S3
@@ -334,8 +410,8 @@ if(zf==0)
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>S3<span class="op">=</span><span class="st">&quot;nuf0&quot;</span></span></code></pre></div>
 <p>由于是小端存储，所以这12个字符应该是<code>Just0for0fun</code></p>
 <p>最后输入<code>Just0for0fun11A</code>即可</p>
-<p><img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/20-57-36.jpg">
-历经磨难，终于写了出来</p>
+<p><img src="/2017/11/10/2017-看雪CTF秋季赛-第二题/20-57-36.jpg"></p>
+<p>历经磨难，终于写了出来</p>
 <p>这题可以说是非常的有意思了</p>
 <p>给出题者点个赞</p>
 <p>最后说一句，<strong>真的不适合入门！</strong></p>

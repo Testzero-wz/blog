@@ -812,17 +812,17 @@ $pass运行然后调用Read类的__ToString()魔术方法
 <p>然后发现手机扫描没反应 才意识到是反色了
 把二维码截取下来，直接丢到任何可编辑的地方，比如QQ，word，然后直接鼠标拖动覆盖选择图片一下就直接反色了，然后就扫描就可以得到flag了</p>
 <p><code>flag{139711e8e9ed545e}</code></p>
-<h4 id="斑马斑马">斑马斑马</h4>
+<h3 id="斑马斑马">斑马斑马</h3>
 <p><img src="/2017/10/09/世安杯-WriteUp/19-09-50.jpg"></p>
 <p>= =脑洞题，不想解释 斑马身上是个条形码，直接扫描就好了
 在线扫描条形码网站:<a href="https://online-barcode-reader.inliteresearch.com/" target="_blank" rel="noopener">https://online-barcode-reader.inliteresearch.com/</a></p>
-<h4 id="createbywho">CreateByWho</h4>
+<h3 id="createbywho">CreateByWho</h3>
 <p>是一个零碎的二维码图片
 之前百度杯也有类似的题，不过这个二维码是缺少了几部分的 <img src="/2017/10/09/世安杯-WriteUp/19-13-37.jpg"> 没写出来
 看别人的wp是把缺的三个角的方块自己补全然后扫描</p>
 <p><img src="/2017/10/09/世安杯-WriteUp/19-15-03.jpg"></p>
 <p>脑洞也是略大</p>
-<h5 id="适合作为桌面的图片">适合作为桌面的图片</h5>
+<h3 id="适合作为桌面的图片">适合作为桌面的图片</h3>
 <p>很简单的隐写题
 首先把图片用Stegsolve进行LSB隐写查找，找到如下二维码</p>
 <p><img src="/2017/10/09/世安杯-WriteUp/19-23-06.jpg">
@@ -856,7 +856,7 @@ $pass运行然后调用Read类的__ToString()魔术方法
 <p><img src="/2017/10/09/世安杯-WriteUp/15-49-13.jpg"></p>
 <p><img src="/2017/10/09/世安杯-WriteUp/15-49-20.jpg"></p>
 <p><code>flag{4f7548f93c7bef1dc6a0542cf04e796e}</code></p>
-<h5 id="珍妮的qq号">珍妮的qq号</h5>
+<h3 id="珍妮的qq号">珍妮的qq号</h3>
 <p>不解释</p>
 <pre><code>珍妮换了一个新的QQ号码，原来的号码和新的号码都是5位靓号哦；其次，新的号码是原来号码的4倍，并且原来的号码倒着写正好是新的号码，请问，新号码是多少，新号码即为key。</code></pre>
 <div class="sourceCode" id="cb30"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">xrange</span>(<span class="dv">1</span>,<span class="dv">99999</span>):</span>
@@ -864,7 +864,7 @@ $pass运行然后调用Read类的__ToString()魔术方法
 <span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span> <span class="dv">4</span><span class="op">*</span>i</span>
 <span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">break</span></span></code></pre></div>
 <p><code>87912</code></p>
-<h4 id="webshell">webshell</h4>
+<h3 id="webshell">webshell</h3>
 <p>分析数据包的题
 提示是<code>小黑在拿到webshell后，马上就获得了自己心仪公司的照片</code>
 猜测就是找http包然后分析包含照片的信息
@@ -875,10 +875,14 @@ $pass运行然后调用Read类的__ToString()魔术方法
 <strong>这是一个不尊重参赛者的比赛</strong>
 连flag也不改，题目都是原题，选择题宕机最后半小时又开启说要算分(当时我直接无视了)，以及决赛还要自带干粮(这个不能忍！)
 所以是果断地拒绝了参加决赛，纯当练手了</p>
-<p><strong>感悟：</strong> &gt; +
-少参加类似的技术含量低的比赛(除非实在闲得慌) &gt; +
-逆向要加强，汇编、动态调试、加花混淆、防动调等 &gt; +
-多运动，做一天的题，累得慌</p>
+<p><strong>感悟：</strong></p>
+<blockquote>
+<ul>
+<li>少参加类似的技术含量低的比赛(除非实在闲得慌)</li>
+<li>逆向要加强，汇编、动态调试、加花混淆、防动调等</li>
+<li>多运动，做一天的题，累得慌</li>
+</ul>
+</blockquote>
 <p><strong>感谢阅读</strong></p>
 
         </div>

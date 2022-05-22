@@ -212,11 +212,14 @@
         </header>
 
         <div class="post-content">
-            <p><img src="/2018/01/16/百度杯11月pwnme/13-99-45.jpg"> &gt;
-这算是接触pwntools的第一题吧 &gt;
-需要很多二进制知识储备，解释得比较适合新手看，大佬绕行 &gt;
-过程跌跌撞撞，写来纪念一下</p>
+            <p><img src="/2018/01/16/百度杯11月pwnme/13-99-45.jpg"></p>
+<blockquote>
+<p>这算是接触pwntools的第一题吧</p>
+<p>需要很多二进制知识储备，解释得比较适合新手看，大佬绕行</p>
+<p>过程跌跌撞撞，写来纪念一下</p>
+</blockquote>
 <a id="more"></a>
+<h4 id="稍作分析">稍作分析</h4>
 <p>首先拿到题目，丢IDA，发现是 64位 elf文件</p>
 <p><img src="/2018/01/16/百度杯11月pwnme/13-32-01.jpg">随意找一下，分析出主程序和主循环</p>
 <p><img src="/2018/01/16/百度杯11月pwnme/13-32-40.jpg">大致过程就是先打印欢迎界面
@@ -231,19 +234,21 @@ Wiki-格式化字符串漏洞</a>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> checksec <span class="at">--file</span> pwnme </span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">RELRO</span>           STACK CANARY      NX            PIE             RPATH      RUNPATH  FORTIFY Fortified Fortifiable  FILE</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Full</span> RELRO      No canary found   NX enabled    No PIE          No RPATH   No RUNPATH   No  0       5   pwnme</span></code></pre></div>
-<blockquote>
-<h4 id="canary栈保护">Canary（栈保护）</h4>
-<p>栈溢出保护是一种缓冲区溢出攻击缓解手段，当函数存在缓冲区溢出攻击漏洞时，攻击者可以覆盖栈上的返回地址来让shellcode能够得到执行。当启用栈保护后，函数开始执行的时候会先往栈里插入cookie信息，当函数真正返回的时候会验证cookie信息是否合法，如果不合法就停止程序运行。攻击者在覆盖返回地址的时候往往也会将cookie信息给覆盖掉，导致栈保护检查失败而阻止shellcode的执行。在Linux中我们将cookie信息称为canary。
-#### NX/DEP（堆栈不可执行）
-NX即No-eXecute（不可执行）的意思，NX（DEP）的基本原理是将数据所在内存页标识为不可执行，当程序溢出成功转入shellcode时，程序会尝试在数据页面上执行指令，此时CPU就会抛出异常，而不是去执行恶意指令。
-#### PIE/ASLR（地址随机化） 程序和库加载在内存中地址随机化 #### Fortify
-与栈保护都是gcc的新的为了增强保护的一种机制，防止缓冲区溢出攻击。 ####
-RelRO
-设置符号重定向表格为只读或在程序启动时就解析并绑定所有动态符号，从而减少对GOT（Global
+<h4 id="保护机制">保护机制</h4>
+<h5 id="canary栈保护">Canary（栈保护）</h5>
+<p>栈溢出保护是一种缓冲区溢出攻击缓解手段，当函数存在缓冲区溢出攻击漏洞时，攻击者可以覆盖栈上的返回地址来让shellcode能够得到执行。当启用栈保护后，函数开始执行的时候会先往栈里插入cookie信息，当函数真正返回的时候会验证cookie信息是否合法，如果不合法就停止程序运行。攻击者在覆盖返回地址的时候往往也会将cookie信息给覆盖掉，导致栈保护检查失败而阻止shellcode的执行。在Linux中我们将cookie信息称为canary。</p>
+<h5 id="nxdep堆栈不可执行">NX/DEP（堆栈不可执行）</h5>
+<p>NX即No-eXecute（不可执行）的意思，NX（DEP）的基本原理是将数据所在内存页标识为不可执行，当程序溢出成功转入shellcode时，程序会尝试在数据页面上执行指令，此时CPU就会抛出异常，而不是去执行恶意指令。</p>
+<h5 id="pieaslr地址随机化">PIE/ASLR（地址随机化）</h5>
+<p>程序和库加载在内存中地址随机化 #### Fortify
+与栈保护都是gcc的新的为了增强保护的一种机制，防止缓冲区溢出攻击。</p>
+<h5 id="relro">RelRO</h5>
+<p>设置符号重定向表格为只读或在程序启动时就解析并绑定所有动态符号，从而减少对GOT（Global
 Offset Table）攻击。</p>
-</blockquote>
-<p><strong><em>以下内容需要先了解ROP</em></strong> <a href="https://ctf-wiki.github.io/ctf-wiki/pwn/stackoverflow/basic_rop.html" target="_blank" rel="noopener">详情点此处</a>
-可以看出
+<h4 id="开始利用">开始利用</h4>
+<p><strong><em>以下内容需要先了解ROP</em></strong><br>
+<a href="https://ctf-wiki.github.io/ctf-wiki/pwn/stackoverflow/basic_rop.html" target="_blank" rel="noopener">详情点此处</a></p>
+<p>可以看出
 <code>Full RELRO</code>，并不能修改got表劫持控制流，<code>NX enable</code>也不能执行栈内数据，而且<code>Canary</code>并没用开启。所以有两种思路：一种是利用格式化漏洞泄露<code>system</code>的地址，然后修改栈数据劫持控制流，调用<code>system</code>；另一种是格式化漏洞泄露<code>system</code>地址，然后寻找一个栈溢出漏洞覆盖返回地址劫持控制流
 参考了各位大佬的思路得知，溢出点在修改信息的修改密码时：</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>__int64 __usercall modify@<span class="op">&lt;</span>rax<span class="op">&gt;(</span>__int64 s@<span class="op">&lt;</span>rdi<span class="op">&gt;,</span> __int64 dest@<span class="op">&lt;</span>rdx<span class="op">&gt;,</span> __int64 sa<span class="op">,</span> __int64 a4<span class="op">,</span> __int64 desta<span class="op">,</span> __int64 a6<span class="op">,</span> __int64 a7<span class="op">)</span></span>
@@ -307,10 +312,14 @@ Offset Table）攻击。</p>
 它不同于x86的栈传参，它是优先6个寄存器传参，依次是<code>RDI</code>,<code>RSI</code>,<code>RDX</code>,<code>RCX</code>,<code>R8</code>,<code>R9</code>，然后多余的参数才传进栈内
 我的思路是先leak到<code>system</code>的位置，再寻找适当的<code>gadget</code>将栈上参数pop进寄存器然后再调用<code>read</code>函数将<code>/bin/sh</code>写到<code>.bss</code>段，然后再劫持控制流到<code>pop rdi;ret</code>来起<code>shell</code>
 找<code>gadget</code>的工具有很多，简单的<code>objdump</code>和<code>IDA</code>查找也是可以的，也可以用一些工具
-&gt; <a href="https://github.com/packz/ropeme" target="_blank" rel="noopener">ROPEME -
-https://github.com/packz/ropeme</a> <a href="https://github.com/sashs/Ropper" target="_blank" rel="noopener">Ropper -
-https://github.com/sashs/Ropper</a> <a href="https://github.com/JonathanSalwan/ROPgadget/tree/master" target="_blank" rel="noopener">ROPgadget
-- https://github.com/JonathanSalwan/ROPgadget/tree/master</a> <a href="https://github.com/0vercl0k/rp" target="_blank" rel="noopener">rp++ -
+工具链接如下：</p>
+<p><a href="https://github.com/packz/ropeme" target="_blank" rel="noopener">ROPEME -
+https://github.com/packz/ropeme</a></p>
+<p><a href="https://github.com/sashs/Ropper" target="_blank" rel="noopener">Ropper -
+https://github.com/sashs/Ropper</a></p>
+<p><a href="https://github.com/JonathanSalwan/ROPgadget/tree/master" target="_blank" rel="noopener">ROPgadget
+- https://github.com/JonathanSalwan/ROPgadget/tree/master</a></p>
+<p><a href="https://github.com/0vercl0k/rp" target="_blank" rel="noopener">rp++ -
 https://github.com/0vercl0k/rp</a></p>
 <p>来寻找适合的<code>gadget</code>
 我找到的是第一个<code>0x400ECB - pop_4_ret gadget</code>
@@ -337,10 +346,14 @@ https://github.com/0vercl0k/rp</a></p>
 0x00400ed3 : pop rdi ; ret
 </code></pre>
 <p>第一和第二个链各个配对的<code>gadget</code>是IDA找到的,<code>pop_ret</code>是ROPgadget脚本找到的
-回顾一下思路 &gt; 1. 先leak到<code>system</code>的位置 &gt; 2.
-寻找适当的<code>gadget</code>将栈上参数pop进寄存器然后再调用<code>read</code>函数将<code>/bin/sh</code>写到<code>.bss</code>段
-&gt; 3.
-然后再劫持控制流到<code>pop rdi;ret</code>来起<code>shell</code></p>
+回顾一下思路</p>
+<blockquote>
+<ol type="1">
+<li><p>先leak到<code>system</code>的位置</p></li>
+<li><p>寻找适当的<code>gadget</code>将栈上参数pop进寄存器然后再调用<code>read</code>函数将<code>/bin/sh</code>写到<code>.bss</code>段</p></li>
+<li><p>然后再劫持控制流到<code>pop rdi;ret</code>来起<code>shell</code></p></li>
+</ol>
+</blockquote>
 <p><code>.bss</code>具有可写可读的性质故将<code>/bin/sh</code>写在这段上
 段地址可以通过<code>readelf</code>确定</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> readelf <span class="at">-S</span> pwnme </span>
@@ -351,8 +364,8 @@ https://github.com/0vercl0k/rp</a></p>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="ex">[24]</span> .bss    NOBITS    0000000000602010    00002010 0000000000000020  0000000000000000  WA       0     0     16</span></code></pre></div>
 <p>得到<code>.bss</code>地址是<code>0x602010</code>
 然后我们回到第一步，泄露<code>system</code>的地址。
-我利用的是<code>pwntool</code>里面带的<code>DynElf</code>来寻找<code>system</code>在内存中的地址，其实就是利用格式化字符串漏洞泄露内存，然后它执行一个遍历找到目标地址
-<strong><em>以下内容需要了解 Pwntool
+我利用的是<code>pwntool</code>里面带的<code>DynElf</code>来寻找<code>system</code>在内存中的地址，其实就是利用格式化字符串漏洞泄露内存，然后它执行一个遍历找到目标地址</p>
+<p><strong><em>以下内容需要了解 Pwntool
 DynElf</em></strong>（很多资料，多谷歌吧） 利用代码如下：</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">#coding:utf-8</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pwn <span class="im">import</span> <span class="op">*</span></span>
@@ -499,26 +512,31 @@ DynElf</em></strong>（很多资料，多谷歌吧） 利用代码如下：</p>
 <span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a><span class="va">uid</span><span class="op">=</span>1009<span class="kw">(</span><span class="ex">pwnme</span><span class="kw">)</span> <span class="va">gid</span><span class="op">=</span>1009<span class="kw">(</span><span class="ex">pwnme</span><span class="kw">)</span> <span class="va">groups</span><span class="op">=</span>1009<span class="kw">(</span><span class="ex">pwnme</span><span class="kw">)</span></span>
 <span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cat /home/pwnme/flag.txt</span>
 <span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a><span class="ex">flag{ecfdbab646c8539f75078b76216942ef}</span></span></code></pre></div>
-<p><strong>总结</strong> &gt; 1. 耗时很久，需要掌握的东西略多 &gt; 2.
-linux 32和64位差异不了解 &gt; 3. 二进制工具不熟悉,linux调试短板 &gt; 4.
-劳累、耗时程度与成就感成正比</p>
-<p><strong>参考文献</strong>(巨多!!!) &gt;<a href="http://drops.xmd5.com/static/drops/tips-6597.html" target="_blank" rel="noopener">[
-一步一步学ROP之linux_x86篇 - 蒸米 ]</a>
-http://drops.xmd5.com/static/drops/tips-6597.html &gt; <a href="http://wps2015.org/drops/drops/%E4%B8%80%E6%AD%A5%E4%B8%80%E6%AD%A5%E5%AD%A6ROP%E4%B9%8Blinux_x64%E7%AF%87.html" target="_blank" rel="noopener">[
-一步一步学ROP之linux_x64篇 - 蒸米 ]</a>
-http://wps2015.org/drops/drops/%E4%B8%80%E6%AD%A5%E4%B8%80%E6%AD%A5%E5%AD%A6ROP%E4%B9%8Blinux_x64%E7%AF%87.html
-&gt; <a href="https://ctf-wiki.github.io/ctf-wiki/pwn/fmtstr/index.html" target="_blank" rel="noopener">[ CTF
-Wiki - 格式化字符串漏洞 ]</a>
-https://ctf-wiki.github.io/ctf-wiki/pwn/fmtstr/index.html &gt; <a href="http://www.mottoin.com/92467.html" target="_blank" rel="noopener">[ 百度杯十一月场pwn专题赛—pwnme
-writeup - Moto ]</a> http://www.mottoin.com/92467.html &gt; <a href="https://bbs.ichunqiu.com/thread-16508-1-1.html" target="_blank" rel="noopener">[
-百度杯CTF·十二月PWN专题WriteUp解析 - 一口盐汽水 ]</a>
-https://bbs.ichunqiu.com/thread-16508-1-1.html &gt; <a href="https://www.anquanke.com/post/id/85129" target="_blank" rel="noopener">[
-借助DynELF实现无libc的漏洞利用小结 - tianyi201612
-]</a>https://www.anquanke.com/post/id/85129 &gt; <a href="http://blog.csdn.net/qq_15514565/article/details/57644132" target="_blank" rel="noopener">[
-IA32寄存器与x86-64寄存器的区别 - 转载 ]</a>
-http://blog.csdn.net/qq_15514565/article/details/57644132 &gt; <a href="http://www.mamicode.com/info-detail-1990426.html" target="_blank" rel="noopener">[
-二进制的保护机制 ]</a>
-http://www.mamicode.com/info-detail-1990426.html</p>
+<h4 id="总结">总结</h4>
+<blockquote>
+<ol type="1">
+<li>耗时很久，需要掌握的东西略多</li>
+<li>linux 32和64位差异不了解</li>
+<li>二进制工具不熟悉,linux调试短板</li>
+<li>劳累、耗时程度与成就感成正比</li>
+</ol>
+</blockquote>
+<h4 id="参考文献"><strong>参考文献</strong></h4>
+<p><a href="http://drops.xmd5.com/static/drops/tips-6597.html" target="_blank" rel="noopener">一步一步学ROP之linux_x86篇
+- 蒸米</a></p>
+<p><a href="http://wps2015.org/drops/drops/%E4%B8%80%E6%AD%A5%E4%B8%80%E6%AD%A5%E5%AD%A6ROP%E4%B9%8Blinux_x64%E7%AF%87.html" target="_blank" rel="noopener">一步一步学ROP之linux_x64篇
+- 蒸米</a></p>
+<p><a href="https://ctf-wiki.github.io/ctf-wiki/pwn/fmtstr/index.html" target="_blank" rel="noopener">CTF
+Wiki - 格式化字符串漏洞</a></p>
+<p><a href="http://www.mottoin.com/92467.html" target="_blank" rel="noopener">百度杯十一月场pwn专题赛—pwnme
+writeup - Moto</a></p>
+<p><a href="https://bbs.ichunqiu.com/thread-16508-1-1.html" target="_blank" rel="noopener">百度杯CTF·十二月PWN专题WriteUp解析
+- 一口盐汽水</a></p>
+<p><a href="https://www.anquanke.com/post/id/85129" target="_blank" rel="noopener">借助DynELF实现无libc的漏洞利用小结
+- tianyi201612</a></p>
+<p><a href="http://blog.csdn.net/qq_15514565/article/details/57644132" target="_blank" rel="noopener">IA32寄存器与x86-64寄存器的区别
+- 转载</a></p>
+<p><a href="http://www.mamicode.com/info-detail-1990426.html" target="_blank" rel="noopener">二进制的保护机制</a></p>
 
         </div>
 

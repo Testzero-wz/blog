@@ -212,15 +212,17 @@
         </header>
 
         <div class="post-content">
-            <p><img src="/2017/10/16/用C实现磁盘分析/20171010010507711.jpg"> &gt;
-由于实验需要写一个分区表的分析程序，时间比较多就写了个适用于GPT和
+            <p><img src="/2017/10/16/用C实现磁盘分析/20171010010507711.jpg"></p>
+<blockquote>
+<p>由于实验需要写一个分区表的分析程序，时间比较多就写了个适用于GPT和
 MBR分区的通用程序</p>
+</blockquote>
 <a id="more"></a>
 <p>没啥特别的亮点，主要还是可以通用地分析磁盘分区以及适用两种磁盘格式
 本程序是字符界面，之前的是图形化界面，规划得有点丑，就不献丑了
 自带分析、提取数据函数，若想继续分析其他也可在此基础上添加。在此只演示GPT下的FAT32分区分析
-<strong>注：需管理员权限运行，否则无法得到分区信息</strong> ###
-分区/驱动器Drive类</p>
+<strong>注：需管理员权限运行，否则无法得到分区信息</strong></p>
+<h3 id="分区驱动器drive类">分区/驱动器Drive类</h3>
 <div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#pragma once</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include</span><span class="im">&lt;string&gt;</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#include</span><span class="im">&lt;string.h&gt;</span></span>
@@ -659,6 +661,7 @@ MBR分区的通用程序</p>
 <span id="cb2-397"><a href="#cb2-397" aria-hidden="true" tabindex="-1"></a> <span class="op">}</span></span>
 <span id="cb2-398"><a href="#cb2-398" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-399"><a href="#cb2-399" aria-hidden="true" tabindex="-1"></a> <span class="co">/*------------------------------------------------------------------------------------------------*/</span></span></code></pre></div>
+<h3 id="输出展示">输出展示</h3>
 <p>输出结果:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">主分区DPT分析：</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a> <span class="ex">活动分区标志:</span> 00 <span class="kw">|</span> <span class="ex">分区类型标志:</span> ee <span class="kw">|</span> <span class="ex">偏移扇区:</span> 1 <span class="kw">|</span> <span class="ex">磁盘大小:</span> 465.76 GB  <span class="kw">|</span></span>

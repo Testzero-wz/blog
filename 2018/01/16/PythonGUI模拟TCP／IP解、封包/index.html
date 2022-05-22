@@ -212,9 +212,11 @@
         </header>
 
         <div class="post-content">
-            <p><img src="/2018/01/16/PythonGUI模拟TCP／IP解、封包/20171010120024275.jpg"> &gt;
-认真学习了TCP/IP中包的结构以及封包解包，分包重组等步骤 &gt;
-利用实验之余写一个比较严格执行TCP/IP模型的解、封包模拟程序并以仿wireshark的GUI形式展现</p>
+            <p><img src="/2018/01/16/PythonGUI模拟TCP／IP解、封包/20171010120024275.jpg"></p>
+<blockquote>
+<p>认真学习了TCP/IP中包的结构以及封包解包，分包重组等步骤</p>
+<p>利用实验之余写一个比较严格执行TCP/IP模型的解、封包模拟程序并以仿wireshark的GUI形式展现</p>
+</blockquote>
 <a id="more"></a>
 <p>本程序使用5层TCP/IP模型(多了个物理层)</p>
 <p><img src="/2018/01/16/PythonGUI模拟TCP／IP解、封包/18-07-52.jpg"></p>
@@ -701,6 +703,7 @@ GUI库用的是Python自带的tkinter，不需要安装，有python2.7环境就�
 <span id="cb1-475"><a href="#cb1-475" aria-hidden="true" tabindex="-1"></a>root.geometry(<span class="st">&quot;</span><span class="sc">%d</span><span class="st">x</span><span class="sc">%d</span><span class="st">&quot;</span> <span class="op">%</span>(root.winfo_screenwidth()<span class="op">-</span><span class="dv">5</span>, root.winfo_screenheight()))</span>
 <span id="cb1-476"><a href="#cb1-476" aria-hidden="true" tabindex="-1"></a>root.config(menu<span class="op">=</span>mainMenu)</span>
 <span id="cb1-477"><a href="#cb1-477" aria-hidden="true" tabindex="-1"></a>root.mainloop()</span></code></pre></div>
+<h2 id="难点">难点</h2>
 <p>开发过程中遇到最难的一个问题的就是如何动态构建菜单
 通过查阅资料以及在<code>stackoverflow</code>与<code>segementfault</code>论坛上学习后发现可以通过python的内置函数<code>locals()</code>来获取程序的局部和全局变量当然也可以动态地创建变量
 'locals()'函数返回的是一个字典，变量名与变量值一一对应，而我们</p>
@@ -709,6 +712,7 @@ GUI库用的是Python自带的tkinter，不需要安装，有python2.7环境就�
     for i in range(len(seApp_StreamList)):
         senderMenu.ApplicationLayer.add_command(label=&#39;数据包%s&#39;%str(i+1),command=lambda x=i:updateAnalysisFrame(seApp_StreamList[x],&#39;Application&#39;))
 </code></pre>
+<h2 id="展示">展示</h2>
 <p>程序运行展示：</p>
 <p><img src="/2018/01/16/PythonGUI模拟TCP／IP解、封包/18-13-28.jpg"> <img src="/2018/01/16/PythonGUI模拟TCP／IP解、封包/18-17-23.jpg"> <img src="/2018/01/16/PythonGUI模拟TCP／IP解、封包/18-18-00.jpg"></p>
 

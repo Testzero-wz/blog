@@ -219,8 +219,10 @@
 这一年我都干了啥.jpg</p>
 <p>今年的题比去年的质量好很多，且加上了最有亮点的反作弊系统，每道题每个人的flag不一样，连某些逆向题的源码都不一样，可见十分用心
 这次学到了很多，希望这样有质量的比赛能够继承下去</p>
-<p><a id="more"></a> # WriteUp ## WEB #### Web1 - 数据库的秘密
-一道前端计算签名然后sql盲注的web题</p>
+<p><a id="more"></a> # WriteUp</p>
+<h2 id="web">WEB</h2>
+<h4 id="web1---数据库的秘密">Web1 - 数据库的秘密</h4>
+<p>一道前端计算签名然后sql盲注的web题</p>
 <p>进去就是非法链接，很明显需要<code>burp</code>抓一下包然后添个<code>HTTP的X-Forwarded-For</code>为<code>123.232.23.245</code></p>
 <p><img src="/2018/04/21/又是一年DDCTF/11-25-24.jpg">
 然后我们将得到一个很常规的查询界面</p>
@@ -525,7 +527,7 @@
 <span id="cb3-242"><a href="#cb3-242" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span></code></pre></div>
 <p>这个方法有一点要注意，就是<code>PyV8</code>的<code>JS</code>脚本中的<code>new Date().getTime() / 1000</code>会与服务器或者浏览器获取的时间有误差，会快那么个一两百，当时我写完之后就一直提示<code>time error</code>，花了接近三个小时Debug，最后对比从浏览器获取的时间发现快了一两百秒，然后我就默默的手动加上了一句<code>-300</code>就成功了。这次复现又变成<code>-100</code>才能正确了，这是一个坑点2333
 看到有的师傅是直接把源码下载到本地然后搭好本地环境，写一个本地的php脚本，接受那几个参数，然后通过curl这类函数将得到的参数进行转发，然后用sqlmap直接渗透本地的php。这个思路也很行。（想起来有好久都没有用过sqlmap了）</p>
-<h4 id="web2---专属链接">Web2 - 专属链接</h4>
+<h3 id="web2---专属链接">Web2 - 专属链接</h3>
 <p>这一题很不错，脑洞很大，但是不失度
 主要还是对jsp这方面接触很少，而且本学期才开始学的java，2333
 但是由于语法跟C++差不多，多多少少还是能看懂的 说题目吧
@@ -746,7 +748,7 @@
 <div class="sourceCode" id="cb9"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">&quot;44444354467B333631343538353036323532393832353737337D&quot;</span>.decode(<span class="st">&quot;hex&quot;</span>)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>DDCTF{<span class="dv">3614585062529825773</span>}</span></code></pre></div>
 <p>这一题比较的脑洞，也比较考验jsp这边的经验，也难怪卡了这么久</p>
-<h4 id="web3---注入的奥妙">Web3 - 注入的奥妙</h4>
+<h3 id="web3---注入的奥妙">Web3 - 注入的奥妙</h3>
 <p>题目提示得很明显，Sql注入
 然后进去就是一个标准的注入套路，还有注入回显</p>
 <p><img src="/2018/04/21/又是一年DDCTF/11-44-20.jpg">
@@ -1166,7 +1168,7 @@ switch=1分析load，等于0则分析loop</p>
 <p>由于数有点大，大概需要1分钟的样子解出答案</p>
 <p><img src="/2018/04/21/又是一年DDCTF/21-53-59.jpg"></p>
 <h2 id="misc">MISC</h2>
-<h4 id="misc2--">Misc2 - (╯°□°）╯︵ ┻━┻</h4>
+<h3 id="misc2--">Misc2 - (╯°□°）╯︵ ┻━┻</h3>
 <p>每个字符的ASCLL码都加了128，去掉就好了</p>
 <div class="sourceCode" id="cb17"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>c <span class="op">=</span> <span class="st">&quot;d4e8e1f4a0f7e1f3a0e6e1f3f4a1a0d4e8e5a0e6ece1e7a0e9f3baa0c4c4c3d4c6fbb7b9b8e4b5b5e4e2b7b6b5b5b2e1b9b2b2e4b0b0e4b7b7b5e5b3b3b1b1b9b0b7fd&quot;</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>flag <span class="op">=</span> <span class="st">&quot;&quot;</span></span>
@@ -1174,14 +1176,7 @@ switch=1分析load，等于0则分析loop</p>
 <span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    flag <span class="op">+=</span> <span class="bu">chr</span>(<span class="bu">int</span>(c[i <span class="op">*</span> <span class="dv">2</span>:(i <span class="op">+</span> <span class="dv">1</span>) <span class="op">*</span> <span class="dv">2</span>], <span class="dv">16</span>) <span class="op">&amp;</span> <span class="bn">0x7f</span>)</span>
 <span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span> flag</span>
 <span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="co">#That was fast! The flag is: DDCTF{798d55db76552a922d00d775e3311907}</span></span></code></pre></div>
-<h4 id="misc4---第四扩展fs">Misc4 - 第四扩展FS</h4>
-<p>一张windows.jpg，属性部分存在密码备注，图片里面存在ZIP的文件头PK，用winhex提取出zip</p>
-<p><img src="/2018/04/21/又是一年DDCTF/22-05-38.jpg">
-file.txt是一个充满字符的txt</p>
-<p><img src="/2018/04/21/又是一年DDCTF/22-05-46.jpg"> <img src="/2018/04/21/又是一年DDCTF/22-06-02.jpg"> 很容易联想到字频统计之类的攻击
-使用TextDecoder Toolkit这个工具进行字符统计 下载地址：<a href="http://www.kahusecurity.com/?page_id=13485" target="_blank" rel="noopener">http://www.kahusecurity.com/?page_id=13485</a>，解压密码kahusecurity</p>
-<p><img src="/2018/04/21/又是一年DDCTF/22-07-11.jpg"> 得到flag</p>
-<h4 id="misc3---流量分析">Misc3 - 流量分析</h4>
+<h3 id="misc3---流量分析">Misc3 - 流量分析</h3>
 <p>包里面用ftp传了sqlmap.zip和Fl-g.zip，后来才发现是陷阱(巨坑)
 包里面的smtp里面传了一些无关紧要的东西，一些网页，一些对话，还有一张大图image001.png</p>
 <p><img src="/2018/04/21/又是一年DDCTF/22-08-49.png">
@@ -1199,8 +1194,16 @@ file.txt是一个充满字符的txt</p>
 -&gt; RSA keys list Edit</p>
 <p><img src="/2018/04/21/又是一年DDCTF/22-14-23.jpg">
 然后在ssl流量中发现解密出来的flag</p>
-<p><img src="/2018/04/21/又是一年DDCTF/22-14-51.jpg"> #### Misc5 - 安全通信
-这题比较快地写了出来，google找到一篇github的文章，刚好是对应的类型，然后写了个脚本就好了，文章地址：
+<p><img src="/2018/04/21/又是一年DDCTF/22-14-51.jpg"></p>
+<h3 id="misc4---第四扩展fs">Misc4 - 第四扩展FS</h3>
+<p>一张windows.jpg，属性部分存在密码备注，图片里面存在ZIP的文件头PK，用winhex提取出zip</p>
+<p><img src="/2018/04/21/又是一年DDCTF/22-05-38.jpg">
+file.txt是一个充满字符的txt</p>
+<p><img src="/2018/04/21/又是一年DDCTF/22-05-46.jpg"> <img src="/2018/04/21/又是一年DDCTF/22-06-02.jpg"> 很容易联想到字频统计之类的攻击
+使用TextDecoder Toolkit这个工具进行字符统计 下载地址：<a href="http://www.kahusecurity.com/?page_id=13485" target="_blank" rel="noopener">http://www.kahusecurity.com/?page_id=13485</a>，解压密码kahusecurity</p>
+<p><img src="/2018/04/21/又是一年DDCTF/22-07-11.jpg"> 得到flag</p>
+<h3 id="misc5---安全通信">Misc5 - 安全通信</h3>
+<p>这题比较快地写了出来，google找到一篇github的文章，刚好是对应的类型，然后写了个脚本就好了，文章地址：
 <a href="https://github.com/liamh95/CTF-writeups/tree/master/CSAW17/baby_crypt" target="_blank" rel="noopener">https://github.com/liamh95/CTF-writeups/tree/master/CSAW17/baby_crypt</a>
 题的代码如下</p>
 <div class="sourceCode" id="cb19"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/usr/bin/env python</span></span>
