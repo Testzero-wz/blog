@@ -42,8 +42,19 @@
     
 
 
+
+  <!-- for theme: default is false -->
+  <!-- for page: default is true -->
+<link rel="stylesheet" href="/js/fancybox/jquery.fancybox.min.css">
+
+
 </head>
 <body>
+	
+		<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+       <script type="text/javascript" src="/js/fancybox/jquery.fancybox.min.js"></script>
+       <script type="text/javascript" src="/js/wrapImage.js"></script>
+   
     <div class="wrapper">
         <header>
     <nav class="navbar">
@@ -209,7 +220,8 @@
 我们的目标是首先将异常访问从日志中剥离出来，标记为异常流量，然后后期目标再是对异常流量进行攻击分类统计。最后，我们的愿景是从攻击中溯源，检测出是否被成功入侵等等。
 万事开头难。按照我们的初级目标，我们首先了解一下现在常见的各类异常检测模型，再来进行分析、选择。
 笔者也是刚接触机器学习不久，旨在与大家交流心得体会，不正之处还请斧正，也算是实习三个月这方面的一次总结。
-<a id="more"></a> # 检测模型</p>
+<a id="more"></a></p>
+<h1 id="检测模型">检测模型</h1>
 <h2 id="基于文本序列模型">基于文本序列模型</h2>
 <p>这个模型有点像语音识别方面的机器学习。其应用了隐马尔科夫模型，对参数进行了序列化建模。隐马尔科夫模型按照我的理解，简单来说就是对文本序列进行归一化处理的有限状态机，其需要满足无后效性（转换仅与之前的状态有关）以及时齐性（转换状态与时间无关）。
 对于该模型我并没有太深入地研究，简单地作图来说明其原理或者说步骤：
@@ -421,8 +433,8 @@ IDF_i\]</span></p>
 <p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/tf-idf.jpeg">
 对于某个样本<span class="math inline">\(\rho\)</span>，我们用一个<span class="math inline">\(100^2\)</span>的向量去描述它；则对于<span class="math inline">\(m\)</span>个样本会有的<span class="math inline">\(m \times 100^2\)</span>的向量矩阵</p>
 <h3 id="模型训练">模型训练</h3>
-<p>特征提取之后就是对模型的训练，参数调优等步骤，但要进行训练，则首先需要将训练样本筛选出来，这样才能进行参数调优，计算准确率，召回率，F1值等。
-#### 训练样本筛选</p>
+<p>特征提取之后就是对模型的训练，参数调优等步骤，但要进行训练，则首先需要将训练样本筛选出来，这样才能进行参数调优，计算准确率，召回率，F1值等。</p>
+<h4 id="训练样本筛选">训练样本筛选</h4>
 <p>由于采用了单分类模型，则我们只需要将正常的日志筛选出来即可。在<strong>analog</strong>中，我们需要将数据放进<code>analog\sample_set\train.txt</code>中。
 需要注意的是，我们要尽量地筛选出正常的样本，且数量要大于5000(或者更多)，保证数据量的充足从而进一步保证数据的全面覆盖性，这是模型所需要的，否则在未进行模型泛化处理如聚类，自编码等处理时，未包括进训练模型的样本将在一定程度上识别成异常，导致预测效果不好。这也是我下一步需要努力的方向。
 然后再采集一些白样本和黑样本进行参数优化所需要的计算，所以要求白样本得全部都是正常样本，黑样本也得全部是黑样本，这样算出来的值才具有参考价值。所幸测试样本要求的数量并不大，大概500-1000条左右(10%-20%的比例)，对于一般的小网站，日志人工筛选大概需要2-3个小时左右。当然，黑样本也可以直接用github上payload仓库的样本
@@ -494,14 +506,14 @@ Boundary)产生作用，反之<span class="math inline">\(\gamma\)</span>越小�
 <p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/18-36-03.jpg"></p>
 <h3 id="日志审查">日志审查</h3>
 <div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> show log current month</span></code></pre></div>
-<p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/10-15-19.jpg"> ###
-IP、请求等统计</p>
+<p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/10-15-19.jpg"></p>
+<h3 id="ip请求等统计">IP、请求等统计</h3>
 <div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> show statistics requests current day top 20</span></code></pre></div>
 <p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/10-17-25.jpg"></p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> show statistics url current day top 20</span></code></pre></div>
-<p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/10-18-13.jpg"> ###
-恶意请求统计
-包括恶意IP定位、恶意请求统计，恶意IP地理分布统计，正、异常请求比</p>
+<p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/10-18-13.jpg"></p>
+<h3 id="恶意请求统计">恶意请求统计</h3>
+<p>包括恶意IP定位、恶意请求统计，恶意IP地理分布统计，正、异常请求比</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span>  show analysis current month</span></code></pre></div>
 <p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/10-19-59.jpg"></p>
 <h2 id="安装">安装</h2>
@@ -532,34 +544,36 @@ IP、请求等统计</p>
 训练样本尽量使样本数量为5000-10000条(视网站情况适量加减，太少不准确，太多影响参数优化速度)，且尽可能覆盖正常访问流量，保证异常率不超过15%，否则会影响模型预测效果；白样本则要求尽量全为正常流量，黑样本可以自己从日志里面挑选出来异常的流量，也可以在github上找一些payload放进去，格式可以是日志格式，也可以是纯请求路径格式。同时尽量保持数大于500条（工作量大概在20分钟左右）</p>
 <p><strong>3.
 使用<code>train</code>或者<code>retrain</code>命令训练模型</strong>
-可以使用<code>train progress</code>命令获取训练进度或重载当前模型 ##
-更多用法 ### 获取帮助</p>
+可以使用<code>train progress</code>命令获取训练进度或重载当前模型</p>
+<h2 id="更多用法">更多用法</h2>
+<h3 id="获取帮助">获取帮助</h3>
 <div class="sourceCode" id="cb9"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> help</span></code></pre></div>
-<p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/23-30-21.jpg"> ###
-设置时间</p>
+<p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/23-30-21.jpg"></p>
+<h3 id="设置时间">设置时间</h3>
 <div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> set date 2017/09/22</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> set hour 10</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> set day 22</span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> set month 7</span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> set year 2017</span></code></pre></div>
-<p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/23-31-59.jpg"> ###
-设置当前偏移
-前提是已经进入了<code>log</code>模式(如输入<code>show log current month</code>)</p>
+<p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/23-31-59.jpg"></p>
+<h3 id="设置当前偏移">设置当前偏移</h3>
+<p>前提是已经进入了<code>log</code>模式(如输入<code>show log current month</code>)</p>
 <p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/10-15-19.jpg"></p>
 <div class="sourceCode" id="cb11"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> set offset 400</span></code></pre></div>
-<p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/23-35-56.jpg"> ###
-模型相关 #### 训练模型</p>
+<p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/23-35-56.jpg"></p>
+<h3 id="模型相关">模型相关</h3>
+<h4 id="训练模型">训练模型</h4>
 <div class="sourceCode" id="cb12"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> train</span></code></pre></div>
 <p>或者</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> retrain</span></code></pre></div>
-<p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/01-16-52.jpg"> ####
-获取训练进度</p>
+<p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/01-16-52.jpg"></p>
+<h4 id="获取训练进度">获取训练进度</h4>
 <div class="sourceCode" id="cb14"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> get progress</span></code></pre></div>
-<p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/01-18-41.jpg"> ####
-获取当前模型参数</p>
+<p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/01-18-41.jpg"></p>
+<h4 id="获取当前模型参数">获取当前模型参数</h4>
 <div class="sourceCode" id="cb15"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> get model</span></code></pre></div>
-<p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/01-21-27.jpg"> ###
-清屏</p>
+<p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/01-21-27.jpg"></p>
+<h3 id="清屏">清屏</h3>
 <div class="sourceCode" id="cb16"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> clear</span></code></pre></div>
 <h2 id="todo">TODO</h2>
 <ol type="1">
