@@ -196,7 +196,7 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">十月 22, 2018&nbsp;&nbsp;15:14:00</a>
+                        Date: <a href="#">十月 22, 2018</a>
                         </span>
                     
                     
@@ -213,19 +213,19 @@
 
         <div class="post-content">
             <h1 id="前言">前言</h1>
-<p>机器学习，众所周知，对于改善基于正则的流量检测的误报、无法应对未知攻击的现状将起到关键性的作用。本文旨在简述当前接触到的基于机器学习的web异常检测应用以及对应产生的一次实践的经验。
-对于异常流量，其中一个较为有效的做法是<strong>建立白样本的模型，过滤后剩下的都是异常样本</strong>
-这个方法也是比较符合逻辑以及事实的，因为正常流量总是极其相似的，而异常的流量却是各种不同。
-再者，只收集白样本的确实比同时收集黑白样本来得容易，因为我们所获得的流量基本上都是正常的白样本流量，攻击样本流量所占比例是很小的，采用监督学习（即给黑白样本打标签，让机器学习模型识别是正常还是异常），采集成本过高，单分类模型只需要采集白样本，且允许一定量的误差样本存在，使得我们可以很容易地收集到训练样本。正如吴恩达在机器学习课上提到的——“一个模型的好坏往往不是取决于算法，而是很大程度上取决于数据”。
-我们的目标是首先将异常访问从日志中剥离出来，标记为异常流量，然后后期目标再是对异常流量进行攻击分类统计。最后，我们的愿景是从攻击中溯源，检测出是否被成功入侵等等。
-万事开头难。按照我们的初级目标，我们首先了解一下现在常见的各类异常检测模型，再来进行分析、选择。
-笔者也是刚接触机器学习不久，旨在与大家交流心得体会，不正之处还请斧正，也算是实习三个月这方面的一次总结。
+<p>机器学习，众所周知，对于改善基于正则的流量检测的误报、无法应对未知攻击的现状将起到关键性的作用。本文旨在简述当前接触到的基于机器学习的web异常检测应用以及对应产生的一次实践的经验。</p>
+<p>对于异常流量，其中一个较为有效的做法是<strong>建立白样本的模型，过滤后剩下的都是异常样本</strong></p>
+<p>这个方法也是比较符合逻辑以及事实的，因为正常流量总是极其相似的，而异常的流量却是各种不同。</p>
+<p>再者，只收集白样本的确实比同时收集黑白样本来得容易，因为我们所获得的流量基本上都是正常的白样本流量，攻击样本流量所占比例是很小的，采用监督学习（即给黑白样本打标签，让机器学习模型识别是正常还是异常），采集成本过高，单分类模型只需要采集白样本，且允许一定量的误差样本存在，使得我们可以很容易地收集到训练样本。正如吴恩达在机器学习课上提到的——“一个模型的好坏往往不是取决于算法，而是很大程度上取决于数据”。</p>
+<p>我们的目标是首先将异常访问从日志中剥离出来，标记为异常流量，然后后期目标再是对异常流量进行攻击分类统计。最后，我们的愿景是从攻击中溯源，检测出是否被成功入侵等等。</p>
+<p>万事开头难。按照我们的初级目标，我们首先了解一下现在常见的各类异常检测模型，再来进行分析、选择。</p>
+<p>笔者也是刚接触机器学习不久，旨在与大家交流心得体会，不正之处还请斧正，也算是实习三个月这方面的一次总结。
 <a id="more"></a></p>
 <h1 id="检测模型">检测模型</h1>
 <h2 id="基于文本序列模型">基于文本序列模型</h2>
-<p>这个模型有点像语音识别方面的机器学习。其应用了隐马尔科夫模型，对参数进行了序列化建模。隐马尔科夫模型按照我的理解，简单来说就是对文本序列进行归一化处理的有限状态机，其需要满足无后效性（转换仅与之前的状态有关）以及时齐性（转换状态与时间无关）。
-对于该模型我并没有太深入地研究，简单地作图来说明其原理或者说步骤：
-对于某个参数<code>id</code>，其形式大致均为<code>7fad-82ac-3ff2</code>、<code>f30d-a29c-f324</code>等。我们可以id进行如下的建模：</p>
+<p>这个模型有点像语音识别方面的机器学习。其应用了隐马尔科夫模型，对参数进行了序列化建模。隐马尔科夫模型按照我的理解，简单来说就是对文本序列进行归一化处理的有限状态机，其需要满足无后效性（转换仅与之前的状态有关）以及时齐性（转换状态与时间无关）。</p>
+<p>对于该模型我并没有太深入地研究，简单地作图来说明其原理或者说步骤：</p>
+<p>对于某个参数<code>id</code>，其形式大致均为<code>7fad-82ac-3ff2</code>、<code>f30d-a29c-f324</code>等。我们可以id进行如下的建模：</p>
 <p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/23.jpeg">
 若这样分类建模，其对应的状态转换图会较为复杂，其对应的转换概率会基于训练样本计算，会随着样本的改变产生一定的误差，对样本的数量及覆盖范围要求较高(简化版状态图)</p>
 <p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/12.jpeg">
@@ -233,15 +233,18 @@
 <p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/13-22.jpeg">
 对应的转换图就会变成这样</p>
 <p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/13.jpeg">
-对于后者，效率提升的同时，信息熵肯定会降低，缺失掉一部分细节，各有利弊。
-实际上语法泛化应用起来还需要更多的泛化步骤以适应更多的样本及降低误报率。
-最后经过算法优化可能会转换成这样子：</p>
+对于后者，效率提升的同时，信息熵肯定会降低，缺失掉一部分细节，各有利弊。</p>
+<p>实际上语法泛化应用起来还需要更多的泛化步骤以适应更多的样本及降低误报率。</p>
+<p>最后经过算法优化可能会转换成这样子：</p>
 <p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/14.jpeg">
-计算是否符合模型也十分简单，只是简单的概率相乘。 对于给定的样本<span class="math inline">\(X=x_1x_2x_3...x_i\)</span>，其是由语法<span class="math inline">\(M\)</span>产生的概率:<span class="math inline">\(p_{s}\)</span> <span class="math display">\[
+计算是否符合模型也十分简单，只是简单的概率相乘。</p>
+<p>对于给定的样本<span class="math inline">\(X=x_1x_2x_3...x_i\)</span>，其是由语法<span class="math inline">\(M\)</span>产生的概率:<span class="math inline">\(p_{s}\)</span></p>
+<p><span class="math display">\[
 P(X|M)=\sum_{q \in Q} p_{Iq_1}p_{s_1}\cdot p_{q_1q_2}p_{s_2}\cdot
 p_{q_2q_3}p_{s_3}... p_{q_mF}
 \]</span></p>
-<p>其中<span class="math inline">\(q_i=q_1q_2q_3...q_m\)</span>是<span class="math inline">\(X\)</span>的状态序列，即图中的节点，<span class="math inline">\(Q\)</span>是<span class="math inline">\(M\)</span>中所有产生<span class="math inline">\(X\)</span>的集合，<span class="math inline">\(s_i=s_1s_2s_3...s_m\)</span>是对应<span class="math inline">\(q\)</span>的所有状态， 即<span class="math inline">\(p_{s_i}\)</span> 指第<span class="math inline">\(i\)</span>个<span class="math inline">\(q\)</span>的<span class="math inline">\(s\)</span>状态的概率。拿上图做例子，若此时<span class="math inline">\(i\)</span>=1，则<span class="math inline">\(p_{s_i}=1\)</span>(因为<span class="math inline">\(P(A)=1\)</span>，没得选) 若样本不是模型<span class="math inline">\(M\)</span>产生的，那么概率就会比是<span class="math inline">\(M\)</span>产生的概率低，可以通过适当的阈值进行预警。</p>
+<p>其中<span class="math inline">\(q_i=q_1q_2q_3...q_m\)</span>是<span class="math inline">\(X\)</span>的状态序列，即图中的节点，<span class="math inline">\(Q\)</span>是<span class="math inline">\(M\)</span>中所有产生<span class="math inline">\(X\)</span>的集合，<span class="math inline">\(s_i=s_1s_2s_3...s_m\)</span>是对应<span class="math inline">\(q\)</span>的所有状态， 即<span class="math inline">\(p_{s_i}\)</span> 指第<span class="math inline">\(i\)</span>个<span class="math inline">\(q\)</span>的<span class="math inline">\(s\)</span>状态的概率。拿上图做例子，若此时<span class="math inline">\(i\)</span>=1，则<span class="math inline">\(p_{s_i}=1\)</span>(因为<span class="math inline">\(P(A)=1\)</span>，没得选)</p>
+<p>若样本不是模型<span class="math inline">\(M\)</span>产生的，那么概率就会比是<span class="math inline">\(M\)</span>产生的概率低，可以通过适当的阈值进行预警。</p>
 <h3 id="优点">优点</h3>
 <ol type="1">
 <li>最终经过优化的模型具有优良的适应性，可以接收参数的多个形式，减少模型数，提高效率</li>
@@ -253,17 +256,20 @@ p_{q_2q_3}p_{s_3}... p_{q_mF}
 </ol>
 <h2 id="基于统计模型">基于统计模型</h2>
 <p>论文《Anomaly Detection of Web-based
-Attacks》中提出了几个用作异常检测的统计特征，如参数值长度，参数值字符分布，参数缺失，参数顺序，访问频率，访问时间间隔等特征，都利用切比雪夫不等式或卡方分布计算其正常的概率。
-举个栗子，如参数值长度，利用切比雪夫不等式，对于有<span class="math inline">\(n\)</span>个样本值的随机变量<span class="math inline">\(X\)</span>，若其期望为<span class="math inline">\(\mu\)</span>，方差<span class="math inline">\(\sigma\)</span>，对于正数<span class="math inline">\(\epsilon&gt;0\)</span>有</p>
-<p><span class="math display">\[p\lbrace \frac{1}{n} |X-\mu|
-&gt;\epsilon \rbrace &lt; \frac{\sigma^2}{\epsilon^2}\]</span></p>
-<p>很明显这个不等式提供了一个正常的样本中某个特征值波动的上确界
-若我们有个样本值为<span class="math inline">\(l\)</span>，则由上式有</p>
+Attacks》中提出了几个用作异常检测的统计特征，如参数值长度，参数值字符分布，参数缺失，参数顺序，访问频率，访问时间间隔等特征，都利用切比雪夫不等式或卡方分布计算其正常的概率。</p>
+<p>举个栗子，如参数值长度，利用切比雪夫不等式，对于有<span class="math inline">\(n\)</span>个样本值的随机变量<span class="math inline">\(X\)</span>，若其期望为<span class="math inline">\(\mu\)</span>，方差<span class="math inline">\(\sigma\)</span>，对于正数<span class="math inline">\(\epsilon&gt;0\)</span>有</p>
+<p><span class="math display">\[
+p\lbrace \frac{1}{n} |X-\mu| &gt;\epsilon \rbrace &lt;
+\frac{\sigma^2}{\epsilon^2}
+\]</span></p>
+<p>很明显这个不等式提供了一个正常的样本中某个特征值波动的上确界。</p>
+<p>若我们有个样本值为<span class="math inline">\(l\)</span>，则由上式有</p>
 <p><span class="math display">\[
 p\lbrace|x-\mu|&gt;|l-\mu| \rbrace&lt; \frac{\sigma^2}{(l-\mu)^2} = p(l)
 \]</span></p>
 <p>所以我们有了一个关于样本<span class="math inline">\(l\)</span>的正常概率。对于卡方分布实际是运用卡方检验，在论文中均有详细提及，不再赘述。
-当我们把上面的特征的正常概率换成异常概率累加起来，再加上一个权值<span class="math inline">\(w\)</span>，得出总的异常度<span class="math inline">\(F\)</span> <span class="math display">\[
+当我们把上面的特征的正常概率换成异常概率累加起来，再加上一个权值<span class="math inline">\(w\)</span>，得出总的异常度<span class="math inline">\(F\)</span></p>
+<p><span class="math display">\[
 F = \sum {w_i (1- p_i)}
 \]</span></p>
 <p>至此，对于该类预测模型我们也有了一些简单的认识，很容易看出其中有些特征是十分之弱的或者说代价很大的，如参数长度，参数值字符分布，参数顺序等，论文作者也提及了此问题，可将这些值作为参考值或者仅将样本标记为可疑以减少误报率。</p>
@@ -290,27 +296,29 @@ to a reduced number of false alarms.</u></p>
 </ol>
 <h2 id="基于单分类模型">基于单分类模型</h2>
 <p>正如上文提到的检测思路一样，单分类模型就是利用Oneclass SVM
-(单类支持向量机)对正常的访问数据进行建模，然后识别出其他异常值。
-SVM大致原理如下(以二维为例)：
-在给定的已标记的数据中找到一个最佳超平面分隔两类样本且达到最大化边距的目的</p>
+(单类支持向量机)对正常的访问数据进行建模，然后识别出其他异常值。</p>
+<p>SVM大致原理如下(以二维为例)：</p>
+<p>在给定的已标记的数据中找到一个最佳超平面分隔两类样本且达到最大化边距的目的</p>
 <p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/20-53-51.jpg">设超平面方程为：
-<span class="math display">\[w^Tx +b = 0\]</span> 优化目标是: <span class="math display">\[\min_{\zeta\ \in R } \frac{1}{2}
+<span class="math display">\[w^Tx +b = 0\]</span> 优化目标是:</p>
+<p><span class="math display">\[\min_{\zeta\ \in R } \frac{1}{2}
 ||w||^2+C\sum_i^m \zeta_i\]</span> <span class="math display">\[subject
 \ to \ \ \ y_i(w^Tx+b)&gt;1-\zeta_i \ \  \ \ \]</span> <span class="math display">\[\zeta_i \geq 0\]</span></p>
 <p>其中<span class="math inline">\(\zeta\)</span>是松弛变量，即允许较为离群的支持向量点距离超平面的范围，用来防止过拟合；<span class="math inline">\(C\)</span>是惩罚系数，是描述支持向量机对异常点的敏感程度，<span class="math inline">\(C\)</span>越大就越敏感，任何异常点都会影响最终结果。
 <span class="math inline">\(C\)</span>
-越小，对异常点就越不敏感，普通的一两个异常点都会被忽略。 而 Oneclass SVM
-属于无监督学习范畴</p>
+越小，对异常点就越不敏感，普通的一两个异常点都会被忽略。</p>
+<p>而 Oneclass SVM 属于无监督学习范畴</p>
 <p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/23-11-12.jpg">
-对于<span class="math inline">\(v\)</span>-svm或者说PSVM是想找到一个离原点最远的超平面将样本点隔离，其优化目标函数是
-<span class="math display">\[\min_{\zeta\ \in R, \ \rho \in R }
+对于<span class="math inline">\(v\)</span>-svm或者说PSVM是想找到一个离原点最远的超平面将样本点隔离，其优化目标函数是</p>
+<p><span class="math display">\[\min_{\zeta\ \in R, \ \rho \in R }
 \frac{1}{2} ||w||^2 - \rho  +\frac{1}{\nu l}\sum_i^l \zeta_i \]</span>
 <span class="math display">\[subject \ to \ \ \ (w^Tx+b)&gt;\rho-\zeta_i
-\ \  \ \ \]</span> <span class="math display">\[\zeta_i \geq 0\]</span>
-其中<span class="math inline">\(\nu\)</span>为样本点被错误分类所占比例的上界及样本点中支持向量所占比例的下界；<span class="math inline">\(l\)</span>为观测值个数(论文原文: <span class="math inline">\(l \in N\)</span> is the number of observations)
+\ \  \ \ \]</span> <span class="math display">\[\zeta_i \geq
+0\]</span></p>
+<p>其中<span class="math inline">\(\nu\)</span>为样本点被错误分类所占比例的上界及样本点中支持向量所占比例的下界；<span class="math inline">\(l\)</span>为观测值个数(论文原文: <span class="math inline">\(l \in N\)</span> is the number of observations)
 对于SVDD（Support Vector Data
-Description）其中心思想是将样本投射到高维空间(用核函数)，寻找半径最小的球将样本包含在内，其优化目标函数是:
-<span class="math display">\[\min_{\zeta\ \in R, \ \rho \in R }
+Description）其中心思想是将样本投射到高维空间(用核函数)，寻找半径最小的球将样本包含在内，其优化目标函数是:</p>
+<p><span class="math display">\[\min_{\zeta\ \in R, \ \rho \in R }
 R^2  +\frac{1}{\nu l}\sum_i^l \zeta_i \]</span> <span class="math display">\[subject \ to \ \ \ (w^Tx+b)&gt;\rho-\zeta_i \
 \  \ \ \]</span> <span class="math display">\[\zeta_i \geq
 0\]</span></p>
@@ -328,31 +336,37 @@ SVM对数据泛化的作用小，要求样本具有较高的覆盖性，全面�
 <li>对于新的样本出现，则需要重新训练模型以供检测，而现实应用中合适地重新建模训练要求较高的实时性</li>
 </ol>
 <p>对于缺点2，可以用特征聚类或者深度自编码进行优化。</p>
-<p>由于了解SVM时间较短，未能详细地了解一遍推导过程及数学细节，在此给出参考资料及论文，感兴趣的读者可以借助参考。
-对机器学习有兴趣的读者推荐观看吴恩达在网易云课堂发布的斯坦福大学免费机器学习课程，对数学要求较低，学过高数和线代的大学生都基本能看懂。
-SVM推导资料及论文： + <a href="http://rvlasveld.github.io/blog/2013/07/12/introduction-to-one-class-support-vector-machines/" target="_blank" rel="noopener">Introduction
-to One-class Support Vector Machines - Roemer Vlasveld</a> + <a href="https://www.jianshu.com/p/cce76c056d35" target="_blank" rel="noopener">支持向量机SVM - 忆霜晨</a>
-+ <a href="https://github.com/HaoMood/File/blob/master/%E4%BB%8E%E9%9B%B6%E6%8E%A8%E5%AF%BC%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA%28SVM%29.pdf" target="_blank" rel="noopener">从零推导支持向量机(SVM)
-- Hao Zhang</a> + <a href="https://github.com/halfrost/Halfrost-Field/blob/master/contents/Machine_Learning/Support_Vector_Machines.ipynb" target="_blank" rel="noopener">Andrew
-Ng Stanford University SVM 笔记</a></p>
+<p>由于了解SVM时间较短，未能详细地了解一遍推导过程及数学细节，在此给出参考资料及论文，感兴趣的读者可以借助参考。</p>
+<p>对机器学习有兴趣的读者推荐观看吴恩达在网易云课堂发布的斯坦福大学免费机器学习课程，对数学要求较低，学过高数和线代的大学生都基本能看懂。</p>
+<p>SVM推导资料及论文：</p>
+<ul>
+<li><a href="http://rvlasveld.github.io/blog/2013/07/12/introduction-to-one-class-support-vector-machines/" target="_blank" rel="noopener">Introduction
+to One-class Support Vector Machines - Roemer Vlasveld</a></li>
+<li><a href="https://www.jianshu.com/p/cce76c056d35" target="_blank" rel="noopener">支持向量机SVM -
+忆霜晨</a></li>
+<li><a href="https://github.com/HaoMood/File/blob/master/%E4%BB%8E%E9%9B%B6%E6%8E%A8%E5%AF%BC%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA%28SVM%29.pdf" target="_blank" rel="noopener">从零推导支持向量机(SVM)
+- Hao Zhang</a></li>
+<li><a href="https://github.com/halfrost/Halfrost-Field/blob/master/contents/Machine_Learning/Support_Vector_Machines.ipynb" target="_blank" rel="noopener">Andrew
+Ng Stanford University SVM 笔记</a></li>
+</ul>
 <p>Oneclass SVM论文: + 《Estimating the Support of a high-Dimensional
 Distribution》, Bernhard Schölkopf + 《Support Vector Method for Novelty
 Detection》, Bernhard Schölkopf</p>
 <h1 id="实践">实践</h1>
-<p>其实前期研究该问题时就想先拿统计模型对日志特征点进行统计先练练手，作为异常检测入门的实践。但是该想法夭折于找不到带参数的样本，可谓样本难求。因为样本涉及到隐私，也挺少组织或者公司开放真实的数据源，寻找任务异常困难。一些机构对一些日志进行了开源，如<a href="SecRepo.com">SecRepo.com</a>，一个开源免费的数据收集网站，包括一些主机日志，Web日志，DNS,FTP,DHCP等各种服务日志等。但是发现好像Web日志并未包含很多合规参数，可能本身就是静态页面的原因，所以用作统计参数特征等是比较欠妥的。
-随后一想，倒不如直接用我博客的访问日志进行一次单分类的实践，一来可以实践Oneclass
+<p>其实前期研究该问题时就想先拿统计模型对日志特征点进行统计先练练手，作为异常检测入门的实践。但是该想法夭折于找不到带参数的样本，可谓样本难求。因为样本涉及到隐私，也挺少组织或者公司开放真实的数据源，寻找任务异常困难。一些机构对一些日志进行了开源，如<a href="SecRepo.com">SecRepo.com</a>，一个开源免费的数据收集网站，包括一些主机日志，Web日志，DNS,FTP,DHCP等各种服务日志等。但是发现好像Web日志并未包含很多合规参数，可能本身就是静态页面的原因，所以用作统计参数特征等是比较欠妥的。</p>
+<p>随后一想，倒不如直接用我博客的访问日志进行一次单分类的实践，一来可以实践Oneclass
 SVM
-积累经验；二来由于本人有看日志的习惯，所以倒不如直接写一个日志审查的工具，配以异常访问分析，减少看纯日志文件的痛苦。
-所以，一款基于机器学习的Web日志异常检测工具——<strong>analog</strong>就诞生了</p>
+积累经验；二来由于本人有看日志的习惯，所以倒不如直接写一个日志审查的工具，配以异常访问分析，减少看纯日志文件的痛苦。</p>
+<p>所以，一款基于机器学习的Web日志异常检测工具——<strong>analog</strong>就诞生了</p>
 <h2 id="分析">分析</h2>
 <p>接下来将分析如何将日志变成特征数据，拟合模型，然后参数调优，用模型预测样本等等步骤</p>
 <h3 id="特征提取">特征提取</h3>
 <h4 id="数据选取">数据选取</h4>
-<p>首先我们定义一个异常访问需要知道到底怎样才算异常。如参数注入攻击，XSS，RCE，爆破目录，非法爬虫，DOS等等攻击，都属于异常。而我们怎样选取特征才能勾画出这些异常呢？
-记不清楚出处在哪的一句话说的很在理：“机器学习应用其本质上就是特征工程，如果特征选的好，数据源选的好，那么一个训练出来的模型就会很好，使用什么模型去预测倒不是最重要的。实践起来就是将数据筛选，训练，发现瑕疵数据，剔除数据，完善特征，继续训练，分析的这么一个循环过程。”
-所以我们由简入深，首先将访问日志中最重要的“访问路径”进行特征提取分析，先不管访问频率、访问时间等隐藏特征。对访问路径分析能够识别出一些<code>GET</code>方法的注入、XSS及一些Web
-RCE攻击，通过Web服务的蠕虫传播以及一些目录爆破等攻击，可以说是性价比很高的分析。
-以<code>nginx</code>默认日志格式为例，其结构如下:</p>
+<p>首先我们定义一个异常访问需要知道到底怎样才算异常。如参数注入攻击，XSS，RCE，爆破目录，非法爬虫，DOS等等攻击，都属于异常。而我们怎样选取特征才能勾画出这些异常呢？</p>
+<p>记不清楚出处在哪的一句话说的很在理：“机器学习应用其本质上就是特征工程，如果特征选的好，数据源选的好，那么一个训练出来的模型就会很好，使用什么模型去预测倒不是最重要的。实践起来就是将数据筛选，训练，发现瑕疵数据，剔除数据，完善特征，继续训练，分析的这么一个循环过程。”</p>
+<p>所以我们由简入深，首先将访问日志中最重要的“访问路径”进行特征提取分析，先不管访问频率、访问时间等隐藏特征。对访问路径分析能够识别出一些<code>GET</code>方法的注入、XSS及一些Web
+RCE攻击，通过Web服务的蠕虫传播以及一些目录爆破等攻击，可以说是性价比很高的分析。</p>
+<p>以<code>nginx</code>默认日志格式为例，其结构如下:</p>
 <table>
 <colgroup>
 <col style="width: 20%">
@@ -425,22 +439,23 @@ frequency，idf）是一个词语普遍重要性的度量。某一特定词语�
 \rbrace}|\)</span></p>
 <p>最后 <span class="math display">\[tf-idf_{i,j} = TF_{i,j} *
 IDF_i\]</span></p>
-<p>这个算法可以被用作关键字查询、文件与用户查询之间相关程度的度量或评级等用途。其中心思想就是字词的重要性随着它在文件中出现的次数成正比增加，但同时会随着它在语料库中出现的频率成反比下降。
-面对访问路径如<code>GET /admin/login.php?flag=1&amp;user=%23%28</code>，传统的按照空格分词，或者特殊符号分词就会将未解码的参数或者访问路径囊括，计算TF-IDF时造成特征过多，过杂，影响效率，更为提高了后面特征空间映射，维数约减难度。
-那么我们采用n-grams进行分词提取。拿2-grams来举例:
-由于访问路径均为ASCII码(未解码前),假设访问路径包含100种可打印字符。那么对于每条样本，2-grams分词出来后，我们都有对应的一个维的向量。
-那么对于某条访问路径，如<code>abcd</code>，2-grams分词出来后是<code>[ab,bc,cd]</code>，那么我们计算<code>[ab,bc,cd]</code>对应的TF-IDF值，将其填入对应的向量位置</p>
+<p>这个算法可以被用作关键字查询、文件与用户查询之间相关程度的度量或评级等用途。其中心思想就是字词的重要性随着它在文件中出现的次数成正比增加，但同时会随着它在语料库中出现的频率成反比下降。</p>
+<p>面对访问路径如<code>GET /admin/login.php?flag=1&amp;user=%23%28</code>，传统的按照空格分词，或者特殊符号分词就会将未解码的参数或者访问路径囊括，计算TF-IDF时造成特征过多，过杂，影响效率，更为提高了后面特征空间映射，维数约减难度。</p>
+<p>那么我们采用n-grams进行分词提取。拿2-grams来举例:</p>
+<p>由于访问路径均为ASCII码(未解码前),假设访问路径包含100种可打印字符。那么对于每条样本，2-grams分词出来后，我们都有对应的一个维的向量。</p>
+<p>那么对于某条访问路径，如<code>abcd</code>，2-grams分词出来后是<code>[ab,bc,cd]</code>，那么我们计算<code>[ab,bc,cd]</code>对应的TF-IDF值，将其填入对应的向量位置</p>
 <p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/tf-idf.jpeg">
 对于某个样本<span class="math inline">\(\rho\)</span>，我们用一个<span class="math inline">\(100^2\)</span>的向量去描述它；则对于<span class="math inline">\(m\)</span>个样本会有的<span class="math inline">\(m \times 100^2\)</span>的向量矩阵</p>
 <h3 id="模型训练">模型训练</h3>
 <p>特征提取之后就是对模型的训练，参数调优等步骤，但要进行训练，则首先需要将训练样本筛选出来，这样才能进行参数调优，计算准确率，召回率，F1值等。</p>
 <h4 id="训练样本筛选">训练样本筛选</h4>
-<p>由于采用了单分类模型，则我们只需要将正常的日志筛选出来即可。在<strong>analog</strong>中，我们需要将数据放进<code>analog\sample_set\train.txt</code>中。
-需要注意的是，我们要尽量地筛选出正常的样本，且数量要大于5000(或者更多)，保证数据量的充足从而进一步保证数据的全面覆盖性，这是模型所需要的，否则在未进行模型泛化处理如聚类，自编码等处理时，未包括进训练模型的样本将在一定程度上识别成异常，导致预测效果不好。这也是我下一步需要努力的方向。
-然后再采集一些白样本和黑样本进行参数优化所需要的计算，所以要求白样本得全部都是正常样本，黑样本也得全部是黑样本，这样算出来的值才具有参考价值。所幸测试样本要求的数量并不大，大概500-1000条左右(10%-20%的比例)，对于一般的小网站，日志人工筛选大概需要2-3个小时左右。当然，黑样本也可以直接用github上payload仓库的样本
+<p>由于采用了单分类模型，则我们只需要将正常的日志筛选出来即可。在<strong>analog</strong>中，我们需要将数据放进<code>analog\sample_set\train.txt</code>中。</p>
+<p>需要注意的是，我们要尽量地筛选出正常的样本，且数量要大于5000(或者更多)，保证数据量的充足从而进一步保证数据的全面覆盖性，这是模型所需要的，否则在未进行模型泛化处理如聚类，自编码等处理时，未包括进训练模型的样本将在一定程度上识别成异常，导致预测效果不好。这也是我下一步需要努力的方向。</p>
+<p>然后再采集一些白样本和黑样本进行参数优化所需要的计算，所以要求白样本得全部都是正常样本，黑样本也得全部是黑样本，这样算出来的值才具有参考价值。所幸测试样本要求的数量并不大，大概500-1000条左右(10%-20%的比例)，对于一般的小网站，日志人工筛选大概需要2-3个小时左右。当然，黑样本也可以直接用github上payload仓库的样本
 <a href="https://github.com/foospidy/payloads" target="_blank" rel="noopener">https://github.com/foospidy/payloads</a>
-。 若对自己采集的日志完整性没有把握，可以使用我写的<a href="https://github.com/Testzero-wz/wscan" target="_blank" rel="noopener">轻量扫描器</a>进行一次扫描。(要求python3.5以上)
-只需要简单的两步：</p>
+。</p>
+<p>若对自己采集的日志完整性没有把握，可以使用我写的<a href="https://github.com/Testzero-wz/wscan" target="_blank" rel="noopener">轻量扫描器</a>进行一次扫描。(要求python3.5以上)</p>
+<p>只需要简单的两步：</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a> <span class="ex">$</span> pip install wscan</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a> <span class="ex">$</span> wscan <span class="at">-u</span> http://example.com <span class="at">-m</span></span></code></pre></div>
 <p>扫描完成后就可以从自己的访问日志选取新的访问日志添加进训练样本了。（其实扫描器也属于频率异常的访问，而当前阶段关注的是访问路径，所以可以充当训练样本）</p>
@@ -475,15 +490,16 @@ IDF_i\]</span></p>
 <span class="math display">\[
 F1 = (\frac{P^{-1}+R^{-1}}{2})^{-1} = 2 \cdot \frac{P \cdot R}{P+R}
 \]</span></p>
-<p>后面我们就以F1值为准则来优化模型
-我们采用的库是python著名的库<code>scikit-learn</code>，其中就实现有Oneclass
-SVM函数。 其中我们需要调优的是两个参数——<strong>nu</strong>(<span class="math inline">\(\nu\)</span>)和<strong>gamma</strong>(<span class="math inline">\(\gamma\)</span>)
-nu：模型参数。为样本点被错误分类所占比例的上界及样本点中支持向量所占比例的下界；
-gamma：内核参数。使用高斯内核时，gamma定义了单个训练样本对结果作用范围的远近。gamma越大，作用范围越近，支持向量越少，容易过拟合。gamma越小，作用范围越远，支持向量越多，容易欠拟合。
-对于参数<strong>nu</strong>，我们理解为样本点被错误分类所占比例的上界及样本点中支持向量所占比例的下界，其实就是我们上面说的Oneclass
-SVM优化目标函数松弛变量的惩罚系数。
-介绍一下我们使用的RBF(径向基函数，Radius Basis Function)核，即高斯核。
-高斯核可以将变量<span class="math inline">\(x\)</span>映射到向量空间<span class="math inline">\(F\)</span>上，即<span class="math inline">\(x \to
+<p>后面我们就以F1值为准则来优化模型。</p>
+<p>我们采用的库是python著名的库<code>scikit-learn</code>，其中就实现有Oneclass
+SVM函数。 其中我们需要调优的是两个参数——<strong>nu</strong>(<span class="math inline">\(\nu\)</span>)和<strong>gamma</strong>(<span class="math inline">\(\gamma\)</span>)</p>
+<p>nu：模型参数。为样本点被错误分类所占比例的上界及样本点中支持向量所占比例的下界；</p>
+<p>gamma：内核参数。使用高斯内核时，gamma定义了单个训练样本对结果作用范围的远近。gamma越大，作用范围越近，支持向量越少，容易过拟合。gamma越小，作用范围越远，支持向量越多，容易欠拟合。</p>
+<p>对于参数<strong>nu</strong>，我们理解为样本点被错误分类所占比例的上界及样本点中支持向量所占比例的下界，其实就是我们上面说的Oneclass
+SVM优化目标函数松弛变量的惩罚系数。</p>
+<p>介绍一下我们使用的RBF(径向基函数，Radius Basis
+Function)核，即高斯核。</p>
+<p>高斯核可以将变量<span class="math inline">\(x\)</span>映射到向量空间<span class="math inline">\(F\)</span>上，即<span class="math inline">\(x \to
 F\)</span>映射： <span class="math display">\[
 f^{(i)}=K(x^{(i)},x&#39;)= e^{- \gamma ||x^{(i)}-x&#39;||^2} = \
 e^{\frac{||x^{(i)}-x&#39;||^2}{2\sigma^2}}
@@ -491,15 +507,15 @@ e^{\frac{||x^{(i)}-x&#39;||^2}{2\sigma^2}}
 <p>其中<span class="math inline">\(x&#39;\)</span>可以是我们的训练样本(事实上也是这么选取的)，参数<span class="math inline">\(\gamma=\frac{1}{2\sigma^2}\)</span> 越大，<span class="math inline">\(\gamma\)</span>越小，高斯函数越陡峭。<span class="math inline">\(\gamma\)</span>越大，高斯函数越平坦。</p>
 <p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/GS.png">
 我们可以认为<span class="math inline">\(f^{(i)}\)</span>是衡量测试样本与训练样本之间关联程度的，同等情况下，<span class="math inline">\(\sigma\)</span>越大，对应<span class="math inline">\(\gamma\)</span>越小，<span class="math inline">\(x^{(i)}\)</span>越与训练样本<span class="math inline">\(x&#39;\)</span>越契合；<span class="math inline">\(\sigma\)</span>越小，对应<span class="math inline">\(\gamma\)</span>越大，<span class="math inline">\(x^{(i)}\)</span>越与训练样本<span class="math inline">\(x&#39;\)</span>越不符合。即<span class="math inline">\(\gamma\)</span>描述了单个训练样本对结果作用范围的远近，且<span class="math inline">\(\gamma\)</span>越大，越容易过拟合，因为只有边界处训练样本才对决策边界(Decision
-Boundary)产生作用，反之<span class="math inline">\(\gamma\)</span>越小，越容易欠拟合，边界则趋于平滑。
-知道参数对应意义后，我们开始参数调优。参数调优我们采用的是网格搜索法(其实就是遍历搜索)
-我们把<strong>gamma</strong>范围锁定在<span class="math inline">\(\{1e-8，1\}\)</span>，<strong>nu</strong>锁定在<span class="math inline">\(\{0.001,0.2\}\)</span>之间，进行网格搜索，计算F1值，取F1最高时的<strong>gamma</strong>和<strong>nu</strong>。
-训练时间取决于日志大小以及测试样本多少，提供一些数据供读者参考：</p>
+Boundary)产生作用，反之<span class="math inline">\(\gamma\)</span>越小，越容易欠拟合，边界则趋于平滑。</p>
+<p>知道参数对应意义后，我们开始参数调优。参数调优我们采用的是网格搜索法(其实就是遍历搜索)
+我们把<strong>gamma</strong>范围锁定在<span class="math inline">\(\{1e-8，1\}\)</span>，<strong>nu</strong>锁定在<span class="math inline">\(\{0.001,0.2\}\)</span>之间，进行网格搜索，计算F1值，取F1最高时的<strong>gamma</strong>和<strong>nu</strong>。</p>
+<p>训练时间取决于日志大小以及测试样本多少，提供一些数据供读者参考：</p>
 <p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/train_time.png"></p>
 <h2 id="演示">演示</h2>
-<p>基于上述研究写的Web日志异常检测工具<strong>analog</strong>是一款功能丰富的命令行工具，拥有日志审查，日志分析，攻击IP定位等特色功能，也具有访问统计，日志属性统计等实用性功能。可以轻松部署到远程主机进行日志审查。目前只写成了一个离线日志分析工具，以后会改进成实时更新的工具。
-<strong>analog</strong>采用了优秀的命令行工具库<strong>prompt_toolkit</strong>构建命令交互架构；修改了<strong>py-ascii-graph</strong>库及<strong>terminaltables</strong>库，对统计数据进行了可视化，构建直方图及审查表格；借助强大的<strong>scikie-learn</strong>库进行机器学习、异常分析。
-<strong>感谢上述开源库的contributor辛苦付出</strong>。</p>
+<p>基于上述研究写的Web日志异常检测工具<strong>analog</strong>是一款功能丰富的命令行工具，拥有日志审查，日志分析，攻击IP定位等特色功能，也具有访问统计，日志属性统计等实用性功能。可以轻松部署到远程主机进行日志审查。目前只写成了一个离线日志分析工具，以后会改进成实时更新的工具。</p>
+<p><strong>analog</strong>采用了优秀的命令行工具库<strong>prompt_toolkit</strong>构建命令交互架构；修改了<strong>py-ascii-graph</strong>库及<strong>terminaltables</strong>库，对统计数据进行了可视化，构建直方图及审查表格；借助强大的<strong>scikie-learn</strong>库进行机器学习、异常分析。</p>
+<p><strong>感谢上述开源库的contributor辛苦付出</strong>。</p>
 <p><img src="/2018/10/22/基于机器学习的Web日志异常检测实践/analog_prompt.gif"></p>
 <h3 id="访问量统计">访问量统计</h3>
 <div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> show statistics requests current day</span></code></pre></div>
@@ -522,8 +538,8 @@ Boundary)产生作用，反之<span class="math inline">\(\gamma\)</span>越小�
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a> <span class="ex">$</span> cd analog </span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a> <span class="ex">$</span> pip install <span class="at">-r</span> requirements.txt</span></code></pre></div>
 <h2 id="准备">准备</h2>
-<p>若想使用异常检测功能，则必须提供自己的日志训练样本。（统计图表功能则不需要）
-<strong>1.
+<p>若想使用异常检测功能，则必须提供自己的日志训练样本。（统计图表功能则不需要）</p>
+<p><strong>1.
 在<code>analog</code>根目录下的<code>config.ini</code>配置好数据库参数(程序使用的是MYSQL，确保存在数据库环境)</strong></p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode ini"><code class="sourceCode ini"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="dt">host </span><span class="ot">=</span><span class="st"> 127.0.0.1</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">3306</span></span>
@@ -582,8 +598,8 @@ Boundary)产生作用，反之<span class="math inline">\(\gamma\)</span>越小�
 <li>提高检测模型F1值</li>
 </ol>
 <h1 id="结语">结语</h1>
-<p>持续了三个月的学习及码代码结束了，机器学习的途中坑很多，代码方面也继续在坑中爬起进步。十分感谢吴恩达老师通俗易懂的机器学习课程，感谢所有的参考文献、开源库的作者及其贡献者。
-<strong>analog</strong>目前只支持离线分析，只对访问路径进行了分词分析，识别出的异常请求也并未进行进一步的分类，离攻击溯源，入侵检测仍有很大一段距离。也许这一次实践效果并没有地那么理想，但总算是踏出了了解机器学习原理的第一步，或许后面还有很多很多步呢。</p>
+<p>持续了三个月的学习及码代码结束了，机器学习的途中坑很多，代码方面也继续在坑中爬起进步。十分感谢吴恩达老师通俗易懂的机器学习课程，感谢所有的参考文献、开源库的作者及其贡献者。</p>
+<p><strong>analog</strong>目前只支持离线分析，只对访问路径进行了分词分析，识别出的异常请求也并未进行进一步的分类，离攻击溯源，入侵检测仍有很大一段距离。也许这一次实践效果并没有地那么理想，但总算是踏出了了解机器学习原理的第一步，或许后面还有很多很多步呢。</p>
 <p>analog - github地址： <a href="https://github.com/Testzero-wz/analog" target="_blank" rel="noopener">https://github.com/Testzero-wz/analog</a>
 欢迎使用并提出意见，一起交流进步。</p>
 <h1 id="reference">Reference</h1>

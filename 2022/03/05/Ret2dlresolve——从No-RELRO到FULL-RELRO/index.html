@@ -196,7 +196,7 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">三月 5, 2022&nbsp;&nbsp;0:00:00</a>
+                        Date: <a href="#">三月 5, 2022</a>
                         </span>
                     
                     
@@ -213,8 +213,8 @@
 
         <div class="post-content">
             <p>本文需要对<code>ROP</code>技术有一些基础认识，除了<code>ret2dlresolve</code>，其他<code>ROP</code>知识不再赘述。</p>
-<p>本文的目的在于较为系统的总结ret2dlresolve技术在各个等级的<code>RELRO</code>保护下进行，以及对以ctfwiki为代表的一些中文互联网上关于<code>ret2dlresolve</code>技术的博客或者科普文章做一次关于<code>ret2dlresolve</code>技术在<code>FULL RELRO</code>下的利用的补充。</p>
-<p>因为我发现基本上对于绝大多数的pwn入门者，对于<code>ret2dlresolve</code>技术在<code>FULL RELRO</code>下的利用均表示无能为力，并且认为是不可实现的、或者说退而求其次，转向其他技术进行攻击。但经过一系列的学习后，发现事实并非如此——早在2015年的<code>usenix</code>研讨会上就有加州大学的安全研究员
+<p>本文的目的在于较为系统的总结<code>ret2dlresolve</code>技术在各个等级的<code>RELRO</code>保护下进行，以及对以<code>ctfwiki</code>为代表的一些中文互联网上关于<code>ret2dlresolve</code>技术的博客或者科普文章做一次关于<code>ret2dlresolve</code>技术在<code>FULL RELRO</code>下的利用的补充。</p>
+<p>因为我发现基本上绝大多数的pwn入门者，对于<code>ret2dlresolve</code>技术在<code>FULL RELRO</code>下的利用均表示无能为力，并且认为是不可实现的、或者说退而求其次，转向其他技术进行攻击。但经过一系列的学习后，发现事实并非如此——早在2015年的<code>usenix</code>研讨会上就有加州大学的安全研究员
 <code>Alessandro Di Federico</code>
 提出了该情况下的解决方案，该论文也公开发表在 <a href="https://www.usenix.org/conference/usenixsecurity15/technical-sessions/presentation/di-frederico" target="_blank" rel="noopener">usenix
 2015 技术会议</a> 上，对此感兴趣的可直接跳到该论文处阅读。</p>
@@ -223,7 +223,7 @@
 <p>启用动态链接的程序在调用函数时，会使用延迟绑定技术，即外部引入的函数真正调用时才会去解析该函数的虚拟地址VA，而这个动作实际上是需要通过<code>got</code>,
 <code>plt</code>表以及各个动态相关段来实现。</p>
 <p>当第一次调用某外部引入函数（如<code>read</code>，<code>system</code>等)时会调用<code>_dl_runtime_resolve(linkmap, offset)</code>进行函数地址解析，当得到某函数的具体加载地址后会回写<code>got</code>表项再直接调用该函数。</p>
-<p>而Ret2dlresolve攻击则是
+<p>而<code>Ret2dlresolve</code>攻击则是
 <strong>在这一解析函数的过程中，对相关的结构体进行伪造，并通过控制参数或者结构体指针使得解析函数的具体逻辑能够找到我们构造的结构体，并解析出一个危险/邪恶的函数地址，达成执行任意函数的目的。</strong></p>
 <h3 id="lazy-binding">1. Lazy Binding</h3>
 <p>延迟绑定技术(Lazy
@@ -236,7 +236,7 @@ Table)两个表。这些是pwn基本知识，具体细节不在此赘述，此�
 binding</figcaption>
 </figure>
 <h3 id="related-dynamic-sections">2. Related Dynamic Sections</h3>
-<p>接下来就是dl_runtime_resolve为找到对应函数绑定类型、绑定特征、回写地址以及最重要的标识符字符串等<strong>相关的结构体以及各个动态相关的节</strong>，如下表所示：</p>
+<p>接下来就是<code>_dl_runtime_resolve</code>为找到对应函数绑定类型、绑定特征、回写地址以及最重要的标识符字符串等<strong>相关的结构体以及各个动态相关的节</strong>，如下表所示：</p>
 <pre><code>    ===============================================
     |      Related sections       |   Structure   |
     ===============================================
@@ -613,7 +613,7 @@ Btyes，高4位表示符号的绑定特征，低4位表示符号类型。</li>
 <span id="cb14-42"><a href="#cb14-42" aria-hidden="true" tabindex="-1"></a>    <span class="co">//......</span></span>
 <span id="cb14-43"><a href="#cb14-43" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <h4 id="修改link_map">2.2 修改link_map</h4>
-<p>#####2.2.1 分析</p>
+<h5 id="分析">2.2.1 分析</h5>
 <p>至此，通过阅读源码我们知道，保存在<code>ld.so</code>数据段内存中的<code>linkmap-&gt;l_info</code>是寻找函数的关键，它是一个存储动态指针的链表，如<code>l_info[DT_STRTAB]</code>、<code>l_info[DT_JMPREL]</code>、<code>l_info[DT_SYMTAB]</code>等每个元素都是指向<code>Elfxx_Dyn</code>结构体的指针，它们一般情况下指向<code>elf</code>中<code>dynamic</code>段中的各项<code>Elfxx_Dyn</code>条目。</p>
 <p>于是我们可以修改<code>linkmap-&gt;l_info[DT_STRTAB]</code>到我们的可控区域，然后伪造<code>Elf_Dyn</code>条目和函数字符串即可，即我们回到了第1节所述情况，而不需要伪造多个条目，计算多个偏移了。</p>
 <p>值得注意的是，在x64的情况下，该方法的限制与2.1节伪造所有条目的方法一致，都需要任意读写才能完成，因为我们需要控制<code>&amp;link_map+0x1c8</code>为<code>NULL</code>，否则我们绕不开该条语句的判断，程序仍然会崩溃。</p>
@@ -653,7 +653,7 @@ Btyes，高4位表示符号的绑定特征，低4位表示符号类型。</li>
 <p>该方法是我在<code>partial RELRO</code>下使用<code>ret2dlresolve</code>攻击的常用方法，也十分建议读者们使用。</p>
 <h4 id="难度更升一级无输出函数情况伪造linkmap">2.3
 难度更升一级：无输出函数情况——伪造linkmap</h4>
-<h5 id="分析">2.3.1 分析</h5>
+<h5 id="分析-1">2.3.1 分析</h5>
 <p>我们假设一种64位下比较极端的情况——没有任何输出函数可以泄露出<code>link_map</code>的地址，则我们就无法修改<code>l_info[VERSYMIDX(DT_VERSYM)]</code>为<code>NULL</code>，那么我们就无法绕开的<code>l-&gt;l_info[VERSYMIDX(DT_VERSYM)] != NULL</code>，即程序因访问到非法区域而崩溃。（32位则不需要考虑是否会崩溃，可直接使用2,1节的方式进行攻击）</p>
 <p>此时我们需要<strong>一种不需要输出函数也能攻击的方法</strong>。（相关问题出现在这道CTF题上<a href="https://pwnable.tw/challenge/" target="_blank" rel="noopener">pwnable.tw unexploitable</a>）</p>
 <p><strong>我们如果说上一小节的2.1.4中的4小节是绕过小判断，则这次我们需要绕过更上一层的判断</strong>，即使得
@@ -985,7 +985,7 @@ Btyes，高4位表示符号的绑定特征，低4位表示符号类型。</li>
 <li>仍然需要任意写的能力；</li>
 </ol>
 <h3 id="full_relero">3. FULL_RELERO</h3>
-<h4 id="分析-1">3.1 分析</h4>
+<h4 id="分析-2">3.1 分析</h4>
 <p>当开启<code>FULL_RELERO</code>时，整个<code>GOT</code>表将标记为<code>read-only</code>，并且所有的外部引用变量/函数都将在程序装载时由动态链接器解析完成，即<code>dl_runtime_resolve</code>函数将无用武之地
 ，那么此时<code>.got.plt</code>表中的第二项
 表项<code>GOT[1]</code>装载的<code>link_map</code>地址 以及第二项
