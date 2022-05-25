@@ -1279,8 +1279,8 @@ header label {
   background: #f8f5ec;
 }
 .dark-theme .post-content code {
-  color: #fffe28;
-  background: #787575;
+  color: $dark-code-font-color;
+  background: $dark-code-background-color;
 }
 .post-content h1 code,
 .post-content h2 code,
