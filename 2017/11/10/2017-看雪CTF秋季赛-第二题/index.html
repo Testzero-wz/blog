@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="T3stzer0">
+
+
+    <meta name="subtitle" content="思考">
+
+
+
+
+<title>2017-看雪CTF秋季赛-第二题 | T3stzer0&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/blog/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/blog/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/blog/js/script.js"></script>
+    
+    <script src="/blog/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+
+
+
+  <!-- for theme: default is false -->
+  <!-- for page: default is true -->
+
+<link rel="stylesheet" href="/blog/js/fancybox/jquery.fancybox.min.css">
+
+
+
+<meta name="generator" content="Hexo 5.2.0"></head>
+<body>
+	
+		<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+       <script type="text/javascript" src="/js/fancybox/jquery.fancybox.min.js"></script>
+       <script type="text/javascript" src="/js/wrapImage.js"></script>
+   
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/blog/">Home</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/blog/archives">Posts</a>
+                
+                    <a class="menu-item" href="/blog/category">Categories</a>
+                
+                    <a class="menu-item" href="/blog/tag">Tags</a>
+                
+                    <a class="menu-item" href="/blog/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/blog/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/blog/archives">Posts</a>
+                
+                    <a class="menu-item" href="/blog/category">Categories</a>
+                
+                    <a class="menu-item" href="/blog/tag">Tags</a>
+                
+                    <a class="menu-item" href="/blog/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/styles/default.min.css">
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+			expand_toc()
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">2017-看雪CTF秋季赛-第二题</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">T3stzer0</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">十一月 10, 2017</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/blog/category/CTF/">CTF</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/19-29-11.png"></p>
+<blockquote>
+<p>逆向入坑的试炼，跌跌撞撞地做完，也算是快速得积累了一些逆向的经验，很多地方不甚了了，望见谅</p>
+</blockquote>
+<a id="more"></a>
+<p>看雪的CTF都是一些逆向题，对于最近想要入门逆向的我很具有吸引力，正在自学win32汇编的我想来练手，看到第一题太简单了，故第二题也想一起做了，然后发现事情并没有那么简单(后来事实证明这个比赛不适合入门，2333)
+<strong>进入正题</strong></p>
+<h2 id="分析">分析</h2>
+<p>PE分析软件告诉我这是一个未加壳的win32 console程序
+(巧了，我正在学win32 汇编)</p>
+<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/19-30-37.jpg"></p>
+<p>随直接丢IDA静态分析一下</p>
+<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/19-33-41.jpg">
+主函数很简单，显示打印欢迎界面，然后初始化dword_41B034为2，接着调用三个函数，当三个函数进行完之后，若dword_41B034为0的话，就打印<code>"You get it!\n"</code>
+那么先查看调用的第一个函数<code>sub_401050</code></p>
+<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/19-36-49.jpg">看似很简单，一开始没注意，先理解为scanf一个字符串进来并返回了该字符串的地址
+在看接下来的两个函数<code>sub_401090</code>和<code>sub_4010E0</code></p>
+<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/19-39-50.jpg"> <img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/19-40-00.jpg">
+看样子只要v1和v0满足这两个判断的要求就能将<code>dword_41B034--</code>两次，就能打印出<code>"You get it!\n"</code>了</p>
+<p>随后我就没啥好说的了，可以直接写脚本跑出来v0和v1就好了</p>
+<h2 id="陷入僵局">陷入僵局</h2>
+<p>然后我看了一下别人的WP，发现事情果然没有那么简单</p>
+<p>还是太naive啦</p>
+<p>原来这两个条件是无解的</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span> <span class="op">*</span> (v1 <span class="op">-</span> v0) <span class="op">+</span> v1 <span class="op">==</span> <span class="bn">0x8F503A42</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dv">17</span> <span class="op">*</span> (v1 <span class="op">-</span> v0) <span class="op">+</span> v1 <span class="op">==</span> <span class="bn">0xF3A94883</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#两式相减</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="dv">12</span><span class="op">*</span>(v1<span class="op">-</span>v0)<span class="op">=</span><span class="dv">1683557953</span>(奇数)</span></code></pre></div>
+<p>这就非常的尴尬了</p>
+<h2 id="还是太naive">还是太naive</h2>
+<p>再看第一个函数<code>sub_401050</code>的汇编代码</p>
+<p>IDA反出来的代码不太利于理解，直接放Ollydbg的反汇编代码，等会反正会用到它</p>
+<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-04-43.jpg"></p>
+<pre class="x86asm"><code>sub esp,0xC
+push ctf2017_.0041B0AC          ;   Coded by Fpc.\n\n
+call ctf2017_.00413D42
+add esp,0x4
+push ctf2017_.0041B090          ;   Please input your code:
+call ctf2017_.00413D42
+add esp,0x4
+lea eax,dword ptr ss:[esp]
+push eax
+push ctf2017_.0041B08C          ;  %s
+call ctf2017_.00413D73
+lea eax,dword ptr ss:[esp+0x8]
+add esp,0x14
+retn</code></pre>
+<p>首先申请的0xc的栈空间push字符串地址，然后print出来，再将esp+4将栈顶指回原处，然后在地址<code>0040106D</code>处将栈顶push进栈然后将scanf的格式化字符<code>%s</code>的地址也push进栈，留着scanf备用
+然后call scanf，执行完之后esp依然指向字符串<code>%s</code>地址处</p>
+<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-13-17.jpg"> <img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-13-38.jpg">
+然后esp+0x14即esp+20=esp+12(字符串长)+4(之前push的栈顶地址长度)+4(之前push的格式化字符地址长度)
+指回到(0x0018FF40)之前调用函数<code>sub_401050</code>的地址，然后return回去</p>
+<p>其实说了那么多就是想告诉读者
+可以利用缓冲区溢出构造输入的字符串使得return 的地址是可控的</p>
+<p>怎么利用？
+当我们正正经经地输入12个字符如<code>112233445566</code>的时候，我们会刚好把申请的12字节缓冲区占满，但是我们如果输入<code>112233445566aaa</code>，此时<code>aaa</code>就会覆盖到return的地址上去，然后return
+一下就可以执行对用地址的代码了</p>
+<p>如果我们想直接跳到打印<code>"You get it!\n"</code>函数的地址</p>
+<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-21-43.jpg">
+可以将字符串后三个字符构造为对应ascl码为0x2f 0x10
+0x40的字符串就可以跳转到<code>YouGotit</code>了</p>
+<h2 id="再次陷入僵局">再次陷入僵局</h2>
+<p>然而事情还是没有那么简单
+比赛规定了咱们只能输入数字和字母，而对应ASCLL码为0x2f 0x10
+0x40的字符串并不是都是字母和数字 emmmmmmmm...... 果然不适合入门</p>
+<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-27-21.jpg"></p>
+<h2 id="好戏才刚刚开始">好戏才刚刚开始</h2>
+<p>通过观(kan)察(WP)我们注意到有一段很奇怪的数据段</p>
+<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-30-52.jpg">
+然后还是通过观(kan)察(WP)发现这些数据居然都是代码，而且还是加了花的代码
+(在IDA中按C键将数据转换成代码)</p>
+<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-32-44.jpg"></p>
+<p>emmmmmm....... 这个花加得 果然不适合入门</p>
+<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-33-51.jpg">
+该数据段的地址为<code>0x00413131</code>对应的ASCLL码字符串为<code>11A</code>
+到此，我们可以看出这到题的思路就是构造缓冲区溢出，跳转到这个加了花的数据段上执行，然后分析得出flag</p>
+<p>看到了大佬的WP中的一句话</p>
+<blockquote>
+<p>可以看到很多跳转指令。熟悉的人一眼就明白。这里其实是花指令。而且是最简单的花指令。就是来回跳一跳，吓唬吓唬你而已。相信我。所有的花指令都是纸老虎。复杂的花指令可以用插件记录程序流程分析一下脱花。简单的花指令（就像本题中遇到的这种）根本不用鸟它。完全是战五渣。直接gang正面……</p>
+</blockquote>
+<p>于是我充满信心，开始了我第一次去花之旅 打开Ollydbg开始动态调试
+(恩，这是我第一次动态调试)
+构造字符串<code>11223344556611A</code>使得咱们能给够跳转到0x00413131处执行</p>
+<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-40-26.jpg"></p>
+<p>首先右键选择分析-&gt;从模块移除分析</p>
+<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-42-45.jpg"> 然后代码就出来了
+<img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-44-26.jpg"></p>
+<p>emmmmmm..... 这么多的花指令跳转，让我瑟瑟发抖</p>
+<p>借助上面大佬的"教诲"壮胆，硬着头皮执行了下去
+去花的原则是(当然我也不知道这样对不对,是不是一个好方法)</p>
+<blockquote>
+<ul>
+<li>上一步指令和跳转所依赖的标志位无关的直接跳过</li>
+<li>若是遇到依赖的标志位的跳转分支则下断点，选择其中一个跟进，不行的话就重新来，进入另一个分支</li>
+</ul>
+</blockquote>
+<p>历经两天课下时间的动态调试，终于把花给去掉了
+整理如下(可能与各位大佬整理的有出入)：</p>
+<pre class="x86asm"><code>;将输入的前12个字符分割为3个长度为4字节的子字符串S1，S2，S3
+00413131    add esp,-0x10   ;栈顶指向输入的字符串“11223344556611A”
+00413150    xor eax,eax     ;将zf置零
+00413184    mov dword ptr ds:[0x41B034],eax     ;将关键判断字符赋值为0
+004131BA    pop eax         ;eax=S1
+004131EB    mov ecx,eax     ;ecx=S1
+0041321F    pop eax         ;eax=S2
+00413254    mov ebx,eax     ;ebx=S2
+00413289    pop eax         ;eax=S3
+004132B5    mov edx,eax     ;edx=S3
+004132E2    mov eax,ecx     ;eax=S1
+00413316    sub eax,ebx     ;eax=S1-S2
+if(zf==1)&#123;
+;即S1==S2
+    00413306    lea edi,dword ptr ds:[ecx+0x6]
+    00413301    mov eax,0x28741C79
+    00413306    lea edi,dword ptr ds:[ecx+0x6]
+    ;死循环
+
+&#125;
+else&#123;
+;zf==0，即S1!=S2
+00413349    shl eax,0x2     ;eax=(S1-S2)*4
+00413380    add eax,ecx     ;eax=(S1-S2)*4+S1
+004133B5    add eax,edx     ;eax=(S1-S2)*4+S1+S3
+004133E9    sub eax,0xEAF917E2  ;BreakPoint,eax=(S1-S2)*4+S1+S3-0xEAF917E2
+
+if(zf==0)
+    &#123;
+    ;即(S1-S2)*4+S1+S3!=0xEAF917E2
+    00413B1E    pop eax                ; ctf2017_.00413131
+    00413B4E    xor eax,0x1210E
+    00413B1E    pop eax                ; ctf2017_.00413131
+    00413B4E    xor eax,0x1210E
+    00413B83    xor eax,dword ptr ds:[0x41B034]
+    0040103F    push ctf2017_.0041B038          ; ASCII &quot;Bad register-code, keep trying.\n&quot;
+    ;打印上述字符并退出
+    &#125;
+    else
+    &#123;
+    ;zf==1,eax=0
+    00413455    add eax,ecx     ;eax=S1
+    00413489    sub eax,ebx     ;eax=S1-S2
+    004134BF    mov ebx,eax     ;ebx=S1-S2
+    004134F3    shl eax,1   ;BreakPoint,eax=(S1-S2)*2
+
+    00413525    add eax,ebx     ;eax=(S1-S2)*2+S1-S2
+    00413559    add eax,ecx     ;eax=(S1-S2)*2+S1-S2+S1
+    0041358F    mov ecx,eax     ;ecx=(S1-S2)*2+S1-S2+S1
+    004135C3    add eax,edx     ;eax=(S1-S2)*2+S1-S2+S1+S3
+    004135F7    sub eax,0xE8F508C8   ;BreakPoint,eax=(S1-S2)*2+S1-S2+S1+S3-0xE8F508C8
+
+    ;jl&#123;
+
+        00413B1E    pop eax                ; ctf2017_.00413131
+        00413B4E    xor eax,0x1210E
+        00413B83    xor eax,dword ptr ds:[0x41B034]
+        0040103F    push ctf2017_.0041B038          ; ASCII &quot;Bad register-code, keep trying.\n&quot;
+        打印上述字符并退出
+    &#125;
+
+    ;jge 且当zf=0
+    &#123;
+        00413B1E    pop eax                ; ctf2017_.00413131
+        00413B4E    xor eax,0x1210E
+        00413B83    xor eax,dword ptr ds:[0x41B034]
+        0040103F    push ctf2017_.0041B038          ; ASCII &quot;Bad register-code, keep trying.\n&quot;
+        ;打印上述字符并退出
+    &#125;
+    ;jge 且当zf=1
+    &#123;
+    ;即(S1-S2)*2+S1-S2+S1+S3=0xE8F508C8
+        0041365D    mov eax,ecx     ;eax=(S1-S2)*2+S1-S2+S1
+        004136A7    sub eax,edx     ;BreakPoint,eax=(S1-S2)*2+S1-S2+S1-S3
+        004136D8    sub eax,0xC0A3C68 ;eax=(S1-S2)*2+S1-S2+S1-S3-0xC0A3C68
+        ;je
+        ;即(S1-S2)*2+S1-S2+S1-S3=0xC0A3C68
+            00413777    xor eax,0x8101
+            004137A9    mov edi,eax
+            004137E2    xor eax,eax
+            00413817    stos dword ptr es:[edi]
+    &#125;
+
+&#125;</code></pre>
+<p>跳了无数次坑 这可真是个细心活</p>
+<p>最后根据代码可以整理得三个方程</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>(S1<span class="op">-</span>S2)<span class="op">*</span><span class="dv">4</span><span class="op">+</span>S1<span class="op">+</span>S3<span class="op">=</span><span class="bn">0xEAF917E2</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>(S1<span class="op">-</span>S2)<span class="op">*</span><span class="dv">2</span><span class="op">+</span>S1<span class="op">-</span>S2<span class="op">+</span>S1<span class="op">+</span>S3<span class="op">=</span><span class="bn">0xE8F508C8</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>(S1<span class="op">-</span>S2)<span class="op">*</span><span class="dv">2</span><span class="op">+</span>S1<span class="op">-</span>S2<span class="op">+</span>S1<span class="op">-</span>S3<span class="op">=</span><span class="bn">0xC0A3C68</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">#整理得</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span><span class="op">*</span>S1<span class="op">-</span><span class="dv">4</span><span class="op">*</span>S2<span class="op">+</span>S3<span class="op">=</span><span class="bn">0xEAF917E2</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dv">4</span><span class="op">*</span>S1<span class="op">-</span><span class="dv">3</span><span class="op">*</span>S2<span class="op">+</span>S3<span class="op">=</span><span class="bn">0xE8F508C8</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="dv">4</span><span class="op">*</span>S1<span class="op">-</span><span class="dv">3</span><span class="op">*</span>S2<span class="op">-</span>S3<span class="op">=</span><span class="bn">0xC0A3C68</span></span></code></pre></div>
+<p>三条方程三个未知数，解得</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>S1<span class="op">=</span><span class="st">&quot;tsuJ&quot;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>S2<span class="op">=</span><span class="st">&quot;rof0&quot;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>S3<span class="op">=</span><span class="st">&quot;nuf0&quot;</span></span></code></pre></div>
+<p>由于是小端存储，所以这12个字符应该是<code>Just0for0fun</code></p>
+<p>最后输入<code>Just0for0fun11A</code>即可</p>
+<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-57-36.jpg"></p>
+<p>历经磨难，终于写了出来</p>
+<p>这题可以说是非常的有意思了</p>
+<p>给出题者点个赞</p>
+<p>最后说一句，<strong>真的不适合入门！</strong></p>
+<p>感谢阅读</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>T3stzer0</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://testzero-wz.github.io/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/">https://testzero-wz.github.io/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/blog/tag/CTF/"># CTF</a>
+                    
+                        <a href="/blog/tag/%E4%BA%8C%E8%BF%9B%E5%88%B6/"># 二进制</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/blog/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/blog/2017/11/20/2017-LCTF-use_your_IDA/">2017-LCTF-use_your_IDA解析</a>
+            
+            
+            <a class="next" rel="next" href="/blog/2017/11/01/%E7%94%A8C%E5%AE%9E%E7%8E%B032%E4%BD%8DPE%E6%96%87%E4%BB%B6%E5%88%86%E6%9E%90/">用C实现32位PE文件分析</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <!-- 
+<footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© T3stzer0 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+-->
+<script src="/js/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+    </div>
+</body>
+</html>

