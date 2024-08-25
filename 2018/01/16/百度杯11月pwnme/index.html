@@ -18,23 +18,23 @@
 
 
 
-    <link rel="icon" href="/blog/favicon.ico">
+    <link rel="icon" href="/favicon.ico">
 
 
 
 
     <!-- stylesheets list from _config.yml -->
     
-    <link rel="stylesheet" href="/blog/css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
     
 
 
 
     <!-- scripts list from _config.yml -->
     
-    <script src="/blog/js/script.js"></script>
+    <script src="/js/script.js"></script>
     
-    <script src="/blog/js/tocbot.min.js"></script>
+    <script src="/js/tocbot.min.js"></script>
     
 
 
@@ -47,7 +47,7 @@
   <!-- for theme: default is false -->
   <!-- for page: default is true -->
 
-<link rel="stylesheet" href="/blog/js/fancybox/jquery.fancybox.min.css">
+<link rel="stylesheet" href="/js/fancybox/jquery.fancybox.min.css">
 
 
 
@@ -62,16 +62,16 @@
         <header>
     <nav class="navbar">
         <div class="container">
-            <div class="navbar-header header-logo"><a href="/blog/">Home</a></div>
+            <div class="navbar-header header-logo"><a href="/">Home</a></div>
             <div class="menu navbar-right">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
                 <input id="switch_default" type="checkbox" class="switch_default">
                 <label for="switch_default" class="toggleBtn"></label>
@@ -84,19 +84,19 @@
         <div class="container">
             <div class="navbar-header">
                 <div>
-                    <a href="/blog/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    <a href="/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
                 </div>
                 <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
             </div>
             <div class="menu" id="mobile-menu">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
             </div>
         </div>
@@ -206,7 +206,7 @@
                         <span class="post-category">
                     Category:
                             
-                                <a href="/blog/category/CTF/">CTF</a>
+                                <a href="/category/CTF/">CTF</a>
                             
                         </span>
                     
@@ -215,7 +215,7 @@
         </header>
 
         <div class="post-content">
-            <p><img src="/blog/2018/01/16/%E7%99%BE%E5%BA%A6%E6%9D%AF11%E6%9C%88pwnme/13-99-45.jpg"></p>
+            <p><img src="/2018/01/16/%E7%99%BE%E5%BA%A6%E6%9D%AF11%E6%9C%88pwnme/13-99-45.jpg"></p>
 <blockquote>
 <p>这算是接触pwntools的第一题吧</p>
 <p>需要很多二进制知识储备，解释得比较适合新手看，大佬绕行</p>
@@ -224,16 +224,16 @@
 <a id="more"></a>
 <h4 id="稍作分析">稍作分析</h4>
 <p>首先拿到题目，丢IDA，发现是 64位 elf文件</p>
-<p><img src="/blog/2018/01/16/%E7%99%BE%E5%BA%A6%E6%9D%AF11%E6%9C%88pwnme/13-32-01.jpg">随意找一下，分析出主程序和主循环</p>
-<p><img src="/blog/2018/01/16/%E7%99%BE%E5%BA%A6%E6%9D%AF11%E6%9C%88pwnme/13-32-40.jpg">大致过程就是先打印欢迎界面
+<p><img src="/2018/01/16/%E7%99%BE%E5%BA%A6%E6%9D%AF11%E6%9C%88pwnme/13-32-01.jpg">随意找一下，分析出主程序和主循环</p>
+<p><img src="/2018/01/16/%E7%99%BE%E5%BA%A6%E6%9D%AF11%E6%9C%88pwnme/13-32-40.jpg">大致过程就是先打印欢迎界面
 -&gt; 先注册 -&gt; 然后主循环，三个选项，分别是打印信息、修改信息、退出
 很容易发现打印信息函数存在明显的格式化字符串漏洞</p>
-<p><img src="/blog/2018/01/16/%E7%99%BE%E5%BA%A6%E6%9D%AF11%E6%9C%88pwnme/13-34-54.jpg">直接打印存入的信息，是一个很明显的格式化字符漏洞
+<p><img src="/2018/01/16/%E7%99%BE%E5%BA%A6%E6%9D%AF11%E6%9C%88pwnme/13-34-54.jpg">直接打印存入的信息，是一个很明显的格式化字符漏洞
 我们可以构造一个比如<code>%11$x</code>
 <code>%11$n</code>的payload去泄露内存，以及修改内存 格式化漏洞详情 <a target="_blank" rel="noopener" href="https://ctf-wiki.github.io/ctf-wiki/pwn/fmtstr/fmtstr_intro.html">CTF
 Wiki-格式化字符串漏洞</a>
 然后我们用<code>checksec</code>来看一下程序开了那些保护(github上有此脚本)</p>
-<p><img src="/blog/2018/01/16/%E7%99%BE%E5%BA%A6%E6%9D%AF11%E6%9C%88pwnme/13-42-45.jpg"></p>
+<p><img src="/2018/01/16/%E7%99%BE%E5%BA%A6%E6%9D%AF11%E6%9C%88pwnme/13-42-45.jpg"></p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> checksec <span class="at">--file</span> pwnme </span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">RELRO</span>           STACK CANARY      NX            PIE             RPATH      RUNPATH  FORTIFY Fortified Fortifiable  FILE</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Full</span> RELRO      No canary found   NX enabled    No PIE          No RPATH   No RUNPATH   No  0       5   pwnme</span></code></pre></div>
@@ -554,7 +554,7 @@ writeup - Moto</a></p>
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="https://testzero-wz.github.io/2018/01/16/%E7%99%BE%E5%BA%A6%E6%9D%AF11%E6%9C%88pwnme/">https://testzero-wz.github.io/2018/01/16/%E7%99%BE%E5%BA%A6%E6%9D%AF11%E6%9C%88pwnme/</a></span>
+                        <span><a href="https://www.testzero-wz.com/2018/01/16/%E7%99%BE%E5%BA%A6%E6%9D%AF11%E6%9C%88pwnme/">https://www.testzero-wz.com/2018/01/16/%E7%99%BE%E5%BA%A6%E6%9D%AF11%E6%9C%88pwnme/</a></span>
                     </p>
                 
                 
@@ -573,11 +573,11 @@ writeup - Moto</a></p>
                 <span class="tag">
                     
                     
-                        <a href="/blog/tag/CTF/"># CTF</a>
+                        <a href="/tag/CTF/"># CTF</a>
                     
-                        <a href="/blog/tag/%E4%BA%8C%E8%BF%9B%E5%88%B6/"># 二进制</a>
+                        <a href="/tag/%E4%BA%8C%E8%BF%9B%E5%88%B6/"># 二进制</a>
                     
-                        <a href="/blog/tag/PWN/"># PWN</a>
+                        <a href="/tag/PWN/"># PWN</a>
                     
                         
                 </span>
@@ -585,15 +585,15 @@ writeup - Moto</a></p>
             <div>
                 <a href="javascript:window.history.back();">back</a>
                 <span>· </span>
-                <a href="/blog/">home</a>
+                <a href="/">home</a>
             </div>
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/blog/2018/01/16/PythonGUI%E6%A8%A1%E6%8B%9FTCP%EF%BC%8FIP%E8%A7%A3%E3%80%81%E5%B0%81%E5%8C%85/">PythonGUI模拟TCP／IP解、封包</a>
+                <a class="prev" rel="prev" href="/2018/01/16/PythonGUI%E6%A8%A1%E6%8B%9FTCP%EF%BC%8FIP%E8%A7%A3%E3%80%81%E5%B0%81%E5%8C%85/">PythonGUI模拟TCP／IP解、封包</a>
             
             
-            <a class="next" rel="next" href="/blog/2017/11/20/2017-LCTF-use_your_IDA/">2017-LCTF-use_your_IDA解析</a>
+            <a class="next" rel="next" href="/2017/11/20/2017-LCTF-use_your_IDA/">2017-LCTF-use_your_IDA解析</a>
             
         </section>
 
@@ -614,5 +614,22 @@ writeup - Moto</a></p>
 <script>hljs.highlightAll();</script>
 
     </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script> -->
+
+<script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 </body>
 </html>

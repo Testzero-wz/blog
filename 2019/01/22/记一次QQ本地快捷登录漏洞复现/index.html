@@ -18,23 +18,23 @@
 
 
 
-    <link rel="icon" href="/blog/favicon.ico">
+    <link rel="icon" href="/favicon.ico">
 
 
 
 
     <!-- stylesheets list from _config.yml -->
     
-    <link rel="stylesheet" href="/blog/css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
     
 
 
 
     <!-- scripts list from _config.yml -->
     
-    <script src="/blog/js/script.js"></script>
+    <script src="/js/script.js"></script>
     
-    <script src="/blog/js/tocbot.min.js"></script>
+    <script src="/js/tocbot.min.js"></script>
     
 
 
@@ -47,7 +47,7 @@
   <!-- for theme: default is false -->
   <!-- for page: default is true -->
 
-<link rel="stylesheet" href="/blog/js/fancybox/jquery.fancybox.min.css">
+<link rel="stylesheet" href="/js/fancybox/jquery.fancybox.min.css">
 
 
 
@@ -62,16 +62,16 @@
         <header>
     <nav class="navbar">
         <div class="container">
-            <div class="navbar-header header-logo"><a href="/blog/">Home</a></div>
+            <div class="navbar-header header-logo"><a href="/">Home</a></div>
             <div class="menu navbar-right">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
                 <input id="switch_default" type="checkbox" class="switch_default">
                 <label for="switch_default" class="toggleBtn"></label>
@@ -84,19 +84,19 @@
         <div class="container">
             <div class="navbar-header">
                 <div>
-                    <a href="/blog/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    <a href="/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
                 </div>
                 <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
             </div>
             <div class="menu" id="mobile-menu">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
             </div>
         </div>
@@ -206,7 +206,7 @@
                         <span class="post-category">
                     Category:
                             
-                                <a href="/blog/category/%E5%AE%89%E5%85%A8%E7%A0%94%E7%A9%B6/">安全研究</a>
+                                <a href="/category/%E5%AE%89%E5%85%A8%E7%A0%94%E7%A9%B6/">安全研究</a>
                             
                         </span>
                     
@@ -224,7 +224,7 @@
 那么猜测，很大概率是因为在网吧开黑的时候登录了QQ，然后获取到了本地QQ的一些权限，被代替进行了一些高权限操作，那么我们有理由怀疑这个权限是在登录了QQ后获取的，并且能够不需要用户的额外操作就能获取到这些权限。根据这个方向，经过一些查阅资料，基本坐实了是本地快捷登录造成的凭证窃取。</p>
 <h2 id="罪魁祸首快捷登录">罪魁祸首——快捷登录</h2>
 <p>以下是对整套黑产行为的概括：</p>
-<p><img src="/blog/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/Blank_Diagram.png">
+<p><img src="/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/Blank_Diagram.png">
 对快捷登录研究了一下午，也用python做了复现。时间仓促，写的比较随意，望见谅。</p>
 <h2 id="技术分析">技术分析</h2>
 <p>QQ现在实现快捷登录的方式是这样的 1.
@@ -237,14 +237,14 @@
 <p>可以看出，<strong>本地的任何应用都可以与QQ建立的本地服务器进行交互，获取到账号信息，进而进行快捷登录</strong>。而漏洞就出在这。</p>
 <p>于是我们现在尝试对快捷登录的请求进行详细的抓包分析。 1.
 向远处服务器请求，获取到<code>pt_local_token</code>参数</p>
-<p><img src="/blog/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/11-13-27.jpg">以及请求的域名<code>xui.ptlogin2.qq.com</code>，该域名的作用就是获取凭证。</p>
+<p><img src="/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/11-13-27.jpg">以及请求的域名<code>xui.ptlogin2.qq.com</code>，该域名的作用就是获取凭证。</p>
 <pre><code>GET /cgi-bin/xlogin?proxy_url=https%3A//qzs.qq.com/qzone/v6/portal/proxy.html&amp;daid=5&amp;&amp;hide_title_bar=1&amp;low_login=0&amp;qlogin_auto_login=1&amp;no_verifyimg=1&amp;link_target=blank&amp;appid=549000912&amp;style=22&amp;target=self&amp;s_url=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;pt_qr_app=%E6%89%8B%E6%9C%BAQQ%E7%A9%BA%E9%97%B4&amp;pt_qr_link=http%3A//z.qzone.com/download.html&amp;self_regurl=https%3A//qzs.qq.com/qzone/v6/reg/index.html&amp;pt_qr_help_link=http%3A//z.qzone.com/download.html&amp;pt_no_auth=1 HTTP/1.1
 Host: xui.ptlogin2.qq.com</code></pre>
 <p><strong>url</strong>其中的一些参数并不需要理会，抓个包复制上去就好。需要注意的是，这个请求检查了<code>Referer</code>，所以<code>Referer</code>要改成<code>*.qq.com</code>
 在上述请求的响应中，服务器设置了<code>pt_local_token</code>这个cookie，后续的计算也是围绕着这个参数展开。</p>
-<p><img src="/blog/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/11-16-45.jpg">2.
+<p><img src="/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/11-16-45.jpg">2.
 而客户端会带着参数<code>pt_local_token</code>，对本地的指定端口进行请求，获取账号信息。我们可以思考一下是谁在这个端口侦听。</p>
-<p><img src="/blog/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/11-19-08.jpg">请求返回的是一段JS：</p>
+<p><img src="/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/11-19-08.jpg">请求返回的是一段JS：</p>
 <pre><code>HTTP/1.1 200 OK
 Content-Type: Application/javascript
 Content-Length: 323
@@ -258,7 +258,7 @@ var var_sso_uin_list=[&#123;&quot;account&quot;:&quot;12345678&quot;,&quot;clien
 Host: localhost.ptlogin2.qq.com:4301</code></pre>
 <p>其中参数<code>clientuin</code>是Q号，<code>r</code>是随机数，可以随便给，<code>pt_local_tk</code>就是<code>pt_local_token</code>
 请求响应返回一个<code>clientkey</code>的<code>Set-Cookie</code>字段中的值</p>
-<p><img src="/blog/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/12-05-55.jpg"></p>
+<p><img src="/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/12-05-55.jpg"></p>
 <p>4. 带着包含<code>clientkey</code>的cookie向远程服务器进行登录</p>
 <pre><code>GET /jump?clientuin=3537***086&amp;keyindex=9&amp;pt_aid=549000912&amp;daid=5&amp;u1=https%3A%2F%2Fqzs.qzone.qq.com%2Fqzone%2Fv5%2Floginsucc.html%3Fpara%3Dizone&amp;pt_local_tk=2008428654&amp;pt_3rd_aid=0&amp;ptopt=1&amp;style=40 HTTP/1.1
 Host: ssl.ptlogin2.qq.com</code></pre>
@@ -300,7 +300,7 @@ Set-Cookie: p_skey=hlcQmdkZHYwNk5y2XGipsSOm0Igjj7AKo_;Path=/;Domain=qzone.qq.com
 <li><strong>g_tk</strong></li>
 </ol>
 <p>其中<code>qzone_token</code>是刷新空间的时候在页面中给你的一个<code>token</code>，直接正则拿到就好</p>
-<p><img src="/blog/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/12-23-40.jpg"></p>
+<p><img src="/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/12-23-40.jpg"></p>
 <p>而追踪<code>g_tk</code>参数花了我不少功夫，其源码在<a target="_blank" rel="noopener" href="https://qzonestyle.gtimg.cn/qzone/v8/engine/migrate-plugin.js">https://qzonestyle.gtimg.cn/qzone/v8/engine/migrate-plugin.js</a>
 的<code>getACSRFToken</code>函数中：</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>getACSRFToken<span class="op">:</span><span class="kw">function</span>(url) &#123;</span>
@@ -344,15 +344,15 @@ Set-Cookie: p_skey=hlcQmdkZHYwNk5y2XGipsSOm0Igjj7AKo_;Path=/;Domain=qzone.qq.com
 <ol type="1">
 <li>检测本地账号</li>
 </ol>
-<p><img src="/blog/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/12-35-52.jpg"></p>
+<p><img src="/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/12-35-52.jpg"></p>
 <ol start="2" type="1">
 <li>发送指定说说</li>
 </ol>
-<p><img src="/blog/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/12-36-12.jpg"></p>
+<p><img src="/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/12-36-12.jpg"></p>
 <ol start="3" type="1">
 <li>获取好友列表信息以及分组</li>
 </ol>
-<p><img src="/blog/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/12-39-22.jpg"></p>
+<p><img src="/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/12-39-22.jpg"></p>
 <p>测试源码如下，仅供学习之用，了解其原理，禁止用于非法用途！</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> requests</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> re</span>
@@ -531,7 +531,7 @@ Set-Cookie: p_skey=hlcQmdkZHYwNk5y2XGipsSOm0Igjj7AKo_;Path=/;Domain=qzone.qq.com
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="https://testzero-wz.github.io/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/">https://testzero-wz.github.io/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/</a></span>
+                        <span><a href="https://www.testzero-wz.com/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/">https://www.testzero-wz.com/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/</a></span>
                     </p>
                 
                 
@@ -550,9 +550,9 @@ Set-Cookie: p_skey=hlcQmdkZHYwNk5y2XGipsSOm0Igjj7AKo_;Path=/;Domain=qzone.qq.com
                 <span class="tag">
                     
                     
-                        <a href="/blog/tag/%E7%A0%81%E4%BB%A3%E7%A0%81/"># 码代码</a>
+                        <a href="/tag/%E7%A0%81%E4%BB%A3%E7%A0%81/"># 码代码</a>
                     
-                        <a href="/blog/tag/%E6%B8%97%E9%80%8F/"># 渗透</a>
+                        <a href="/tag/%E6%B8%97%E9%80%8F/"># 渗透</a>
                     
                         
                 </span>
@@ -560,15 +560,15 @@ Set-Cookie: p_skey=hlcQmdkZHYwNk5y2XGipsSOm0Igjj7AKo_;Path=/;Domain=qzone.qq.com
             <div>
                 <a href="javascript:window.history.back();">back</a>
                 <span>· </span>
-                <a href="/blog/">home</a>
+                <a href="/">home</a>
             </div>
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/blog/2019/12/02/Redis%E6%9C%AA%E6%8E%88%E6%9D%83%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E4%B8%8E%E5%AE%9E%E8%B7%B5/">Redis 未授权主从复制原理解析与实践</a>
+                <a class="prev" rel="prev" href="/2019/12/02/Redis%E6%9C%AA%E6%8E%88%E6%9D%83%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E4%B8%8E%E5%AE%9E%E8%B7%B5/">Redis 未授权主从复制原理解析与实践</a>
             
             
-            <a class="next" rel="next" href="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/">基于机器学习的Web日志异常检测实践</a>
+            <a class="next" rel="next" href="/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/">基于机器学习的Web日志异常检测实践</a>
             
         </section>
 
@@ -589,5 +589,22 @@ Set-Cookie: p_skey=hlcQmdkZHYwNk5y2XGipsSOm0Igjj7AKo_;Path=/;Domain=qzone.qq.com
 <script>hljs.highlightAll();</script>
 
     </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script> -->
+
+<script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 </body>
 </html>

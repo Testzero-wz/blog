@@ -18,23 +18,23 @@
 
 
 
-    <link rel="icon" href="/blog/favicon.ico">
+    <link rel="icon" href="/favicon.ico">
 
 
 
 
     <!-- stylesheets list from _config.yml -->
     
-    <link rel="stylesheet" href="/blog/css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
     
 
 
 
     <!-- scripts list from _config.yml -->
     
-    <script src="/blog/js/script.js"></script>
+    <script src="/js/script.js"></script>
     
-    <script src="/blog/js/tocbot.min.js"></script>
+    <script src="/js/tocbot.min.js"></script>
     
 
 
@@ -47,7 +47,7 @@
   <!-- for theme: default is false -->
   <!-- for page: default is true -->
 
-<link rel="stylesheet" href="/blog/js/fancybox/jquery.fancybox.min.css">
+<link rel="stylesheet" href="/js/fancybox/jquery.fancybox.min.css">
 
 
 
@@ -62,16 +62,16 @@
         <header>
     <nav class="navbar">
         <div class="container">
-            <div class="navbar-header header-logo"><a href="/blog/">Home</a></div>
+            <div class="navbar-header header-logo"><a href="/">Home</a></div>
             <div class="menu navbar-right">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
                 <input id="switch_default" type="checkbox" class="switch_default">
                 <label for="switch_default" class="toggleBtn"></label>
@@ -84,19 +84,19 @@
         <div class="container">
             <div class="navbar-header">
                 <div>
-                    <a href="/blog/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    <a href="/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
                 </div>
                 <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
             </div>
             <div class="menu" id="mobile-menu">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
             </div>
         </div>
@@ -206,7 +206,7 @@
                         <span class="post-category">
                     Category:
                             
-                                <a href="/blog/category/CTF/">CTF</a>
+                                <a href="/category/CTF/">CTF</a>
                             
                         </span>
                     
@@ -215,7 +215,7 @@
         </header>
 
         <div class="post-content">
-            <p><img src="/blog/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/15-49-43.jpg"></p>
+            <p><img src="/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/15-49-43.jpg"></p>
 <h2 id="引言">引言</h2>
 <p>最近学二进制有点入魔，最近才有时间把最近写的JarvisOJ上一些Pwn题WP和得到的经验总结在此
 不定期更新 <a id="more"></a></p>
@@ -227,7 +227,7 @@
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">char</span> buf<span class="op">;</span> <span class="co">// [sp+0h] [bp-80h]@1</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> read<span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="op">&amp;</span>buf<span class="op">,</span> <span class="dv">512</span><span class="bu">uLL</span><span class="op">);</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="op">&#125;</span></span></code></pre></div>
-<p>查看栈结构很容易得知溢出长度是<code>0x80+0x8=0x88</code> <img src="/blog/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/18-12-02.jpg">
+<p>查看栈结构很容易得知溢出长度是<code>0x80+0x8=0x88</code> <img src="/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/18-12-02.jpg">
 然后劫持到<code>callsystem()</code>的地址<code>0x400596</code>即可
 poc:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pwn <span class="im">import</span> <span class="op">*</span> </span>
@@ -359,7 +359,7 @@ poc:</p>
 <h1 id="level-4">level 4</h1>
 <p>一样给出存在溢出漏洞的函数,但是没有给<code>libc</code>和其他任何提示
 plt中存在<code>read</code>和<code>write</code>函数</p>
-<p><img src="/blog/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/19-30-17.jpg"></p>
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/19-30-17.jpg"></p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="dt">ssize_t</span> vulnerable_function<span class="op">()</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="op">&#123;</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">char</span> buf<span class="op">;</span> <span class="co">// [sp+0h] [bp-88h]@1</span></span>
@@ -469,12 +469,12 @@ write）对此区域作的任何修改都不会写回原来的文件内容。当
 <p>返回值： +
 若映像成功则返回映像区的内存起始地址，否则返回MAP_FAILED（－1），错误原因存于errno中。</p>
 <p>上一张图说明mmap的具体作用是什么：</p>
-<p><img src="/blog/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/14-43-47.jpg">
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/14-43-47.jpg">
 现在我们可以知道，mmap的作用就是<strong>将文件态的部分映射到程序的虚拟空间中</strong>(程序虚拟空间指的是程序可见的地址，包括已分配和可以被分配的两部分内存，即我们操作系统里面所说的程序可占有4G大小的虚拟内存)，然后通过设<code>mmap</code>的参数<code>flags</code>和<code>port</code>就可以控制映射到虚拟空间中的内存的执行、读写权限以及是否修改源文件，是否共享或者私有(用到咱们学的<code>copy-on-write</code>技术，即写时拷贝，每个程序试图修改时才会产生一个拷贝副本)，是否锁定（不允许页置换）等属性。还不理解可以结合in
 nek大佬在知乎上对<code>mmap</code>函数的解释来理解。<a target="_blank" rel="noopener" href="https://www.zhihu.com/question/48161206">知乎- Linux 中 mmap()
 函数的内存映射问题理解？-in nek 的回答</a>
 总得来说，mmap对于我们的作用就是在程序虚拟空间产生一段可读写、可执行的内存段，对于是哪个文件映射过来我们并不关心，但是为了避免我们在内存段中写入ShellCode回写至被映射的文件而产生莫名的错误，我建议选择<code>MAP_PRIVATE</code>即修改时会产生一个内存副本，而不会修改被映射的文件内容。而第五个参数是被映射文件的文件描述符<code>fd</code>，我们知道平常我们得到的文件描述符是由<code>fopen</code>这类函数的返回值得到的，默认的0是<code>stdin</code>,1是<code>stdout</code>。由于我们并不想知道也并不关心哪个文件或者区域被映射到内存中所以我建议使用匿名映射--<code>MAP_ANONYMOUS</code>。如上秒描述的一样，当<code>MAP_ANONYMOUS</code>时，文件描述符<code>fd</code>会被置为<code>-1</code>被无视掉，更为贴切我们不在乎谁被映射的要求。
-先写一个C程序把<code>flags</code>属性对应的值输出来看一下 <img src="/blog/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/14-39-45.jpg">
+先写一个C程序把<code>flags</code>属性对应的值输出来看一下 <img src="/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/14-39-45.jpg">
 接下来我们就是要构造这样的函数调用</p>
 <div class="sourceCode" id="cb15"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">//原型</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> <span class="op">*</span>mmap<span class="op">(</span> <span class="dt">void</span> <span class="op">*</span>start <span class="op">,</span> <span class="dt">size_t</span> length <span class="op">,</span> <span class="dt">int</span> prot <span class="op">,</span> <span class="dt">int</span> flags <span class="op">,</span> <span class="dt">int</span> fd <span class="op">,</span> off_t offsize<span class="op">)</span></span>
@@ -563,7 +563,7 @@ PS
 由于32位是栈上传参和64位是先由寄存器<code>rdi</code>,<code>rsi</code>,<code>rdx</code>,<code>rcx</code>,<code>r8</code>,<code>r9</code>传递前6位参数，再多的参数就丢栈上传递
 所以我们需要找到一些<code>gadget</code>帮助我们传递<code>/bin/sh</code>进<code>rdi</code>
 之前的文章已经教了如何寻找<code>gadget</code>，此处我们直接用<code>ROPgadget</code>工具寻找</p>
-<p><img src="/blog/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/00-38-15.jpg">
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/00-38-15.jpg">
 万事俱备，poc如下:</p>
 <div class="sourceCode" id="cb17"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pwn <span class="im">import</span> <span class="op">*</span> </span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co">#pro = process(&quot;./level2_x64&quot;)</span></span>
@@ -654,7 +654,7 @@ PS
 <span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a><span class="op">&#125;</span></span></code></pre></div>
 <p>问题出在<code>mem_test()</code>函数的<code>scanf</code>上，查看栈结构很容易知道溢出填充长度为<code>23</code>。
 此外还有一个<code>win_func()</code>函数和一个<code>catFlag</code>只读数据</p>
-<p><img src="/blog/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/00-56-31.jpg"></p>
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/00-56-31.jpg"></p>
 <div class="sourceCode" id="cb20"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> __cdecl win_func<span class="op">(</span><span class="dt">char</span> <span class="op">*</span>command<span class="op">)</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="op">&#123;</span></span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> system<span class="op">(</span>command<span class="op">);</span></span>
@@ -729,7 +729,7 @@ PS
 <span id="cb23-31"><a href="#cb23-31" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="op">*</span>MK_FP<span class="op">(</span>__FS__<span class="op">,</span> <span class="dv">40</span><span class="bu">LL</span><span class="op">)</span> <span class="op">^</span> v9<span class="op">;</span></span>
 <span id="cb23-32"><a href="#cb23-32" aria-hidden="true" tabindex="-1"></a><span class="op">&#125;</span></span></code></pre></div>
 <p>在程序<code>data</code>段的末尾<code>0x600D20</code>处有一句提示<code>PCTF&#123;Here',27h,'s the flag on server&#125;</code>,提示我们flag就在此处，需要我们想办法获得，而程序后面会将flag置零</p>
-<p><img src="/blog/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/19-37-38.jpg"></p>
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/19-37-38.jpg"></p>
 <p>这题看似简单，但是需要知道两个知识点才能解决</p>
 <ol type="1">
 <li>Canary保护机制</li>
@@ -739,7 +739,7 @@ PS
 <p>对于linux下的程序保护机制，我的上篇文章也有提及Canary保护。
 <code>Canary</code>，金丝雀。据说是以前矿工用金丝雀来确定地下气体是否有毒或者是否适合工作。。。但是这个名字的由来很好地跟我们解释了这个<code>Canary</code>的作用
 <code>Canary</code>位置如图：</p>
-<p><img src="/blog/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/19-07-05.jpg">
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/19-07-05.jpg">
 <code>Canary</code>是随机生成的一段数据。当我们想栈溢出的时候，填充的数据就会破坏<code>Canary</code>，当程序<code>Return</code>的时候就会检查<code>Canary</code>是否被破坏。如果被破坏了就会调用<code>___stack_chk_fail</code>中断程序，从而达到保护程序控制流不被修改的目的。而函数的原型如下:</p>
 <div class="sourceCode" id="cb24"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> __attribute__ <span class="op">((</span>noreturn<span class="op">))</span> __stack_chk_fail <span class="op">(</span><span class="dt">void</span><span class="op">)</span></span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="op">&#123;</span></span>
@@ -761,7 +761,7 @@ PS
 但是话又说回来，虽然我们可以输出任意地址的字符串，但是我们的<code>flag</code>是被覆盖了啊。俗话说<code>巧妇难为无米之炊</code>。但是我们可以通过<code>linux</code>下elf文件加载进内存的一些特性来实现我们的构想</p>
 <h2 id="elf文件段加载或者说内存映射关系">ELF文件段加载或者说内存映射关系</h2>
 <p>参考<a target="_blank" rel="noopener" href="https://ctf-wiki.github.io/ctf-wiki/executable/elf/program_loading.html">CTF-Wiki
-- 程序加载</a> 文中有如下一段话： <img src="/blog/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/01-30-40.jpg"><img src="/blog/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/01-33-07.jpg"></p>
+- 程序加载</a> 文中有如下一段话： <img src="/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/01-30-40.jpg"><img src="/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/01-33-07.jpg"></p>
 <blockquote>
 <p>在这个例子中，尽管代码段和数据段在模4KB的意义下相等，但是仍然最多有4个页面包含有不纯的代码或者数据。当然，<strong>实际中会取决于页大小或者文件系统的块大小。</strong>
 + 代码段的第一个页包含了ELF头，程序头部表，以及其他信息。 +
@@ -773,31 +773,31 @@ PS
 <p>逻辑上说，系统会对强制控制内存的权限，就好比每一个段的权限都是完全独立的；段的地址会被调整，以便于确保内存中的每一个逻辑页都只有一组类型的权限。在上面给出的例子中，<strong>文件的代码段的最后一部分和数据段的开始部分都会被映射两次：分别在数据段的虚拟地址以及代码段的虚拟地址。</strong>
 然后文件在内存中就会映射成这样子：</p>
 </blockquote>
-<p><img src="/blog/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/01-40-31.jpg">
+<p><img src="/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/01-40-31.jpg">
 很清楚地看到，以4KB大小分割（linux64bit的默认页大小是0x1000Bytes）文件状态下的数据(代码也是数据),段与段之间会有重叠部分，而系统索性全部映射过来，所以<strong>代码段的最后一页包含了数据段开始部分的副本，而数据段的第一页包含了代码段的最后部分的副本。（如图）</strong>
 由于我们的文件很小，且通过<code>readelf</code>查看段的文件偏移全部小于0x1000
-<img src="/blog/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/01-48-06.jpg">
+<img src="/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/01-48-06.jpg">
 且前面几段映射的基址是<code>0x400000</code>,到后面的<code>.init_array</code>段的映射基址是<code>0x600000</code>故我们有理由断定，在内存里面会存在两份<code>.data</code>段和<code>.bss</code>段（其实其他段也会被映射两次）
-<img src="/blog/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/01-48-43.jpg">
+<img src="/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/01-48-43.jpg">
 接下来我们实际演示一下用gdb下断点调试，然后找<code>.rodata</code>段里面的数据在内存里面的位置来验证我们的猜想
-<img src="/blog/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/01-53-18.jpg">
+<img src="/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/01-53-18.jpg">
 首先随便下个断点，让程序装载就好了
 然后我们寻找<code>.rodata</code>段里面的数据<code>"Thank you, bye!"</code>
-<img src="/blog/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/01-57-08.jpg">
+<img src="/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/01-57-08.jpg">
 果不其然，位于地址<code>0x40094E</code>的数据
 <code>"Thank you, bye!"</code>在内存里面被映射了两次。
 既然我们猜想实现，那么我们来尝试寻找在<code>.data</code>段里面的<code>PCTF&#123;</code>
 这次我们把断点定在<code>0x40080B</code>处，为的是不让下面的函数将<code>PCTF&#123;</code>破坏掉
-<img src="/blog/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/02-01-54.jpg">
+<img src="/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/02-01-54.jpg">
 同样的，我们在内存中(或者说是程序虚拟空间中)找到了两处<code>PCTF&#123;</code>的映射
 所以就算地址<code>0x600D20</code>处的flag被破坏，我们也能在另外一处即地址<code>0x400D20</code>找到一模一样的flag备份
 那么结合我们上面说的用溢出点覆盖栈上的字符串地址<code>argv[0]</code>,然后利Canary被破坏的机制触发<code>___stack_chk_fail</code>函数将flag输出出来
 我们首先得找一下溢出点到<code>argv[0]</code>的偏移
-我们的溢出点，很容易发现在黄色高亮的代码处 <img src="/blog/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/02-07-36.jpg">
+我们的溢出点，很容易发现在黄色高亮的代码处 <img src="/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/02-07-36.jpg">
 然后我们设置两个断点，一个是在<code>0x4007E0</code>即<code>main</code>函数刚开始的传参完毕的地方，第二个是我们溢出点后<code>0x400813</code>处
-首先我们用gdb运行程序来到了第一个断点<code>0x4007E0</code> <img src="/blog/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/02-19-41.jpg">
+首先我们用gdb运行程序来到了第一个断点<code>0x4007E0</code> <img src="/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/02-19-41.jpg">
 可以看到<code>char ** argv</code>的值在栈地址<code>0x7fffffffdfa8</code>处，而真正的字符串数组地址是<code>0x7fffffffe078</code>
-然后我们在"name?"后面随便输入了个字符串"test",然后来到第二个断点 <img src="/blog/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/02-28-03.jpg">
+然后我们在"name?"后面随便输入了个字符串"test",然后来到第二个断点 <img src="/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/02-28-03.jpg">
 得到我们溢出buff的地址在<code>0x7fffffffde60</code>
 所以我们将地址一相减就会得到数据填充偏移<code>0x7fffffffde60-0x7fffffffe078=536</code>
 所以我们这样构造poc:</p>
@@ -817,7 +817,7 @@ PS
 <span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>respone(<span class="st">&quot;flag:&quot;</span>,<span class="st">&quot;What ever you want&quot;</span>)</span>
 <span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>pro.interactive()</span></code></pre></div>
 <p>简短的几句，然后就大功告成了。虽然代码很短，但是里面包含着很多知识点
-<img src="/blog/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/02-33-51.jpg"></p>
+<img src="/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/02-33-51.jpg"></p>
 <p><strong>Flag: PCTF{57dErr_Smasher_good_work!}</strong></p>
 
         </div>
@@ -833,7 +833,7 @@ PS
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="https://testzero-wz.github.io/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/">https://testzero-wz.github.io/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/</a></span>
+                        <span><a href="https://www.testzero-wz.com/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/">https://www.testzero-wz.com/2018/02/05/JarvisOJ-PWN-Writeup%E4%B8%93%E9%A2%98/</a></span>
                     </p>
                 
                 
@@ -852,9 +852,9 @@ PS
                 <span class="tag">
                     
                     
-                        <a href="/blog/tag/CTF/"># CTF</a>
+                        <a href="/tag/CTF/"># CTF</a>
                     
-                        <a href="/blog/tag/WriteUp/"># WriteUp</a>
+                        <a href="/tag/WriteUp/"># WriteUp</a>
                     
                         
                 </span>
@@ -862,15 +862,15 @@ PS
             <div>
                 <a href="javascript:window.history.back();">back</a>
                 <span>· </span>
-                <a href="/blog/">home</a>
+                <a href="/">home</a>
             </div>
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/blog/2018/03/18/%E5%9F%BA%E4%BA%8ETk%E7%9A%84%E5%A4%9A%E7%BA%BF%E7%A8%8B%E9%80%89%E8%AF%BE%E7%A8%8B%E5%BA%8F/">基于Tk的多线程选课程序</a>
+                <a class="prev" rel="prev" href="/2018/03/18/%E5%9F%BA%E4%BA%8ETk%E7%9A%84%E5%A4%9A%E7%BA%BF%E7%A8%8B%E9%80%89%E8%AF%BE%E7%A8%8B%E5%BA%8F/">基于Tk的多线程选课程序</a>
             
             
-            <a class="next" rel="next" href="/blog/2018/01/16/PythonGUI%E6%A8%A1%E6%8B%9FTCP%EF%BC%8FIP%E8%A7%A3%E3%80%81%E5%B0%81%E5%8C%85/">PythonGUI模拟TCP／IP解、封包</a>
+            <a class="next" rel="next" href="/2018/01/16/PythonGUI%E6%A8%A1%E6%8B%9FTCP%EF%BC%8FIP%E8%A7%A3%E3%80%81%E5%B0%81%E5%8C%85/">PythonGUI模拟TCP／IP解、封包</a>
             
         </section>
 
@@ -891,5 +891,22 @@ PS
 <script>hljs.highlightAll();</script>
 
     </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script> -->
+
+<script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 </body>
 </html>

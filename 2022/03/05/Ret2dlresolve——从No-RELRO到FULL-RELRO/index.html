@@ -18,23 +18,23 @@
 
 
 
-    <link rel="icon" href="/blog/favicon.ico">
+    <link rel="icon" href="/favicon.ico">
 
 
 
 
     <!-- stylesheets list from _config.yml -->
     
-    <link rel="stylesheet" href="/blog/css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
     
 
 
 
     <!-- scripts list from _config.yml -->
     
-    <script src="/blog/js/script.js"></script>
+    <script src="/js/script.js"></script>
     
-    <script src="/blog/js/tocbot.min.js"></script>
+    <script src="/js/tocbot.min.js"></script>
     
 
 
@@ -47,7 +47,7 @@
   <!-- for theme: default is false -->
   <!-- for page: default is true -->
 
-<link rel="stylesheet" href="/blog/js/fancybox/jquery.fancybox.min.css">
+<link rel="stylesheet" href="/js/fancybox/jquery.fancybox.min.css">
 
 
 
@@ -62,16 +62,16 @@
         <header>
     <nav class="navbar">
         <div class="container">
-            <div class="navbar-header header-logo"><a href="/blog/">Home</a></div>
+            <div class="navbar-header header-logo"><a href="/">Home</a></div>
             <div class="menu navbar-right">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
                 <input id="switch_default" type="checkbox" class="switch_default">
                 <label for="switch_default" class="toggleBtn"></label>
@@ -84,19 +84,19 @@
         <div class="container">
             <div class="navbar-header">
                 <div>
-                    <a href="/blog/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    <a href="/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
                 </div>
                 <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
             </div>
             <div class="menu" id="mobile-menu">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
             </div>
         </div>
@@ -206,7 +206,7 @@
                         <span class="post-category">
                     Category:
                             
-                                <a href="/blog/category/%E5%AE%89%E5%85%A8%E7%A0%94%E7%A9%B6/">安全研究</a>
+                                <a href="/category/%E5%AE%89%E5%85%A8%E7%A0%94%E7%A9%B6/">安全研究</a>
                             
                         </span>
                     
@@ -234,7 +234,7 @@ Binding)，即在elf文件加载时并不直接全部解析所需外部导入的
 Offset Table)和过程链接表(Procedure Linkage
 Table)两个表。这些是pwn基本知识，具体细节不在此赘述，此处仅给出一般情况下调用函数时使用<code>dl_runtime_resolve</code>解析时的程序流和栈内情况，方便后面构造数据结构或者传递参数时进行参考，也算是较为系统化的概述的第一步。</p>
 <figure>
-<img src="/blog/2022/03/05/Ret2dlresolve%E2%80%94%E2%80%94%E4%BB%8ENo-RELRO%E5%88%B0FULL-RELRO/ret2dlresolve--1.lazy-binding.png" alt="ret2dlresolve--1.lazy binding">
+<img src="/2022/03/05/Ret2dlresolve%E2%80%94%E2%80%94%E4%BB%8ENo-RELRO%E5%88%B0FULL-RELRO/ret2dlresolve--1.lazy-binding.png" alt="ret2dlresolve--1.lazy binding">
 <figcaption aria-hidden="true">ret2dlresolve--1.lazy
 binding</figcaption>
 </figure>
@@ -258,7 +258,7 @@ binding</figcaption>
 等节在程序入口附近，上述节与elf头、程序头均被IDA视为与加载相关，都放在为<code>LOAD</code>段中。</p>
 <p>接下来用图来表示这些段的作用和各个参数的关系：</p>
 <figure>
-<img src="/blog/2022/03/05/Ret2dlresolve%E2%80%94%E2%80%94%E4%BB%8ENo-RELRO%E5%88%B0FULL-RELRO/ret2dlresolve--2.related-sections.png" alt="ret2dlresolve--2.related-sections">
+<img src="/2022/03/05/Ret2dlresolve%E2%80%94%E2%80%94%E4%BB%8ENo-RELRO%E5%88%B0FULL-RELRO/ret2dlresolve--2.related-sections.png" alt="ret2dlresolve--2.related-sections">
 <figcaption aria-hidden="true">ret2dlresolve--2.related-sections</figcaption>
 </figure>
 <p>而<code>.dynamic</code>节则是存放了一些<code>Elf64_Dyn</code>或者<code>Elf32_Dyn</code>结构体，说具体些就是键值对，关键字是各个动态段的标识，值则是各个动态段的对应的基址，即包括上图中的<code>.ret.plt</code>、<code>.dynsym</code>、<code>dynstr</code>节等。其主要作用就是在解析函数地址时使用这些键值对来找到各个动态段的基址，以确定数据条目的位置。</p>
@@ -385,7 +385,7 @@ Read-Only)重定位段只读保护分为以下三个等级：</p>
 + <code>st_name</code>偏移
 落入到我们可控区域即可，然后写上<code>"system\x00"</code>，解析<code>puts</code>函数时变为<code>system</code>函数。</p>
 <figure>
-<img src="/blog/2022/03/05/Ret2dlresolve%E2%80%94%E2%80%94%E4%BB%8ENo-RELRO%E5%88%B0FULL-RELRO/ret2dlresolve--3.NO-RELRO.png" alt="ret2dlresolve--3.NO-RELRO">
+<img src="/2022/03/05/Ret2dlresolve%E2%80%94%E2%80%94%E4%BB%8ENo-RELRO%E5%88%B0FULL-RELRO/ret2dlresolve--3.NO-RELRO.png" alt="ret2dlresolve--3.NO-RELRO">
 <figcaption aria-hidden="true">ret2dlresolve--3.NO-RELRO</figcaption>
 </figure>
 <p>上图红色部分代表伪造或者需要修改的结构体，灰色部分为原本正常的结构体，实线箭头表示原本正常的解析流程或者正常的指向，虚线则表示篡改后的指向（下图同）。</p>
@@ -412,7 +412,7 @@ Read-Only)重定位段只读保护分为以下三个等级：</p>
 <p><code>d_tag</code>为<code>DT_STRTAB</code>时，第二项<code>d_ptr</code>即为<code>.dynstr</code>的基址。</p>
 <p>IDA中该条目如图所示：</p>
 <figure>
-<img src="/blog/2022/03/05/Ret2dlresolve%E2%80%94%E2%80%94%E4%BB%8ENo-RELRO%E5%88%B0FULL-RELRO/image-20220515221854382.png" alt="image-20220515221854382">
+<img src="/2022/03/05/Ret2dlresolve%E2%80%94%E2%80%94%E4%BB%8ENo-RELRO%E5%88%B0FULL-RELRO/image-20220515221854382.png" alt="image-20220515221854382">
 <figcaption aria-hidden="true">image-20220515221854382</figcaption>
 </figure>
 <p>利用的python伪代码如下，感受一下思路即可：</p>
@@ -451,7 +451,7 @@ Types），一般在利用上选取<code>R_386_JMP_SLOT=R_X86_64_JUMP_SLOT=7</co
 <li><code>Elf_Sym</code>结构体中的<code>st_name</code>：该值为函数字符串相对于<code>.dynstr</code>表基址的偏移。</li>
 </ol>
 <figure>
-<img src="/blog/2022/03/05/Ret2dlresolve%E2%80%94%E2%80%94%E4%BB%8ENo-RELRO%E5%88%B0FULL-RELRO/ret2dlresolve--2.related-sections.png" alt="ret2dlresolve--2.related-sections">
+<img src="/2022/03/05/Ret2dlresolve%E2%80%94%E2%80%94%E4%BB%8ENo-RELRO%E5%88%B0FULL-RELRO/ret2dlresolve--2.related-sections.png" alt="ret2dlresolve--2.related-sections">
 <figcaption aria-hidden="true">ret2dlresolve--2.related-sections</figcaption>
 </figure>
 <p>如上述分析，我们需要计算三个偏移（<code>offset</code>、<code>r_info</code>、<code>st_name</code>）以及三个结构体(<code>Elf_Rel</code>、<code>Elf_Sym</code>以及函数字符串)，其中字符串就不用分析了，那么现在我们需要了解<code>Elf_Rel</code>、<code>Elf_Sym</code>的含义。</p>
@@ -529,7 +529,7 @@ Btyes，高4位表示符号的绑定特征，低4位表示符号类型。</li>
 <h5 id="利用">2.1.4 利用</h5>
 <p>我们需要计算三个偏移（<code>offset</code>、<code>r_info</code>、<code>st_name</code>）以及三个结构体(<code>Elf_Rel</code>、<code>Elf_Sym</code>以及函数字符串)。考虑到一般情况下能够控制的内存空间长度是有限的，所以我们伪造的这些结构越紧凑越好，那么可以参考以下的构造方式：</p>
 <figure>
-<img src="/blog/2022/03/05/Ret2dlresolve%E2%80%94%E2%80%94%E4%BB%8ENo-RELRO%E5%88%B0FULL-RELRO/ret2dlresolve--4.Partial-RELRO.png" alt="ret2dlresolve--4.Partial-RELRO">
+<img src="/2022/03/05/Ret2dlresolve%E2%80%94%E2%80%94%E4%BB%8ENo-RELRO%E5%88%B0FULL-RELRO/ret2dlresolve--4.Partial-RELRO.png" alt="ret2dlresolve--4.Partial-RELRO">
 <figcaption aria-hidden="true">ret2dlresolve--4.Partial-RELRO</figcaption>
 </figure>
 <p><code>pwntools</code>在这方面已经集成了自动化生成上述伪造条目的功能，并且能够通过搜寻<code>ROP gadget</code>来自动化帮助你构建所需ROP链，然后在ROP链中加入即可，如下代码所示：</p>
@@ -624,7 +624,7 @@ Btyes，高4位表示符号的绑定特征，低4位表示符号类型。</li>
 <h5 id="利用-1">2.2.2 利用</h5>
 <p>不过此小节的方法思路较为简单，手动构造也十分容易，只是需要的利用条件是一样的。</p>
 <figure>
-<img src="/blog/2022/03/05/Ret2dlresolve%E2%80%94%E2%80%94%E4%BB%8ENo-RELRO%E5%88%B0FULL-RELRO/ret2dlresolve--4.Partial-RELRO.1.png" alt="ret2dlresolve--4.Partial-RELRO.1">
+<img src="/2022/03/05/Ret2dlresolve%E2%80%94%E2%80%94%E4%BB%8ENo-RELRO%E5%88%B0FULL-RELRO/ret2dlresolve--4.Partial-RELRO.1.png" alt="ret2dlresolve--4.Partial-RELRO.1">
 <figcaption aria-hidden="true">ret2dlresolve--4.Partial-RELRO.1</figcaption>
 </figure>
 <p>看一下利用伪代码吧：</p>
@@ -771,7 +771,7 @@ Btyes，高4位表示符号的绑定特征，低4位表示符号类型。</li>
 <p>然后我们再在在<code>got表</code>附近“构造”的<code>Elf_Sym</code>结构体，准确地说是恰好让结构体中的<code>st_value</code>的区域和<code>func B</code>的<code>got表项</code>重合，即借用<code>GOT表项</code>，(<em>请读者仔细阅读上面这句话</em>)，那么此时(假设为64位)的<code>Elf_Sym</code>中的<code>st_name</code>和<code>st_other</code>字段将与<code>func B</code>的上一个GOT表项重合。</p>
 <p>构造示意图如下：</p>
 <figure>
-<img src="/blog/2022/03/05/Ret2dlresolve%E2%80%94%E2%80%94%E4%BB%8ENo-RELRO%E5%88%B0FULL-RELRO/ret2dlresolve--4.Partial-RELRO.No-Leak.png" alt="ret2dlresolve--4.Partial-RELRO.No-Leak">
+<img src="/2022/03/05/Ret2dlresolve%E2%80%94%E2%80%94%E4%BB%8ENo-RELRO%E5%88%B0FULL-RELRO/ret2dlresolve--4.Partial-RELRO.No-Leak.png" alt="ret2dlresolve--4.Partial-RELRO.No-Leak">
 <figcaption aria-hidden="true">ret2dlresolve--4.Partial-RELRO.No-Leak</figcaption>
 </figure>
 <p><strong>那么我们为什么要这么构造呢？</strong></p>
@@ -796,7 +796,7 @@ Btyes，高4位表示符号的绑定特征，低4位表示符号类型。</li>
 <p>我们需要伪造我们自己的<code>link_map</code>，并将这些指针中的关键的部分指向我们<code>link_map</code>内部或者上述的<code>GOT表项</code>以减少<code>payload</code>大小，毕竟再一次地，可控区域一般情况下有限，<code>payload</code>越短越好。那么此时<strong>我们可以简单化地将各类节和条目之前的偏移设置为0</strong>（如<code>offset</code>，<code>r_info</code>中的<code>index</code>，一是方便计算，二是可以紧凑得压缩payload长度。</p>
 <p>至此我们可以得出以下的构造方式（方式不唯一，知道原理即可得出自己的构造方式）：</p>
 <figure>
-<img src="/blog/2022/03/05/Ret2dlresolve%E2%80%94%E2%80%94%E4%BB%8ENo-RELRO%E5%88%B0FULL-RELRO/ret2dlresolve--4.Partial-RELRO.No-Leak.2.png" alt="ret2dlresolve--4.Partial-RELRO.No-Leak.2">
+<img src="/2022/03/05/Ret2dlresolve%E2%80%94%E2%80%94%E4%BB%8ENo-RELRO%E5%88%B0FULL-RELRO/ret2dlresolve--4.Partial-RELRO.No-Leak.2.png" alt="ret2dlresolve--4.Partial-RELRO.No-Leak.2">
 <figcaption aria-hidden="true">ret2dlresolve--4.Partial-RELRO.No-Leak.2</figcaption>
 </figure>
 <p>我自己写的利用代码如下，用作伪造<code>link_map</code>仅供参考：</p>
@@ -1122,7 +1122,7 @@ Christmas》</a>，向我们介绍了一种即使开了<code>FULL_RELERO</code>�
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="https://testzero-wz.github.io/2022/03/05/Ret2dlresolve%E2%80%94%E2%80%94%E4%BB%8ENo-RELRO%E5%88%B0FULL-RELRO/">https://testzero-wz.github.io/2022/03/05/Ret2dlresolve%E2%80%94%E2%80%94%E4%BB%8ENo-RELRO%E5%88%B0FULL-RELRO/</a></span>
+                        <span><a href="https://www.testzero-wz.com/2022/03/05/Ret2dlresolve%E2%80%94%E2%80%94%E4%BB%8ENo-RELRO%E5%88%B0FULL-RELRO/">https://www.testzero-wz.com/2022/03/05/Ret2dlresolve%E2%80%94%E2%80%94%E4%BB%8ENo-RELRO%E5%88%B0FULL-RELRO/</a></span>
                     </p>
                 
                 
@@ -1141,7 +1141,7 @@ Christmas》</a>，向我们介绍了一种即使开了<code>FULL_RELERO</code>�
                 <span class="tag">
                     
                     
-                        <a href="/blog/tag/pwn/"># pwn</a>
+                        <a href="/tag/pwn/"># pwn</a>
                     
                         
                 </span>
@@ -1149,13 +1149,13 @@ Christmas》</a>，向我们介绍了一种即使开了<code>FULL_RELERO</code>�
             <div>
                 <a href="javascript:window.history.back();">back</a>
                 <span>· </span>
-                <a href="/blog/">home</a>
+                <a href="/">home</a>
             </div>
         </section>
         <section class="post-nav">
             
             
-            <a class="next" rel="next" href="/blog/2020/11/12/%E4%BB%A5%E8%93%9D%E9%98%9F%E8%A7%86%E8%A7%92%E7%9C%8BHW%E6%89%8B%E6%B3%95/">以蓝队视角看HW手法</a>
+            <a class="next" rel="next" href="/2020/11/12/%E4%BB%A5%E8%93%9D%E9%98%9F%E8%A7%86%E8%A7%92%E7%9C%8BHW%E6%89%8B%E6%B3%95/">以蓝队视角看HW手法</a>
             
         </section>
 
@@ -1176,5 +1176,22 @@ Christmas》</a>，向我们介绍了一种即使开了<code>FULL_RELERO</code>�
 <script>hljs.highlightAll();</script>
 
     </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script> -->
+
+<script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 </body>
 </html>

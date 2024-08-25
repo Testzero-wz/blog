@@ -18,23 +18,23 @@
 
 
 
-    <link rel="icon" href="/blog/favicon.ico">
+    <link rel="icon" href="/favicon.ico">
 
 
 
 
     <!-- stylesheets list from _config.yml -->
     
-    <link rel="stylesheet" href="/blog/css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
     
 
 
 
     <!-- scripts list from _config.yml -->
     
-    <script src="/blog/js/script.js"></script>
+    <script src="/js/script.js"></script>
     
-    <script src="/blog/js/tocbot.min.js"></script>
+    <script src="/js/tocbot.min.js"></script>
     
 
 
@@ -47,7 +47,7 @@
   <!-- for theme: default is false -->
   <!-- for page: default is true -->
 
-<link rel="stylesheet" href="/blog/js/fancybox/jquery.fancybox.min.css">
+<link rel="stylesheet" href="/js/fancybox/jquery.fancybox.min.css">
 
 
 
@@ -62,16 +62,16 @@
         <header>
     <nav class="navbar">
         <div class="container">
-            <div class="navbar-header header-logo"><a href="/blog/">Home</a></div>
+            <div class="navbar-header header-logo"><a href="/">Home</a></div>
             <div class="menu navbar-right">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
                 <input id="switch_default" type="checkbox" class="switch_default">
                 <label for="switch_default" class="toggleBtn"></label>
@@ -84,19 +84,19 @@
         <div class="container">
             <div class="navbar-header">
                 <div>
-                    <a href="/blog/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    <a href="/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
                 </div>
                 <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
             </div>
             <div class="menu" id="mobile-menu">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
             </div>
         </div>
@@ -206,7 +206,7 @@
                         <span class="post-category">
                     Category:
                             
-                                <a href="/blog/category/%E5%AE%89%E5%85%A8%E7%A0%94%E7%A9%B6/">安全研究</a>
+                                <a href="/category/%E5%AE%89%E5%85%A8%E7%A0%94%E7%A9%B6/">安全研究</a>
                             
                         </span>
                     
@@ -219,7 +219,7 @@
 Stager &amp; Stage Shellcode 深度解析</h1>
 <h2 id="一恶意代码下发">一、恶意代码下发</h2>
 <p>我们先来了解CS恶意代码下发以及通信基本流程，其示意图如下图所示：</p>
-<p><img src="/blog/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/CS下发&amp;通信流程.png"></p>
+<p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/CS下发&amp;通信流程.png"></p>
 <p>CS在3.x版本较多地使用分（阶）段式恶意代码下发手法——以小巧的shellcode嵌入到可执行文件、注入进程等方式下载较大的、功能较全的Payload。而在4.0版本，CS默认使用Stageless，即不分阶段，将功能完全的Payload直接嵌入可执行文件或者以其他方式执行，官方文章提出这么做是出于安全考虑。</p>
 <p>的确，因为以Stage方式下发，我们能从的Stage中获得很多C&amp;C服务器的信息，以达到溯源、反制的目的。这很大程度要归功于Stager，也就是那段小巧的shellcode并不能带上AES或者RSA等复杂的加密算法，毕竟这会使得shellcode体积变得很大，不利于落地。于是CS选择了以异或的方式对Stage进行了简单的加密，而异或密钥xor_key就包含在下发的Stage中。</p>
 <h2 id="二stager-shellcode">二、Stager Shellcode</h2>
@@ -229,27 +229,27 @@ Stager &amp; Stage Shellcode 深度解析</h1>
 
 </div>
 <p>由于可执行文件比较简单，没有玩啥花的，IDA里面可以直接F5。</p>
-<p><img src="/blog/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021173228832.png"></p>
+<p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021173228832.png"></p>
 <p>函数<code>sub_4027B0()</code>与初始化有关，主要执行了<code>sub_4014F0()</code></p>
-<p><img src="/blog/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021173332956.png"></p>
+<p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021173332956.png"></p>
 <p>主要的逻辑在<code>sub_401800()</code>中实现：</p>
-<p><img src="/blog/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021173812934.png"></p>
+<p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021173812934.png"></p>
 <p><code>sub_401800()</code>将全局变量<code>FileName</code>填充为<code>\\.\pipe\MSSE-%d-server</code>的形式，然后另起线程调用<code>sub_4016D3()</code>，而<code>sub_4016D3()</code>调用<code>sub_401608()</code>建立管道，将加密的shellcode写入管道。</p>
-<p><img src="/blog/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021173926353.png"></p>
+<p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021173926353.png"></p>
 <p>在<code>sub_401800()</code>最后调用的<code>sub_4017A2()</code>中申请了一个堆用于存放shellcode并且为了等待线程写入完毕，特意等待了1024ms。</p>
-<p><img src="/blog/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021174018843.png"></p>
+<p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021174018843.png"></p>
 <p>然后就是循环调用<code>sub_4016F2</code>读取管道中的shellcode。</p>
 <p>折腾这么一出是因为为了躲过杀软的沙箱查杀，因为沙箱不能很好的模拟管道（可能是因为效率也可能是因为觉得并无必要？）故无法执行代码进行查杀，而常规的数组加载shellcode会导致直接被杀掉。</p>
-<p><img src="/blog/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021174123458.png"></p>
+<p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021174123458.png"></p>
 <p>最后<code>sub_401559()</code>中，将读入堆中的shellcode进行解密并申请虚拟空间，用<code>VirtualProtect()</code>将申请到的空间加入可读和执行权限再创建线程执行：</p>
-<p><img src="/blog/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021174201888.png"></p>
+<p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021174201888.png"></p>
 <div style="page-break-after: always;">
 
 </div>
 <h3 id="stager-shellcode">2. Stager Shellcode</h3>
 <h4 id="start">2.1 start</h4>
 <p>xor解密是四字节一组进行解密的，并且只用到了<code>xor_key</code>的前四个字节。</p>
-<p><img src="/blog/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021174251460.png"></p>
+<p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021174251460.png"></p>
 <p>而解码后的shellcode可以转换为如下的x86汇编代码:</p>
 <pre class="x86asm"><code>0x0000:  FC                cld    
 0x0001:  E8 89 00 00 00    call   0x8f  
@@ -454,7 +454,7 @@ ntdll!_LDR_DATA_TABLE_ENTRY
 <p>发现偏移<code>0x30</code>处并不存在完整的数据结构。</p>
 <p>难道我们理解错了吗？</p>
 <p>利用scdbg对进行shellcode调试发现指令<code>mov esi, [edx+0x28]</code>读到了偏移为<code>0x2c</code>的<code>BaseName</code>的地址，而<code>mov ecx, [edx+0x26]</code>则读到了对应的<code>BaseName</code>的字符串长度（后面发现其实是最大长度，长度不计算字符<code>\x00</code>）。</p>
-<p><img src="/blog/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201020115459257.png"></p>
+<p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201020115459257.png"></p>
 <p>那么我们可以合理猜测，<code>BaseDLLName</code>的类型<code>_UNICODE_STRING</code>并非是一个简单的指针，而是一个结构体，包含了长度和地址等信息。</p>
 <p>在文章<a target="_blank" rel="noopener" href="https://0xevilc0de.com/locating-dll-name-from-the-process-environment-block-peb/">Locating
 DLL Name from the Process Environment Block
@@ -709,14 +709,14 @@ Listener，故主要动作还是加载"winnet"库，建立网络连接，利用I
 0x0127:  FF D5                   call   ebp               
 ...</code></pre>
 <p>利用scdbg模拟执行Shellcode我们能够快速了解Shellcode到底执行了哪些函数：</p>
-<p><img src="/blog/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021174738015.png"></p>
+<p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021174738015.png"></p>
 <p>至此，Stager Shellcode也大致分析完毕了。</p>
 <h2 id="二-stage-shellcode">二、 Stage Shellcode</h2>
 <h3 id="stub-shellcode">1. Stub Shellcode</h3>
 <p>我们知道，当Stager
 Shellcode成功执行后会发起HTTP请求，而C&amp;C服务器会在简单的校验之后返回一个包含Stage
 Shellcode的响应，如下图的中标出的部分：</p>
-<p><img src="/blog/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021152015469.png"></p>
+<p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021152015469.png"></p>
 <p>该<code>Stage</code>包含众多信息，而我们如果能够得到流量，那么解析该<code>Stage</code>就能够极大地帮助溯源工作：</p>
 <ol type="1">
 <li><p>C2 Server addr/domain &amp; public key</p></li>
@@ -729,8 +729,8 @@ Shellcode的响应，如下图的中标出的部分：</p>
 Shellcode是通过xor.bin和xor64.bin两个生成的。</p>
 <p>x86则会从xor.bin中随机提取一段Stub
 Shellcode并且填充一些随机长度的数据进行静态指纹规避，而x64会不加修改的直接复制xor64.bin内的内容作为Stub填充到Shellcode前部。</p>
-<p><img src="/blog/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021152435115.png"></p>
-<p><img src="/blog/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021153241758.png"></p>
+<p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021152435115.png"></p>
+<p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021153241758.png"></p>
 <p>这些Xor.bin中的这些Stub仅是利用寄存器不同而已，所以字节码看起来也是不同的，但是实际做的操作是一样的。我们简单地看一下x86的Stub
 Shellcode，其主要的目的还是异或解密Shellcode并跳到Shellcode执行：</p>
 <pre class="x86asm"><code>0x0000:  FC                cld                       ;清除标志位
@@ -761,7 +761,7 @@ Shellcode，其主要的目的还是异或解密Shellcode并跳到Shellcode执�
 0x003e:  E8 D0 FF FF FF    call 0x13                   ;获取下一指令的地址</code></pre>
 <p>我们通过CS源码和汇编解密注意到这么循环加密的操作是<strong>有一些小问题的</strong>：因为xor_key没有起到其应有的作用，每个4字节长加密的数据块可以通过和上一块数据块进行异或直接获取到明文。</p>
 <p>我们简单画个图说明一下CS的异或加密方式：</p>
-<p><img src="/blog/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021174422078.png"></p>
+<p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201021174422078.png"></p>
 <p>简单地用公式表示为：</p>
 <p><span class="math display">\[
 \begin{align}
@@ -794,7 +794,7 @@ Shellcode（本质上就是解密后的PE文件）。我们直接拿过来封装
 击手法和C&amp;C服务器进行溯源。</p>
 <p>由于32位的shellcode会随即填充一些垃圾数据避免静态查杀，而64位不会，则我们直接用xor64.bin判断是否是64位的shellcode即可。</p>
 <p>效果如下图，<strong>cs_stage_parse</strong>（有时间再上github吧）：</p>
-<p><img src="/blog/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201022173817069.png"></p>
+<p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201022173817069.png"></p>
 <h3 id="pe-to-shellcode">3. PE to Shellcode</h3>
 <p>CS将装载有较完整的恶意功能的PE可执行文件通过<strong>PE_TO_SHELLCODE</strong>技术变成了既可以内存加载执行，也可以像正常EXE文件双击执行的格式。当然，这么做主要还是想将PE文件当做Shellcode执行，从而达到无文件落地目的。</p>
 <p><strong>注：这一节将不会重点展开，因为这一技术并非</strong>Shellcode<strong>的重点。</strong></p>
@@ -822,7 +822,7 @@ Shellcode（本质上就是解密后的PE文件）。我们直接拿过来封装
 0x00021:  57                 push edi
 0x00022:  FF D0              call eax      ;同样地用Hash调用函数</code></pre>
 <p>同样的，开源项目<a target="_blank" rel="noopener" href="https://github.com/hasherezade/pe_to_shellcode">[PE_TO_SHELLCODE]</a>可以将PE转换为Shellcode，其思路大致一致，将充当<code>PE Loader</code>作用的Stub放到了PE文件末尾，理由DOS头的Shellcode跳转到Stub加载PE文件到内存并跳转到程序入口。</p>
-<p><img src="/blog/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201022193600401.png"></p>
+<p><img src="/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/image-20201022193600401.png"></p>
 <p>后续便是一系列的C&amp;C通信步骤，<strong>至此Shellcode分析结束</strong>
 。</p>
 <p>具体PE文件中包含的配置信息是如何解析的，请参考开源项目<a target="_blank" rel="noopener" href="https://github.com/Sentinel-One/CobaltStrikeParser">[CobaltStrikeParser]</a></p>
@@ -857,7 +857,7 @@ CONTAINING_RECORD</a></p>
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="https://testzero-wz.github.io/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/">https://testzero-wz.github.io/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/</a></span>
+                        <span><a href="https://www.testzero-wz.com/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/">https://www.testzero-wz.com/2020/10/22/Cobalt-Strike-Stager&Stage-Shellcode-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/</a></span>
                     </p>
                 
                 
@@ -876,9 +876,9 @@ CONTAINING_RECORD</a></p>
                 <span class="tag">
                     
                     
-                        <a href="/blog/tag/%E5%88%A9%E7%94%A8%E5%88%86%E6%9E%90/"># 利用分析</a>
+                        <a href="/tag/%E5%88%A9%E7%94%A8%E5%88%86%E6%9E%90/"># 利用分析</a>
                     
-                        <a href="/blog/tag/%E7%A0%81%E4%BB%A3%E7%A0%81/"># 码代码</a>
+                        <a href="/tag/%E7%A0%81%E4%BB%A3%E7%A0%81/"># 码代码</a>
                     
                         
                 </span>
@@ -886,15 +886,15 @@ CONTAINING_RECORD</a></p>
             <div>
                 <a href="javascript:window.history.back();">back</a>
                 <span>· </span>
-                <a href="/blog/">home</a>
+                <a href="/">home</a>
             </div>
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/blog/2020/11/12/%E4%BB%A5%E8%93%9D%E9%98%9F%E8%A7%86%E8%A7%92%E7%9C%8BHW%E6%89%8B%E6%B3%95/">以蓝队视角看HW手法</a>
+                <a class="prev" rel="prev" href="/2020/11/12/%E4%BB%A5%E8%93%9D%E9%98%9F%E8%A7%86%E8%A7%92%E7%9C%8BHW%E6%89%8B%E6%B3%95/">以蓝队视角看HW手法</a>
             
             
-            <a class="next" rel="next" href="/blog/2020/08/11/LM%E3%80%81NTLM%E4%B8%8ENet-NTLM/">LM？NTLM？Net NTLM？</a>
+            <a class="next" rel="next" href="/2020/08/11/LM%E3%80%81NTLM%E4%B8%8ENet-NTLM/">LM？NTLM？Net NTLM？</a>
             
         </section>
 
@@ -915,5 +915,22 @@ CONTAINING_RECORD</a></p>
 <script>hljs.highlightAll();</script>
 
     </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script> -->
+
+<script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 </body>
 </html>

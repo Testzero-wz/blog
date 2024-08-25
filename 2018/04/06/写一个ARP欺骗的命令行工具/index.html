@@ -18,23 +18,23 @@
 
 
 
-    <link rel="icon" href="/blog/favicon.ico">
+    <link rel="icon" href="/favicon.ico">
 
 
 
 
     <!-- stylesheets list from _config.yml -->
     
-    <link rel="stylesheet" href="/blog/css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
     
 
 
 
     <!-- scripts list from _config.yml -->
     
-    <script src="/blog/js/script.js"></script>
+    <script src="/js/script.js"></script>
     
-    <script src="/blog/js/tocbot.min.js"></script>
+    <script src="/js/tocbot.min.js"></script>
     
 
 
@@ -47,7 +47,7 @@
   <!-- for theme: default is false -->
   <!-- for page: default is true -->
 
-<link rel="stylesheet" href="/blog/js/fancybox/jquery.fancybox.min.css">
+<link rel="stylesheet" href="/js/fancybox/jquery.fancybox.min.css">
 
 
 
@@ -62,16 +62,16 @@
         <header>
     <nav class="navbar">
         <div class="container">
-            <div class="navbar-header header-logo"><a href="/blog/">Home</a></div>
+            <div class="navbar-header header-logo"><a href="/">Home</a></div>
             <div class="menu navbar-right">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
                 <input id="switch_default" type="checkbox" class="switch_default">
                 <label for="switch_default" class="toggleBtn"></label>
@@ -84,19 +84,19 @@
         <div class="container">
             <div class="navbar-header">
                 <div>
-                    <a href="/blog/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    <a href="/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
                 </div>
                 <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
             </div>
             <div class="menu" id="mobile-menu">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
             </div>
         </div>
@@ -206,7 +206,7 @@
                         <span class="post-category">
                     Category:
                             
-                                <a href="/blog/category/%E5%AE%89%E5%85%A8%E7%A0%94%E7%A9%B6/">安全研究</a>
+                                <a href="/category/%E5%AE%89%E5%85%A8%E7%A0%94%E7%A9%B6/">安全研究</a>
                             
                         </span>
                     
@@ -215,7 +215,7 @@
         </header>
 
         <div class="post-content">
-            <p><img src="/blog/2018/04/06/%E5%86%99%E4%B8%80%E4%B8%AAARP%E6%AC%BA%E9%AA%97%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7/18-37-52.jpg">
+            <p><img src="/2018/04/06/%E5%86%99%E4%B8%80%E4%B8%AAARP%E6%AC%BA%E9%AA%97%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7/18-37-52.jpg">
 最近烦心事略多，趁这个假期好好静下心来学习学习 : )</p>
 <h2 id="前言">前言</h2>
 <p>在大一刚接触到kali
@@ -234,17 +234,17 @@ linux的时候，第一个做的渗透就是wifi以及内网渗透，其中中�
 个域网，局域网，城域网，广域网，互联网。MAC地址作用于局域网寻址而IP地址作用于互联网寻址。所以在局域网内要找到对应的机器就得利用到MAC地址</p>
 <p>在一个数据包在局域网传输时，一开始发送者它只知道应该发给哪个IP地址而不知道是对应哪个MAC地址，所以会向局域网里面广播，这个IP在哪个MAC地址，由于ARP协议，当你收到这个包的时候你就会检查你是不是这个IP，如果是的话你就会发回去一个包告诉它，<del>这个鱼塘被你承包了</del>，不，是这个IP地址在我这个MAC这里，然后它就会更新它的ARP表，写上这个IP是你这个MAC的，然后后面的通讯就会基于这条记录来执行
 而记录MAC和IP映射关系的表是一种很简单的结构</p>
-<p><img src="/blog/2018/04/06/%E5%86%99%E4%B8%80%E4%B8%AAARP%E6%AC%BA%E9%AA%97%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7/17-35-27.jpg">
+<p><img src="/2018/04/06/%E5%86%99%E4%B8%80%E4%B8%AAARP%E6%AC%BA%E9%AA%97%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7/17-35-27.jpg">
 ARP协议是基于内网信任的基础上建立的，就是说在协议设计的时代，并没有考虑到会有中间人攻击这种玩意（毕竟当时用得起电脑的都是国家科研机构）。到如今电脑普及的今天，ARP协议这种信任就产生了一个大问题――ARP欺骗</p>
 <h2 id="arp欺骗">ARP欺骗</h2>
 <p>假设当局域网内<code>A</code>和<code>B</code>正在通信的时候，我们发一个ARP的reply包给他们两，告诉<code>A</code>我是<code>B</code>，告诉<code>B</code>我是<code>A</code>，那么他们将会傻傻地听你的话，然后把发给对方的东西发给你，然后你将得到他们的所有数据包
-<img src="/blog/2018/04/06/%E5%86%99%E4%B8%80%E4%B8%AAARP%E6%AC%BA%E9%AA%97%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7/MITM.png"></p>
+<img src="/2018/04/06/%E5%86%99%E4%B8%80%E4%B8%AAARP%E6%AC%BA%E9%AA%97%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7/MITM.png"></p>
 <p>当然，想要细水长流地窃取<code>A</code>和<code>B</code>的数据，<code>Hacker</code>就可以开启IP转发，是基于ICMP的<code>Redirect</code>机制实现的。在Linux下<code>root</code>权限执行命令就好了</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="dv">1</span><span class="op">&gt;</span> /proc/sys/net/ipv4/ip_forward</span></code></pre></div>
 <h2 id="arp包结构">ARP包结构</h2>
 <p>知道原理之后我们知道只要发出对应ARP包就够了
 我们来看一下ARP包的结构</p>
-<p><img src="/blog/2018/04/06/%E5%86%99%E4%B8%80%E4%B8%AAARP%E6%AC%BA%E9%AA%97%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7/ARP.png"></p>
+<p><img src="/2018/04/06/%E5%86%99%E4%B8%80%E4%B8%AAARP%E6%AC%BA%E9%AA%97%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7/ARP.png"></p>
 <p>很明显ARP的内容被包裹在链路层的数据内容中，其中</p>
 <table>
 <colgroup>
@@ -296,7 +296,7 @@ ARP协议是基于内网信任的基础上建立的，就是说在协议设计�
 <p><strong>注：利用Python
 的socket类建立端口收发ARP等较为底层的包需要root权限</strong></p>
 <h3 id="小工具">小工具</h3>
-<p><img src="/blog/2018/04/06/%E5%86%99%E4%B8%80%E4%B8%AAARP%E6%AC%BA%E9%AA%97%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7/21-16-40.jpg"></p>
+<p><img src="/2018/04/06/%E5%86%99%E4%B8%80%E4%B8%AAARP%E6%AC%BA%E9%AA%97%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7/21-16-40.jpg"></p>
 <p>流程比较简单，简单才最美</p>
 <ol type="1">
 <li>选择网卡</li>
@@ -305,9 +305,9 @@ ARP协议是基于内网信任的基础上建立的，就是说在协议设计�
 <p>ARP扫描是获取网卡信息后，计算出子网大小，然后逐一请求IP的MAC地址，即广播ARP
 request可实现，ARP欺骗的原理已经说过了
 当我们双向欺骗成功之后，可以用<code>wireshark</code>或者<code>driftnet</code>等工具提取和分析数据</p>
-<p><img src="/blog/2018/04/06/%E5%86%99%E4%B8%80%E4%B8%AAARP%E6%AC%BA%E9%AA%97%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7/21-31-33.jpg"></p>
+<p><img src="/2018/04/06/%E5%86%99%E4%B8%80%E4%B8%AAARP%E6%AC%BA%E9%AA%97%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7/21-31-33.jpg"></p>
 <p>当然，程序中也加入了一些异常处理机制、默认选项、发包频率、发包时间等，让程序更加健壮</p>
-<p><img src="/blog/2018/04/06/%E5%86%99%E4%B8%80%E4%B8%AAARP%E6%AC%BA%E9%AA%97%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7/21-32-20.jpg"> <img src="/blog/2018/04/06/%E5%86%99%E4%B8%80%E4%B8%AAARP%E6%AC%BA%E9%AA%97%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7/21-33-42.jpg"></p>
+<p><img src="/2018/04/06/%E5%86%99%E4%B8%80%E4%B8%AAARP%E6%AC%BA%E9%AA%97%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7/21-32-20.jpg"> <img src="/2018/04/06/%E5%86%99%E4%B8%80%E4%B8%AAARP%E6%AC%BA%E9%AA%97%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7/21-33-42.jpg"></p>
 <p>程序源码下载地址：</p>
 <p><a target="_blank" rel="noopener" href="https://github.com/WananpIG/ARP-Spoof">https://github.com/WananpIG/ARP-Spoof</a></p>
 <h2 id="最后说一句">最后说一句</h2>
@@ -328,7 +328,7 @@ request可实现，ARP欺骗的原理已经说过了
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="https://testzero-wz.github.io/2018/04/06/%E5%86%99%E4%B8%80%E4%B8%AAARP%E6%AC%BA%E9%AA%97%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7/">https://testzero-wz.github.io/2018/04/06/%E5%86%99%E4%B8%80%E4%B8%AAARP%E6%AC%BA%E9%AA%97%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7/</a></span>
+                        <span><a href="https://www.testzero-wz.com/2018/04/06/%E5%86%99%E4%B8%80%E4%B8%AAARP%E6%AC%BA%E9%AA%97%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7/">https://www.testzero-wz.com/2018/04/06/%E5%86%99%E4%B8%80%E4%B8%AAARP%E6%AC%BA%E9%AA%97%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7/</a></span>
                     </p>
                 
                 
@@ -347,9 +347,9 @@ request可实现，ARP欺骗的原理已经说过了
                 <span class="tag">
                     
                     
-                        <a href="/blog/tag/%E7%A0%81%E4%BB%A3%E7%A0%81/"># 码代码</a>
+                        <a href="/tag/%E7%A0%81%E4%BB%A3%E7%A0%81/"># 码代码</a>
                     
-                        <a href="/blog/tag/%E6%80%BB%E7%BB%93/"># 总结</a>
+                        <a href="/tag/%E6%80%BB%E7%BB%93/"># 总结</a>
                     
                         
                 </span>
@@ -357,15 +357,15 @@ request可实现，ARP欺骗的原理已经说过了
             <div>
                 <a href="javascript:window.history.back();">back</a>
                 <span>· </span>
-                <a href="/blog/">home</a>
+                <a href="/">home</a>
             </div>
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/">又是一年DDCTF</a>
+                <a class="prev" rel="prev" href="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/">又是一年DDCTF</a>
             
             
-            <a class="next" rel="next" href="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/">RPO攻击解析</a>
+            <a class="next" rel="next" href="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/">RPO攻击解析</a>
             
         </section>
 
@@ -386,5 +386,22 @@ request可实现，ARP欺骗的原理已经说过了
 <script>hljs.highlightAll();</script>
 
     </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script> -->
+
+<script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 </body>
 </html>

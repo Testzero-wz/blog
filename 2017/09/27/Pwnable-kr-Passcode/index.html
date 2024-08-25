@@ -18,23 +18,23 @@
 
 
 
-    <link rel="icon" href="/blog/favicon.ico">
+    <link rel="icon" href="/favicon.ico">
 
 
 
 
     <!-- stylesheets list from _config.yml -->
     
-    <link rel="stylesheet" href="/blog/css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
     
 
 
 
     <!-- scripts list from _config.yml -->
     
-    <script src="/blog/js/script.js"></script>
+    <script src="/js/script.js"></script>
     
-    <script src="/blog/js/tocbot.min.js"></script>
+    <script src="/js/tocbot.min.js"></script>
     
 
 
@@ -47,7 +47,7 @@
   <!-- for theme: default is false -->
   <!-- for page: default is true -->
 
-<link rel="stylesheet" href="/blog/js/fancybox/jquery.fancybox.min.css">
+<link rel="stylesheet" href="/js/fancybox/jquery.fancybox.min.css">
 
 
 
@@ -62,16 +62,16 @@
         <header>
     <nav class="navbar">
         <div class="container">
-            <div class="navbar-header header-logo"><a href="/blog/">Home</a></div>
+            <div class="navbar-header header-logo"><a href="/">Home</a></div>
             <div class="menu navbar-right">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
                 <input id="switch_default" type="checkbox" class="switch_default">
                 <label for="switch_default" class="toggleBtn"></label>
@@ -84,19 +84,19 @@
         <div class="container">
             <div class="navbar-header">
                 <div>
-                    <a href="/blog/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    <a href="/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
                 </div>
                 <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
             </div>
             <div class="menu" id="mobile-menu">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
             </div>
         </div>
@@ -206,7 +206,7 @@
                         <span class="post-category">
                     Category:
                             
-                                <a href="/blog/category/CTF/">CTF</a>
+                                <a href="/category/CTF/">CTF</a>
                             
                         </span>
                     
@@ -215,7 +215,7 @@
         </header>
 
         <div class="post-content">
-            <p><img src="/blog/2017/09/27/Pwnable-kr-Passcode/1506517410721.jpg"></p>
+            <p><img src="/2017/09/27/Pwnable-kr-Passcode/1506517410721.jpg"></p>
 <blockquote>
 <p>初步了解linux下函数机制的一道题，过程比较艰辛
 ，怕以后忘了，故此记录</p>
@@ -230,7 +230,7 @@ Offset Table -- 全局偏移表 )</p>
 将name残余的数据构造成执行完scanf()函数后将要执行的函数的GOT地址 &gt; 3.
 然后通过<code>scanf()</code>对GOT地址进行操作,使得程序jmp到想要运行的地址或者说是函数。</p>
 <h2 id="大致流程图">大致流程图</h2>
-<p><img src="/blog/2017/09/27/Pwnable-kr-Passcode/20-31-32.png"></p>
+<p><img src="/2017/09/27/Pwnable-kr-Passcode/20-31-32.png"></p>
 <h2 id="先看源码">先看源码</h2>
 <div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;stdlib.h&gt;</span></span>
@@ -289,8 +289,8 @@ Welcome()处声明了一个100字节长的char数组name;</p>
 <p>发现name的地址和passcode1的地址相差96个字节
 我是通过本地编译,然后设置断点，查看变量地址然后相减得到的距离
 其他大牛的wp都是看汇编看出来的</p>
-<p><img src="/blog/2017/09/27/Pwnable-kr-Passcode/20-55-23.png"></p>
-<p><img src="/blog/2017/09/27/Pwnable-kr-Passcode/21-16-37.png"></p>
+<p><img src="/2017/09/27/Pwnable-kr-Passcode/20-55-23.png"></p>
+<p><img src="/2017/09/27/Pwnable-kr-Passcode/21-16-37.png"></p>
 <p>然后说因为在main中调用了<code>welcome()</code>后立刻调用<code>login()</code>，而且均是无参数，所以ebp是一样的,故相差地址为
 -0x70-(-0x10)=-96 bytes
 现在才疏学浅，未学习win32汇编，也不知道为啥是一样的ebp，留个坑吧。</p>
@@ -298,12 +298,12 @@ Welcome()处声明了一个100字节长的char数组name;</p>
 然后填充的payload即为以下，整好100字节</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">&#39;a&#39;</span><span class="op">*</span><span class="dv">96</span><span class="op">+</span><span class="st">&#39;</span><span class="ch">\x04\xa0\x04\x08</span><span class="st">&#39;</span></span></code></pre></div>
 <p>然后将地址<strong>0x0804a004</strong>的内容修改为<code>system()</code>的地址就大功告成了</p>
-<p><img src="/blog/2017/09/27/Pwnable-kr-Passcode/20-55-36.jpg">
+<p><img src="/2017/09/27/Pwnable-kr-Passcode/20-55-36.jpg">
 所以我们应该修改为<strong>0x080485e3</strong>
 因为scanf的格式是%d，所以要将0x080485e3化为十进制的134514147</p>
 <p>所以payload修改为：</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">Python</span> <span class="at">-c</span> <span class="st">&#39;print &quot;a&quot;*96+&quot;\x04\xa0\x04\x08&quot; +&quot;\n&quot;+&quot;134514147&quot;+&quot;\n&quot; &#39;</span></span></code></pre></div>
-<p><img src="/blog/2017/09/27/Pwnable-kr-Passcode/20-55-41.png"></p>
+<p><img src="/2017/09/27/Pwnable-kr-Passcode/20-55-41.png"></p>
 
         </div>
 
@@ -318,7 +318,7 @@ Welcome()处声明了一个100字节长的char数组name;</p>
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="https://testzero-wz.github.io/2017/09/27/Pwnable-kr-Passcode/">https://testzero-wz.github.io/2017/09/27/Pwnable-kr-Passcode/</a></span>
+                        <span><a href="https://www.testzero-wz.com/2017/09/27/Pwnable-kr-Passcode/">https://www.testzero-wz.com/2017/09/27/Pwnable-kr-Passcode/</a></span>
                     </p>
                 
                 
@@ -337,9 +337,9 @@ Welcome()处声明了一个100字节长的char数组name;</p>
                 <span class="tag">
                     
                     
-                        <a href="/blog/tag/CTF/"># CTF</a>
+                        <a href="/tag/CTF/"># CTF</a>
                     
-                        <a href="/blog/tag/%E4%BA%8C%E8%BF%9B%E5%88%B6/"># 二进制</a>
+                        <a href="/tag/%E4%BA%8C%E8%BF%9B%E5%88%B6/"># 二进制</a>
                     
                         
                 </span>
@@ -347,15 +347,15 @@ Welcome()处声明了一个100字节长的char数组name;</p>
             <div>
                 <a href="javascript:window.history.back();">back</a>
                 <span>· </span>
-                <a href="/blog/">home</a>
+                <a href="/">home</a>
             </div>
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/blog/2017/09/28/XSS%E9%A2%98%E6%8A%80%E5%B7%A7%E6%80%BB%E7%BB%93-%E4%B8%8D%E5%AE%9A%E6%9C%9F%E6%9B%B4%E6%96%B0/">XSS题技巧总结-不定期更新</a>
+                <a class="prev" rel="prev" href="/2017/09/28/XSS%E9%A2%98%E6%8A%80%E5%B7%A7%E6%80%BB%E7%BB%93-%E4%B8%8D%E5%AE%9A%E6%9C%9F%E6%9B%B4%E6%96%B0/">XSS题技巧总结-不定期更新</a>
             
             
-            <a class="next" rel="next" href="/blog/2017/09/27/NSCTF-Web-WriteUp/">NSCTF-Web-WriteUp</a>
+            <a class="next" rel="next" href="/2017/09/27/NSCTF-Web-WriteUp/">NSCTF-Web-WriteUp</a>
             
         </section>
 
@@ -376,5 +376,22 @@ Welcome()处声明了一个100字节长的char数组name;</p>
 <script>hljs.highlightAll();</script>
 
     </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script> -->
+
+<script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 </body>
 </html>

@@ -18,23 +18,23 @@
 
 
 
-    <link rel="icon" href="/blog/favicon.ico">
+    <link rel="icon" href="/favicon.ico">
 
 
 
 
     <!-- stylesheets list from _config.yml -->
     
-    <link rel="stylesheet" href="/blog/css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
     
 
 
 
     <!-- scripts list from _config.yml -->
     
-    <script src="/blog/js/script.js"></script>
+    <script src="/js/script.js"></script>
     
-    <script src="/blog/js/tocbot.min.js"></script>
+    <script src="/js/tocbot.min.js"></script>
     
 
 
@@ -47,7 +47,7 @@
   <!-- for theme: default is false -->
   <!-- for page: default is true -->
 
-<link rel="stylesheet" href="/blog/js/fancybox/jquery.fancybox.min.css">
+<link rel="stylesheet" href="/js/fancybox/jquery.fancybox.min.css">
 
 
 
@@ -62,16 +62,16 @@
         <header>
     <nav class="navbar">
         <div class="container">
-            <div class="navbar-header header-logo"><a href="/blog/">Home</a></div>
+            <div class="navbar-header header-logo"><a href="/">Home</a></div>
             <div class="menu navbar-right">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
                 <input id="switch_default" type="checkbox" class="switch_default">
                 <label for="switch_default" class="toggleBtn"></label>
@@ -84,19 +84,19 @@
         <div class="container">
             <div class="navbar-header">
                 <div>
-                    <a href="/blog/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    <a href="/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
                 </div>
                 <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
             </div>
             <div class="menu" id="mobile-menu">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
             </div>
         </div>
@@ -206,7 +206,7 @@
                         <span class="post-category">
                     Category:
                             
-                                <a href="/blog/category/CTF/">CTF</a>
+                                <a href="/category/CTF/">CTF</a>
                             
                         </span>
                     
@@ -215,7 +215,7 @@
         </header>
 
         <div class="post-content">
-            <p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/2018041802.jpg"></p>
+            <p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/2018041802.jpg"></p>
 <h1 id="前言">前言</h1>
 <p>还记得去年的四、五月份参加的DDCTF 混了个名次，蹭了次面试
 没想到时间过得这么快，今年的DDCTF现在也比完了 老了老了
@@ -227,11 +227,11 @@
 <h4 id="web1---数据库的秘密">Web1 - 数据库的秘密</h4>
 <p>一道前端计算签名然后sql盲注的web题</p>
 <p>进去就是非法链接，很明显需要<code>burp</code>抓一下包然后添个<code>HTTP的X-Forwarded-For</code>为<code>123.232.23.245</code></p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/11-25-24.jpg">
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/11-25-24.jpg">
 然后我们将得到一个很常规的查询界面</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/11-27-43.jpg">
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/11-27-43.jpg">
 从源码来看传了四个参数过去分别是<code>id</code>，<code>title</code>，<code>date</code>，<code>author</code></p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/11-30-07.jpg"> 如果我们随便POST一个
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/11-30-07.jpg"> 如果我们随便POST一个
 <code>id=1&amp;author=asd&amp;date=1&amp;title=s</code>会提示<code>param error</code>
 那么很有可能用<code>JS</code>搞了些事情了，找到页面中引用的<code>JS</code>文件——<code>main.js</code>和<code>math.js</code>查看<code>submit()</code>函数</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">signGenerate</span>(obj<span class="op">,</span> key) &#123;</span>
@@ -274,13 +274,13 @@
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&quot;sig:&quot;</span><span class="op">+</span><span class="fu">hex_math_enc</span>(str0 <span class="op">+</span> key))</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="fu">hex_math_enc</span>(str0 <span class="op">+</span> key)</span></code></pre></div>
 <p>这里有个小技巧，因为<code>author</code>参数是<code>hidden</code>的，所以我们可以把它变成<code>text</code>，本地方便我们输入测试得到签名</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/12-07-07.jpg"> 效果如下</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/12-07-41.jpg">
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/12-07-07.jpg"> 效果如下</p>
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/12-07-41.jpg">
 得到签名之后我们再去burp重放一下就好了
 后面我测试得<code>author</code>填单引号的时候界面的数据没了，很明显这个参数可能存在注入</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/12-13-01.jpg">
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/12-13-01.jpg">
 尝试基本的<code>' or 1 #</code></p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/12-14-47.jpg">
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/12-14-47.jpg">
 那么可以确定存在<code>author</code>这个参数存在注入了
 再测试一下联合注入啥的，会被假狗waf掉，我直接是选择了盲注，也没啥大问题
 我的脚本是选择的<code>PyV8</code>库来运行<code>JS</code>脚本
@@ -535,11 +535,11 @@
 主要还是对jsp这方面接触很少，而且本学期才开始学的java，2333
 但是由于语法跟C++差不多，多多少少还是能看懂的 说题目吧
 首先是一个静态页面，啥也找不出来，卡了很久</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/13-49-53.jpg">
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/13-49-53.jpg">
 一开始顺着提示——专属登录链接，然后再源码里面找到了<code>&lt;meta property="qc:admins" content="36510766376011725352163757752314571645060454"/&gt;</code>还以为什么QQ平台第三方登录漏洞什么的，后来发现是纯粹浪费时间=
 = 首页源码提示<code>&lt;!--/flag/testflag/yourflag--&gt;</code></p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/21-36-06.jpg"> 访问之</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/21-37-04.jpg">
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/21-36-06.jpg"> 访问之</p>
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/21-37-04.jpg">
 提示<code>java.lang.ArrayIndexOutOfBoundsException</code>
 尝试了很久得出这样的一个访问链接<code>http://116.85.48.102:5050/flag/testflag/&#123;fasfasf&#125;</code>
 得到下列错误</p>
@@ -550,7 +550,7 @@
 <p>我们只能得到有个<code>com.didichuxing.ctf.controller.user.FlagController</code>这个类名，还有这个大括号里面是要求一个long
 然后我尝试爆破long，失败，毕竟long这么大，还以为是啥小点的数，因为实在是没啥思路</p>
 <p>后来发现这个提示——“专属登录链接”的作用是叫你访问<code>http://116.85.48.102:5050/login</code></p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/13-53-04.jpg">
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/13-53-04.jpg">
 然后找到一个废弃的登录页面，一点用也没有的那种
 而且这个博客的名字看起来就像乱写的而且没啥特征，看起来去google找也不会找到啥信息
 然而事实是<code>Github</code>上还真的有源码<a target="_blank" rel="noopener" href="https://github.com/xingfly/SBlog">https://github.com/xingfly/SBlog</a>
@@ -598,10 +598,10 @@
                     │  └─user
                     ├─common   
                     └─user</code></pre>
-<p>而在首页，图标出现了奇怪的缺失纹路 <img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/21-55-22.jpg"> 找到对应的ico地址</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/21-56-23.jpg">
+<p>而在首页，图标出现了奇怪的缺失纹路 <img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/21-55-22.jpg"> 找到对应的ico地址</p>
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/21-56-23.jpg">
 下载下来查看发现这个脑洞，emmmm，说实话在比赛的时候我是没有发现的</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/21-57-42.jpg">
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/21-57-42.jpg">
 然后我们可以知道这个链接就是通往flag的地方了
 <code>http://116.85.48.102:5050/image/banner/ZmF2aWNvbi5pY28=</code>
 <code>ZmF2aWNvbi5pY28=</code>base64解码之后<code>favicon.ico</code>
@@ -639,9 +639,9 @@
 <span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="op">&#125;</span></span></code></pre></div>
 <p>找到了我们之前访问<code>/flag/testflag/&#123;asdf&#125;</code>的逻辑了
 很明显要得到flag就要看一个<code>flagService.getFlagByEmail()</code>函数以及知道参数<code>email</code>是啥，我们按照上面的方法继续读取<code>flagService</code>类和<code>flag</code>类下来，然后发现<code>flagService</code>类是一个<code>public abstract interface</code>类，就很迷，里面啥代码都没有（其实在对应的mapper.xml里面）
-将里面的这三个文件下载下来进行分析 <img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/10-33-28.jpg">
+将里面的这三个文件下载下来进行分析 <img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/10-33-28.jpg">
 在<code>applicationContext.xml</code>找到初始化类，下载之</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/10-48-17.jpg"> 找到flag加密代码逻辑</p>
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/10-48-17.jpg"> 找到flag加密代码逻辑</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode java"><code class="sourceCode java"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span><span class="op">&#123;</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>      <span class="kw">this</span><span class="op">.</span><span class="fu">flagService</span><span class="op">.</span><span class="fu">deleteAll</span><span class="op">();</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>      <span class="bu">String</span> path <span class="op">=</span> ctx<span class="op">.</span><span class="fu">getServletContext</span><span class="op">().</span><span class="fu">getRealPath</span><span class="op">(</span><span class="st">&quot;/WEB-INF/classes/emails.txt&quot;</span><span class="op">);</span></span>
@@ -691,11 +691,11 @@
 我尝试了很多个email，包括我自己的平台注册<code>email</code>和<code>xxx@didichuxing.com</code>这种
 然后经Wfox师傅提醒是首页的一个长的离谱的<code>email</code>才反应过来这个骚套路
 就是这货</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/11-01-58.jpg"> <img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/11-02-08.jpg"> 然后我们可以直接到这个网站(<a target="_blank" rel="noopener" href="http://tool.oschina.net/encrypt?type=2">http://tool.oschina.net/encrypt</a>)进行<code>HmacSHA256</code>加密</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/11-03-22.jpg"></p>
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/11-01-58.jpg"> <img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/11-02-08.jpg"> 然后我们可以直接到这个网站(<a target="_blank" rel="noopener" href="http://tool.oschina.net/encrypt?type=2">http://tool.oschina.net/encrypt</a>)进行<code>HmacSHA256</code>加密</p>
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/11-03-22.jpg"></p>
 <p>用<code>burp</code>
 <code>POST</code>过去，不出意外地得到了签名后的flag</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/11-08-59.jpg">
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/11-08-59.jpg">
 然后就是提取公钥解密这个flag了
 写<code>java</code>这边有点吃力，写了挺久才得到正确解，主要还是这个<code>KeyStore</code>文件提取不了解</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode java"><code class="sourceCode java"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="im">java</span><span class="op">.</span><span class="im">security</span><span class="op">.</span><span class="im">Key</span><span class="op">;</span></span>
@@ -754,17 +754,17 @@
 <h3 id="web3---注入的奥妙">Web3 - 注入的奥妙</h3>
 <p>题目提示得很明显，Sql注入
 然后进去就是一个标准的注入套路，还有注入回显</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/11-44-20.jpg">
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/11-44-20.jpg">
 url是这种<code>http://116.85.48.105:5033/05069d93-1384-4097-a7e7-047658cacbfa/well/getmessage/1</code>，应该是经过重写的一个参数传递方式
 测试了几个常规的payload，发现应该是用<code>addslashes</code>等函数过滤的，特殊字符加了反斜杠转义
 由于页面提示得那么明显，我们直接尝试宽字节注入
 这个网址挺不错的，可以将十六进制数直接变成各个编码对应的字 <a target="_blank" rel="noopener" href="http://www.qqxiuzi.cn/bianma/zifuji.php">http://www.qqxiuzi.cn/bianma/zifuji.php</a></p>
 <p>我们随便选几个会出现宽字节注入的编码(GBK2312不行，因为它低字节没有<code>5C</code>)
-<img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/12-26-22.jpg">
+<img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/12-26-22.jpg">
 测试到BIG5编码（没做这题之前并不知道这个编码）</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/12-27-55.jpg"></p>
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/12-27-55.jpg"></p>
 <p>然后测试这样的<code>payload</code>——<code>綅'or%201%23</code></p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/12-30-36.jpg"></p>
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/12-30-36.jpg"></p>
 <p>发现成功转义了反斜杠，逃逸出了单引号
 稍后我们再结合源码解释一下为什么会出现这样的效果
 毕竟写文章是为了总结，不仅仅是为了记录姿势是吧(大佬们可以跳过此环节)
@@ -815,9 +815,9 @@ get*/   u/well/getmessage/  s
 get*/   u/justtry/self/     s
 post*/  u/justtry/try   2</code></pre>
 <p>于是我们直接下载到了源码备份<code>static/bootstrap/css/backup.zip</code>
-注意到<code>Test</code>类 <img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/14-52-38.jpg"> <img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/14-53-09.jpg">
+注意到<code>Test</code>类 <img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/14-52-38.jpg"> <img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/14-53-09.jpg">
 以及<code>Justtry</code>类的<code>try</code>方法</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/14-54-39.jpg"></p>
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/14-54-39.jpg"></p>
 <p>看得出来出题人偷懒了，直接给了我们一个提示，我们只需要构造好序列化字符串给<code>try</code>函数启动<code>Test</code>类的析构函数就能得到<code>flag</code>了</p>
 <div class="sourceCode" id="cb12"><pre class="sourceCode php"><code class="sourceCode php"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">&lt;?php</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> <span class="cn">T</span>est</span>
@@ -861,12 +861,12 @@ post*/  u/justtry/try   2</code></pre>
 <p>然后我们将序列化之后的字符串<code>POST</code>给<code>/justtry/try</code>目录</p>
 <pre><code>hhkjjhkhjkhjkhkjhkhkhkO:4:&quot;Test&quot;:2:&#123;s:9:&quot;user_uuid&quot;;s:36:&quot;05069d93-1384-4097-a7e7-047658cacbfa&quot;;s:2:&quot;fl&quot;;O:4:&quot;Flag&quot;:1:&#123;s:3:&quot;sql&quot;;O:3:&quot;SQL&quot;:0:&#123;&#125;&#125;&#125;</code></pre>
 <p>恩，发现是没反应的</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/17-48-08.jpg"></p>
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/17-48-08.jpg"></p>
 <p>于是我再次卡了挺久，经师傅提醒才发现，类名需要带上路径，一口老血
 修改成这个样子就好了</p>
 <pre><code>O:17:&quot;Index\Helper\Test&quot;:2:&#123;s:9:&quot;user_uuid&quot;;s:36:&quot;05069d93-1384-4097-a7e7-047658cacbfa&quot;;s:2:&quot;fl&quot;;O:17:&quot;Index\Helper\Flag&quot;:1:&#123;s:3:&quot;sql&quot;;O:16:&quot;Index\Helper\SQL&quot;:0:&#123;&#125;&#125;&#125;</code></pre>
 <p>成功获取flag</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/17-50-01.jpg"> 宽字节注入漏洞原理 <a href="#">看这篇文章</a></p>
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/17-50-01.jpg"> 宽字节注入漏洞原理 <a href="#">看这篇文章</a></p>
 <h2 id="逆向">逆向</h2>
 <h4 id="逆向1---mips">逆向1 - MIPS</h4>
 <p>这题是我在web没思路期间做的，比较坑人,而且自己的姿势也不够多，导致用了笨方法，消耗了很多时间
@@ -874,10 +874,10 @@ post*/  u/justtry/try   2</code></pre>
 在ubuntu下装qemu折腾了好久才运行起来，但是无论你输入啥都会段错误
 那肯定是加了花，但是一般加花程序也能运行，只是混淆了反编译器的反编译代码，但是这次的花把自己给加到段错误不能运行了，我是很服气的，导致我纠结了很久是不是类似于栈溢出跳转到别的地方执行之类的骚套路。事实证明他只是加花把自己加死了=
 = 先分析一下这个花</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/20-50-39.jpg"></p>
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/20-50-39.jpg"></p>
 <p>在程序检验flag的流程里，出现了这种无法指执行的指令如<code>jalx    0xDAC0BAC</code>、<code>sh      $sp, 0x2EB($t7)</code>、甚至是不是指令的垃圾数据<code>.word 0x54F102EB</code>
 但是他们都有一个共同点，就是将指令变成数据之后，他们的较低位的两字节都是<code>02EB</code></p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/20-54-20.jpg">
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/20-54-20.jpg">
 所以这题的预期解法应该是把这些较低字节为<code>02EB</code>的垃圾数据清除后再运行程序，就会很清楚地看到16个检验循环，进而得到16个等式构成一个方程组解出16个变量，即flag
 而我就比较<del>牛逼</del>了
 由于缺乏这种去花常识，我直接用python解析ida的代码，用自己的逻辑跳过垃圾指令，从而自己得出方程（这就是一个笨方法）
@@ -1169,7 +1169,7 @@ switch=1分析load，等于0则分析loop</p>
 <span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(so.check())</span>
 <span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(so.model())</span></code></pre></div>
 <p>由于数有点大，大概需要1分钟的样子解出答案</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/21-53-59.jpg"></p>
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/21-53-59.jpg"></p>
 <h2 id="misc">MISC</h2>
 <h3 id="misc2--">Misc2 - (╯°□°）╯︵ ┻━┻</h3>
 <p>每个字符的ASCLL码都加了128，去掉就好了</p>
@@ -1182,29 +1182,29 @@ switch=1分析load，等于0则分析loop</p>
 <h3 id="misc3---流量分析">Misc3 - 流量分析</h3>
 <p>包里面用ftp传了sqlmap.zip和Fl-g.zip，后来才发现是陷阱(巨坑)
 包里面的smtp里面传了一些无关紧要的东西，一些网页，一些对话，还有一张大图image001.png</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/22-08-49.png">
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/22-08-49.png">
 然后将图片的base64编码提取出来，写进我们写的html文件</p>
 <div class="sourceCode" id="cb18"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">&lt;img</span> <span class="er">src</span><span class="ot">=</span><span class="st">&quot;data:image/png;base64,xxxxxx(ImageBase64)”&gt;</span></span></code></pre></div>
 <p>得到</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/22-09-27.jpg"></p>
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/22-09-27.jpg"></p>
 <p>通过提示很容易知道是一个RSA密钥的base64编码
 随后在wireshark中搜索ssl协议流量，发现172.17.0.3与172.17.0.2之间有ssl通信
 猜测图片中的密钥是其中一方的私钥</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/22-09-48.jpg">
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/22-09-48.jpg">
 将图片的密钥变成标准格式(机器OCR+人眼OCR)</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/22-09-56.jpg"></p>
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/22-09-56.jpg"></p>
 <p>将密钥导进wireshark，编辑 -&gt; 首选项 -&gt; protocols -&gt; SSL
 -&gt; RSA keys list Edit</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/22-14-23.jpg">
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/22-14-23.jpg">
 然后在ssl流量中发现解密出来的flag</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/22-14-51.jpg"></p>
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/22-14-51.jpg"></p>
 <h3 id="misc4---第四扩展fs">Misc4 - 第四扩展FS</h3>
 <p>一张windows.jpg，属性部分存在密码备注，图片里面存在ZIP的文件头PK，用winhex提取出zip</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/22-05-38.jpg">
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/22-05-38.jpg">
 file.txt是一个充满字符的txt</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/22-05-46.jpg"> <img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/22-06-02.jpg"> 很容易联想到字频统计之类的攻击
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/22-05-46.jpg"> <img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/22-06-02.jpg"> 很容易联想到字频统计之类的攻击
 使用TextDecoder Toolkit这个工具进行字符统计 下载地址：<a target="_blank" rel="noopener" href="http://www.kahusecurity.com/?page_id=13485">http://www.kahusecurity.com/?page_id=13485</a>，解压密码kahusecurity</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/22-07-11.jpg"> 得到flag</p>
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/22-07-11.jpg"> 得到flag</p>
 <h3 id="misc5---安全通信">Misc5 - 安全通信</h3>
 <p>这题比较快地写了出来，google找到一篇github的文章，刚好是对应的类型，然后写了个脚本就好了，文章地址：
 <a target="_blank" rel="noopener" href="https://github.com/liamh95/CTF-writeups/tree/master/CSAW17/baby_crypt">https://github.com/liamh95/CTF-writeups/tree/master/CSAW17/baby_crypt</a>
@@ -1262,17 +1262,17 @@ file.txt是一个充满字符的txt</p>
 codebook)模式将一段嵌入<code>agent id</code>和<code>flag</code>的<code>message</code>进行加密，密钥就是随机的key，然后输出加密的结果
 接下来是一个循环，继续利用刚才的密钥对我们接下来输入的信息进行加密然后输出结果
 ECB加密是分组进行加密的，解密也是分组解密。分组与分组之间的明文产生的密文互相独立，且由于算法的缘故，相同的明文分组在相同的密钥加密下会产生相同的密文
-加解密流程如下图所示 &gt; 引用自维基百科 &gt; <img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/22-50-28_1.jpg"></p>
+加解密流程如下图所示 &gt; 引用自维基百科 &gt; <img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/22-50-28_1.jpg"></p>
 <blockquote>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/22-50-56_1.jpg"></p>
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/22-50-56_1.jpg"></p>
 </blockquote>
 <p>而我们要做的事是通过这些个分组且明文加密固定密文的特性猜出flag的每一位来
 题中以16字节为一组，我们举例也拿16字节为一组举例
 首先我们假设<code>xxxx</code>使我们可控的输入，一般情况下的加密会是这样的</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/ECB1_1.png"></p>
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/ECB1_1.png"></p>
 <p>但是如果我们控制<code>xxx</code>为十五个固定的字符如十五个<code>A</code>
 则加密过程会变成这样：</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/ECB2_1.png"></p>
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/ECB2_1.png"></p>
 <p>现在我们记录下此时的<code>HEX_1</code>
 然后再通过Fuzz的方法让同样的密钥对我们特定的分组进行加密，如</p>
 <pre><code>AAAAAAAAAAAAAAAa
@@ -1316,12 +1316,12 @@ flag共39位，可以通过测试id逐字节加再观察加密后的HEX长度得
 <span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a>    pro.close()</span>
 <span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a>    log.info(<span class="st">&quot;Flag: </span><span class="sc">%s</span><span class="st">&quot;</span>, flag)</span>
 <span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a>    sleep(<span class="dv">1</span>)</span></code></pre></div>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/23-30-06.jpg"></p>
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/23-30-06.jpg"></p>
 <h1 id="结尾">结尾</h1>
 <p>比赛过程挺刺激的，依旧持续了一个星期之久 最后也是混了个22名吧
 一年过去了，依旧那么菜
 希望下一年自己能够找到自己真正喜欢的领域去深入研究吧</p>
-<p><img src="/blog/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/23-37-22.jpg"></p>
+<p><img src="/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/23-37-22.jpg"></p>
 
         </div>
 
@@ -1336,7 +1336,7 @@ flag共39位，可以通过测试id逐字节加再观察加密后的HEX长度得
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="https://testzero-wz.github.io/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/">https://testzero-wz.github.io/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/</a></span>
+                        <span><a href="https://www.testzero-wz.com/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/">https://www.testzero-wz.com/2018/04/21/%E5%8F%88%E6%98%AF%E4%B8%80%E5%B9%B4DDCTF/</a></span>
                     </p>
                 
                 
@@ -1355,9 +1355,9 @@ flag共39位，可以通过测试id逐字节加再观察加密后的HEX长度得
                 <span class="tag">
                     
                     
-                        <a href="/blog/tag/CTF/"># CTF</a>
+                        <a href="/tag/CTF/"># CTF</a>
                     
-                        <a href="/blog/tag/WriteUp/"># WriteUp</a>
+                        <a href="/tag/WriteUp/"># WriteUp</a>
                     
                         
                 </span>
@@ -1365,15 +1365,15 @@ flag共39位，可以通过测试id逐字节加再观察加密后的HEX长度得
             <div>
                 <a href="javascript:window.history.back();">back</a>
                 <span>· </span>
-                <a href="/blog/">home</a>
+                <a href="/">home</a>
             </div>
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/blog/2018/07/08/%E6%98%A5%E6%8B%9B%E9%9A%8F%E7%AC%94/">春招随笔</a>
+                <a class="prev" rel="prev" href="/2018/07/08/%E6%98%A5%E6%8B%9B%E9%9A%8F%E7%AC%94/">春招随笔</a>
             
             
-            <a class="next" rel="next" href="/blog/2018/04/06/%E5%86%99%E4%B8%80%E4%B8%AAARP%E6%AC%BA%E9%AA%97%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7/">写一个ARP欺骗的命令行工具</a>
+            <a class="next" rel="next" href="/2018/04/06/%E5%86%99%E4%B8%80%E4%B8%AAARP%E6%AC%BA%E9%AA%97%E7%9A%84%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7/">写一个ARP欺骗的命令行工具</a>
             
         </section>
 
@@ -1394,5 +1394,22 @@ flag共39位，可以通过测试id逐字节加再观察加密后的HEX长度得
 <script>hljs.highlightAll();</script>
 
     </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script> -->
+
+<script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 </body>
 </html>

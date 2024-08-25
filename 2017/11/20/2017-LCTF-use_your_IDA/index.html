@@ -18,23 +18,23 @@
 
 
 
-    <link rel="icon" href="/blog/favicon.ico">
+    <link rel="icon" href="/favicon.ico">
 
 
 
 
     <!-- stylesheets list from _config.yml -->
     
-    <link rel="stylesheet" href="/blog/css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
     
 
 
 
     <!-- scripts list from _config.yml -->
     
-    <script src="/blog/js/script.js"></script>
+    <script src="/js/script.js"></script>
     
-    <script src="/blog/js/tocbot.min.js"></script>
+    <script src="/js/tocbot.min.js"></script>
     
 
 
@@ -47,7 +47,7 @@
   <!-- for theme: default is false -->
   <!-- for page: default is true -->
 
-<link rel="stylesheet" href="/blog/js/fancybox/jquery.fancybox.min.css">
+<link rel="stylesheet" href="/js/fancybox/jquery.fancybox.min.css">
 
 
 
@@ -62,16 +62,16 @@
         <header>
     <nav class="navbar">
         <div class="container">
-            <div class="navbar-header header-logo"><a href="/blog/">Home</a></div>
+            <div class="navbar-header header-logo"><a href="/">Home</a></div>
             <div class="menu navbar-right">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
                 <input id="switch_default" type="checkbox" class="switch_default">
                 <label for="switch_default" class="toggleBtn"></label>
@@ -84,19 +84,19 @@
         <div class="container">
             <div class="navbar-header">
                 <div>
-                    <a href="/blog/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    <a href="/">Home</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
                 </div>
                 <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
             </div>
             <div class="menu" id="mobile-menu">
                 
-                    <a class="menu-item" href="/blog/archives">Posts</a>
+                    <a class="menu-item" href="/archives">Posts</a>
                 
-                    <a class="menu-item" href="/blog/category">Categories</a>
+                    <a class="menu-item" href="/category">Categories</a>
                 
-                    <a class="menu-item" href="/blog/tag">Tags</a>
+                    <a class="menu-item" href="/tag">Tags</a>
                 
-                    <a class="menu-item" href="/blog/about">About</a>
+                    <a class="menu-item" href="/about">About</a>
                 
             </div>
         </div>
@@ -206,7 +206,7 @@
                         <span class="post-category">
                     Category:
                             
-                                <a href="/blog/category/CTF/">CTF</a>
+                                <a href="/category/CTF/">CTF</a>
                             
                         </span>
                     
@@ -215,7 +215,7 @@
         </header>
 
         <div class="post-content">
-            <p><img src="/blog/2017/11/20/2017-LCTF-use_your_IDA/151145228598.jpg"> <a id="more"></a></p>
+            <p><img src="/2017/11/20/2017-LCTF-use_your_IDA/151145228598.jpg"> <a id="more"></a></p>
 <blockquote>
 <p>一个很有质量的比赛，题目都是花了心思，且有专门的人维护的，很用心，点赞</p>
 </blockquote>
@@ -224,12 +224,12 @@
 的皮毛，正好有个LCTF的比赛，故专门找逆向来做，连web老本行都没做(其实是不会做，题目很有水准)，本来想做几题的，没想到逆向第一题就这么有质量，近乎花了一天时间才做出来，不得不说这个比赛很用心</p>
 <h1 id="use_your_ida">use_your_IDA</h1>
 <p>拿到题目丢PEiD,并无异样</p>
-<p><img src="/blog/2017/11/20/2017-LCTF-use_your_IDA/12-34-06.jpg"></p>
+<p><img src="/2017/11/20/2017-LCTF-use_your_IDA/12-34-06.jpg"></p>
 <p>一个win32 Console 程序
 尝试运行，要求输入flag，输入即flag，很常规的逆向套路</p>
-<p><img src="/blog/2017/11/20/2017-LCTF-use_your_IDA/12-35-47.jpg"></p>
+<p><img src="/2017/11/20/2017-LCTF-use_your_IDA/12-35-47.jpg"></p>
 <p>既然没壳，直接上IDA和Ollydbg看看，动静结合嘛 上IDA流程图</p>
-<p><img src="/blog/2017/11/20/2017-LCTF-use_your_IDA/12-48-53.jpg"></p>
+<p><img src="/2017/11/20/2017-LCTF-use_your_IDA/12-48-53.jpg"></p>
 <p>首先看到printf了欢迎词，然后调用了两个函数<code>sub_40108F</code>和<code>sub_4010A1</code>,随后判断内存里Key_word的值是否为零，为零就成功打印Congratulation!，不是则打印Wrong!
 不要问我这些函数你打开之后不是这个名字，当然是因为我分析了功能之后修改了函数名啊。。。
 通过在Ollydbg里面修改寄存器和跳转，到达测试函数单步调试然后查看效果就好了，这个方法比纯静态的方法快，也能更直观地观察到函数作用
@@ -284,19 +284,19 @@
 <p>有了上次解题的经验可以看出此处有溢出漏洞，栈只有19个字节，但是读取起码有255个字节，但是目前还不知道怎么用，姑且留着备用</p>
 <p>在分析下一个函数<code>sub_4010A1</code>之前来看一下影响Key_word的代码在哪
 Key_word初始化为2</p>
-<p><img src="/blog/2017/11/20/2017-LCTF-use_your_IDA/14-44-52.jpg"></p>
-<p><img src="/blog/2017/11/20/2017-LCTF-use_your_IDA/14-43-27.jpg"></p>
-<p><img src="/blog/2017/11/20/2017-LCTF-use_your_IDA/14-43-41.jpg">
+<p><img src="/2017/11/20/2017-LCTF-use_your_IDA/14-44-52.jpg"></p>
+<p><img src="/2017/11/20/2017-LCTF-use_your_IDA/14-43-27.jpg"></p>
+<p><img src="/2017/11/20/2017-LCTF-use_your_IDA/14-43-41.jpg">
 可以看到在函数<code>sub_4010A1</code>中对<code>Key_word</code>的操作只是加一减一，并不能将<code>Key_word</code>变成0
 观察到最后一行有一个操作是将<code>Key_word</code>减二的操作，但是地址在<code>42f90E</code>,所以我们不难猜测，出题人的思路就是故意留出溢出漏洞，让我们找到正确的检验函数地址然后通过检验输入值，然后得到flag
 通过简单地观察函数<code>sub_4010A1</code>，不难看出无论你输入啥，都会跳转到<code>Wrong</code>函数，然后输出<code>Wrong!</code>，程序退出，这也验证了我们的想法
 那么，是不是有点熟悉的味道？</p>
 <p>是的，看雪CTF的第二题(我上篇文章分析的题)的思路！</p>
-<p><img src="/blog/2017/11/20/2017-LCTF-use_your_IDA/20-33-51.jpg"></p>
+<p><img src="/2017/11/20/2017-LCTF-use_your_IDA/20-33-51.jpg"></p>
 <h2 id="寻找突破口">寻找突破口</h2>
 <p>经过一阵查找，发现了一个函数将内存改来改去，然后最后执行了一个将<code>Key_word</code>-2的操作，然后跳回到了我们原来的主函数比较<code>Key_word</code>的地方
 确定是这里没错了</p>
-<p><img src="/blog/2017/11/20/2017-LCTF-use_your_IDA/14-59-03.jpg"></p>
+<p><img src="/2017/11/20/2017-LCTF-use_your_IDA/14-59-03.jpg"></p>
 <p>构造函数跳过来吧</p>
 <p>地址是<code>413142</code>，由上面我们分析的溢出漏洞，我们可以在函数<code>sub_40108F</code>的<code>return</code>处构造地址，很容易得出跳转的payload
 <code>19*"1"+'abcd'+B1A</code></p>
@@ -356,10 +356,10 @@ Key_word初始化为2</p>
 <p>接下来的函数全是这种将栈内的数取出来，加一个数或减去另外一个数，重复几次加减，然后异或一下再存回去原来的位置
 逻辑简单是简单，主要还是太长的，几万行代码。。。我的天？</p>
 <p>在Ollydbg中运行trace来跟踪跳转后这个函数到底干嘛了(我不会说我一开始是用二分法分析函数的。。。)</p>
-<p><img src="/blog/2017/11/20/2017-LCTF-use_your_IDA/15-33-30.jpg">
+<p><img src="/2017/11/20/2017-LCTF-use_your_IDA/15-33-30.jpg">
 注意到，前面都是一些所谓的加减异或来加密我们输入的数值，然后在地址
 <code>42EE4A</code>处我们发现了跳转函数，让我们输出了Wrong!</p>
-<p><img src="/blog/2017/11/20/2017-LCTF-use_your_IDA/15-33-47.jpg"></p>
+<p><img src="/2017/11/20/2017-LCTF-use_your_IDA/15-33-47.jpg"></p>
 <p>跳转到此函数分析</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode asm"><code class="sourceCode fasm"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>0042EE36     <span class="bu">mov</span> <span class="kw">ecx</span><span class="op">,</span><span class="bn">0x3</span>    <span class="co">;三次循环</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>0042EE3B     <span class="bu">mov</span> <span class="kw">edx</span><span class="op">,</span><span class="bn">0x0</span>    <span class="co">;偏移置零</span></span>
@@ -514,7 +514,7 @@ Find answer: check_list[ 19 ] =&gt; 55
 303137
 017</code></pre>
 <p>然后我们整合一下flag——<code>We1come_to_L1111017abcdB1A</code></p>
-<p><img src="/blog/2017/11/20/2017-LCTF-use_your_IDA/23-36-45.jpg"></p>
+<p><img src="/2017/11/20/2017-LCTF-use_your_IDA/23-36-45.jpg"></p>
 <p>emmmmmmm.....</p>
 <p>这么随便的flag么</p>
 <p>然后去比赛网站上看，提示多解的四位为<code>ctf2</code>
@@ -546,7 +546,7 @@ Find answer: check_list[ 19 ] =&gt; 55
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="https://testzero-wz.github.io/2017/11/20/2017-LCTF-use_your_IDA/">https://testzero-wz.github.io/2017/11/20/2017-LCTF-use_your_IDA/</a></span>
+                        <span><a href="https://www.testzero-wz.com/2017/11/20/2017-LCTF-use_your_IDA/">https://www.testzero-wz.com/2017/11/20/2017-LCTF-use_your_IDA/</a></span>
                     </p>
                 
                 
@@ -569,15 +569,15 @@ Find answer: check_list[ 19 ] =&gt; 55
             <div>
                 <a href="javascript:window.history.back();">back</a>
                 <span>· </span>
-                <a href="/blog/">home</a>
+                <a href="/">home</a>
             </div>
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/blog/2018/01/16/%E7%99%BE%E5%BA%A6%E6%9D%AF11%E6%9C%88pwnme/">百度杯11月pwnme</a>
+                <a class="prev" rel="prev" href="/2018/01/16/%E7%99%BE%E5%BA%A6%E6%9D%AF11%E6%9C%88pwnme/">百度杯11月pwnme</a>
             
             
-            <a class="next" rel="next" href="/blog/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/">2017-看雪CTF秋季赛-第二题</a>
+            <a class="next" rel="next" href="/2017/11/10/2017-%E7%9C%8B%E9%9B%AACTF%E7%A7%8B%E5%AD%A3%E8%B5%9B-%E7%AC%AC%E4%BA%8C%E9%A2%98/">2017-看雪CTF秋季赛-第二题</a>
             
         </section>
 
@@ -598,5 +598,22 @@ Find answer: check_list[ 19 ] =&gt; 55
 <script>hljs.highlightAll();</script>
 
     </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script> -->
+
+<script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 </body>
 </html>
